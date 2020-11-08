@@ -23,6 +23,9 @@ process_data <- function(data, override = 0, bp_date = NULL, sbp = NULL, dbp = N
   #idx_list <- list(bp_date = bp_date, sbp = sbp, dbp = dbp, hr = hr, pp = pp, map = map, rpp = rpp)
   #idx <- as.numeric(unlist(idx_list))
 
+  # if(!is.character(bp_date) | !is.character(sbp) | !is.character(dbp) | !is.character(hr) | !is.character(pp) | !is.character(map) | !is.character(rpp)){
+  #   stop('Arguments must all be character and correspond to column names. If a column name is a number, specify it in quotes i.e. sbp = "2" if the name of the SBP column is actually "2".')
+  # }
 
   # Ensure that data is either data.frame or matrix
   if(is.data.frame(data) == FALSE){
@@ -51,9 +54,10 @@ process_data <- function(data, override = 0, bp_date = NULL, sbp = NULL, dbp = N
   # Throw error if SBP and DBP columns aren't specified
   if(is.null(sbp) | is.null(dbp)){
 
-    stop('Both "SBP" & "DBP" column indices must be specified.')
+      stop('Both "SBP" and "DBP" column names must be specified.')
 
     }
+
 
 
 
@@ -62,38 +66,53 @@ process_data <- function(data, override = 0, bp_date = NULL, sbp = NULL, dbp = N
 
     if(toupper(sbp) %in% colnames(data) == FALSE){
 
-      stop('User-defined SBP name does not match column name of supplied dataset')
+      warning('Could not find user-defined SBP argument name in dataset. \ni.e. for example, if user improperly defines sbp = "syst" but there is no column name in the dataset, then there will be no matches for "syst". Check spelling of SBP argument.')
+
+      if(length(grep(paste("\\bSBP\\b", sep = ""), names(data))) == 1){
+
+        stop('Fix user-defined argument name for SBP. \nNote: A column in the dataset DOES match the name "SBP": if this is the correct column, indicate as such in function argument. \ni.e. sbp = "SBP" \n ')
+
+      }
 
     }else{
 
       col_idx <- grep(paste("\\b",toupper(sbp),"\\b", sep = ""), names(data))
       data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
-      #data[ , 1] <- as.numeric(data[ , 1])
+
+      if(colnames(data)[1] != "SBP"){
+
+        colnames(data)[1] <- "SBP"
+        data$SBP <- as.numeric(data$SBP)
+      }
     }
-
-  }else{
-
-    if(sbp > ncol(data)){
-
-      stop('Invalid index for SBP. Index greater than number of available columns')
-    }
-
-    if(sbp < 0){
-
-      stop('Invalid index for SBP. Cannot have negative index')
-    }
-
-    if( (ncol(data) == 2) & (sbp == 2) ){
-
-      data <- data[ , c(2 , 1)]
-
-    }else if(sbp != 1){
-
-      data <- data[, c(sbp, (1:ncol(data))[-sbp])]
-      #data[ , sbp] <- as.numeric(data[ , sbp])
-
-    }
-  }
+  } else {
+    stop('User-defined SBP name must be character.')
+  }# if working with numeric below, remove this bracket
+  {
+  # }else{
+  #
+  #   if(sbp > ncol(data)){
+  #
+  #     stop('Invalid index for SBP. Index greater than number of available columns')
+  #   }
+  #
+  #   if(sbp < 0){
+  #
+  #     stop('Invalid index for SBP. Cannot have negative index')
+  #   }
+  #
+  #   if( (ncol(data) == 2) & (sbp == 2) ){
+  #
+  #     data <- data[ , c(2 , 1)]
+  #
+  #   }else if(sbp != 1){
+  #
+  #     data <- data[, c(sbp, (1:ncol(data))[-sbp])]
+  #     #data[ , sbp] <- as.numeric(data[ , sbp])
+  #
+  #   }
+  # }
+}
 
 
 
@@ -103,39 +122,53 @@ process_data <- function(data, override = 0, bp_date = NULL, sbp = NULL, dbp = N
 
     if(toupper(dbp) %in% colnames(data) == FALSE){
 
-      stop('User-defined DBP name does not match column name of supplied dataset')
+      warning('User-defined DBP name does not match column name of supplied dataset. \ni.e. for example, if user improperly defines dbp = "diast" but there is no column name in the dataset, then there will be no matches for "diast". Check spelling of DBP argument.')
 
+      if(length(grep(paste("\\bDBP\\b", sep = ""), names(data))) == 1){
+
+        stop('Fix user-defined argument name for DBP. \nNote: A column in the dataset DOES match the name "DBP": if this is the correct column, indicate as such in function argument. \ni.e. sbp = "DBP" \n ')
+
+      }
     }else{
 
       col_idx <- grep(paste("\\b",toupper(dbp),"\\b", sep = ""), names(data))
       data <- data[, c(1, col_idx, (2:ncol(data))[-col_idx+1])]
-      #data[ , 2] <- as.numeric(data[ , 2])
-    }
 
-  }else{
+      if(colnames(data)[2] != "DBP"){
 
-    if(dbp > ncol(data)){
-
-      stop('Invalid index for DBP. Index greater than number of available columns')
-    }
-
-    if(dbp < 0){
-
-      stop('Invalid index for DBP. Cannot have negative index')
-    }
-
-    if(sbp == 1){
-
-      data <- data[, c(1, dbp, (2:ncol(data))[-dbp+1])]
-
-    }else if(dbp != 2){
-
-      dbp <- dbp + 1
-      data <- data[, c(1, dbp, (2:ncol(data))[-dbp+1])]
-      #data[ , 2] <- as.numeric(data[ , 2])
-
+        colnames(data)[2] <- "DBP"
+        data$DBP <- as.numeric(data$DBP)
       }
     }
+  } else {
+    stop('User-defined DBP name must be character.')
+    }# if working with numeric below, remove this bracket
+  {
+  # }else{
+  #
+  #   if(dbp > ncol(data)){
+  #
+  #     stop('Invalid index for DBP. Index greater than number of available columns')
+  #   }
+  #
+  #   if(dbp < 0){
+  #
+  #     stop('Invalid index for DBP. Cannot have negative index')
+  #   }
+  #
+  #   if(sbp == 1){
+  #
+  #     data <- data[, c(1, dbp, (2:ncol(data))[-dbp+1])]
+  #
+  #   }else if(dbp != 2){
+  #
+  #     dbp <- dbp + 1
+  #     data <- data[, c(1, dbp, (2:ncol(data))[-dbp+1])]
+  #     #data[ , 2] <- as.numeric(data[ , 2])
+  #
+  #     }
+  #   }
+}
 
 
 
@@ -143,19 +176,20 @@ process_data <- function(data, override = 0, bp_date = NULL, sbp = NULL, dbp = N
   # Pulse Pressure
   if(is.null(pp)){
 
-    if("PP" %in% names(data) == F){
+    if(length(grep(paste("\\bPP\\b", sep = ""), names(data))) == 0){
 
-      data$PP <- data[ , 1] - data[ , 2]
+      data$PP <- data$SBP - data$DBP
 
     }
 
     col_idx <- grep(paste("\\bPP\\b", sep = ""), names(data))
     data <- data[ , c(1:2, col_idx, (3:(ncol(data)))[-col_idx + 2])]
 
+    data$PP <- as.numeric(data$PP)
 
   }else if(is.character(pp)){ # if character (i.e. by name)
 
-    if(toupper(pp) %in% colnames(data) == FALSE){
+    if(toupper(pp) %in% colnames(data) == FALSE){ # is pp argument found in data colnames
 
       stop('User-defined PP name does not match column name of supplied dataset')
 
@@ -164,34 +198,47 @@ process_data <- function(data, override = 0, bp_date = NULL, sbp = NULL, dbp = N
       col_idx <- grep(paste("\\b",toupper(pp),"\\b", sep = ""), names(data))
       data <- data[, c(1:2, col_idx, (3:ncol(data))[-col_idx+2])]
 
+      data$PP <- as.numeric(data$PP)
       }
+  } else {
 
-  }else{ # if numeric
-
-    if(pp > ncol(data)){
-
-      stop('Invalid index for PP. Index greater than number of available columns')
-    }
-
-    if(pp < 0){
-
-      stop('Invalid index for PP. Cannot have negative index')
-    }
-
-    data <- data[, c(1:2, pp, (3:ncol(data))[-pp + 2])]
-
-    idx_list$hr + 1
-    idx_list$map + 1
-    idx_list$rpp + 1
+      stop('User-defined PP name must be character.')
   }
+
+  {
+  # }else{ # if numeric
+  #
+  #   if(pp > ncol(data)){
+  #
+  #     stop('Invalid index for PP. Index greater than number of available columns')
+  #   }
+  #
+  #   if(pp < 0){
+  #
+  #     stop('Invalid index for PP. Cannot have negative index')
+  #   }
+  #
+  #   data <- data[, c(1:2, pp, (3:ncol(data))[-pp + 2])]
+  #
+  #   idx_list$hr + 1
+  #   idx_list$map + 1
+  #   idx_list$rpp + 1
+  # }
+}
 
 
 
 
   # Heart Rate
-  if(!is.null(hr)){
+  if(is.null(hr)){
 
-    if(is.character(hr)){
+    if(length(grep(paste("\\bHR\\b", sep = ""), names(data))) == 1){
+
+      warning('HR column found in data. \nIf this column corresponds to Heart Rate, use hr = "HR" in the function argument.')
+
+    }
+
+  } else if(is.character(hr)){
 
       if(toupper(hr) %in% colnames(data) == FALSE){
 
@@ -201,56 +248,78 @@ process_data <- function(data, override = 0, bp_date = NULL, sbp = NULL, dbp = N
 
         col_idx <- grep(paste("\\b",toupper(hr),"\\b", sep = ""), names(data))
         data <- data[, c(1:3, col_idx, (4:ncol(data))[-col_idx+3])]
+        data$HR <- as.numeric(data$HR)
       }
-    }else{
-
-      if(hr > ncol(data)){
-
-        stop('Invalid index for HR. Index greater than number of available columns')
-      }
-
-      if(hr < 0){
-
-        stop('Invalid index for HR. Cannot have negative index')
-      }
-
-
-      # Check this, not entirely sure if this logic is correct... will this work if multiple changes? tested with a few examples, but
-      # not sure if my tests were thorough enough. I feel like I'm missing something here
-      if(sbp != 1 | dbp != 2 | is.null(pp) | if(!is.null(pp)){pp != 3}){
-        hr <- hr + 1
-      }
-      # same as above... check for more tests
-      if(is.null(pp)){
-        hr_inc <- 4
-      }else{
-        hr_inc <- 3
-      }
-
-      data <- data[, c(1:3, hr, (4:ncol(data))[-hr + hr_inc])]
-    }
+    } else {
+      stop('User-defined HR name must be character.')
   }
 
-
-
-
-  # # Rate Pulse Product
-  # if(is.null(rpp) & !is.null(hr)){
-  #
-  #   data$RPP <- data[ , 1] * data[ , 4]
-  #
-  # }else if(is.character(rpp)){
-  #
-  #   if(toupper(rpp) %in% colnames(data) == FALSE){
-  #
-  #       stop('User-defined RPP name does not match column name of supplied dataset')
-  #
+    {
   #   }else{
   #
-  #     col_idx <- grep(paste("\\b",toupper(rpp),"\\b", sep = ""), names(data))
-  #     data <- data[, c(1:2, col_idx, (3:ncol(data))[-col_idx+4])]
-  #   }
+  #     if(hr > ncol(data)){
   #
+  #       stop('Invalid index for HR. Index greater than number of available columns')
+  #     }
+  #
+  #     if(hr < 0){
+  #
+  #       stop('Invalid index for HR. Cannot have negative index')
+  #     }
+  #
+  #
+  #     # Check this, not entirely sure if this logic is correct... will this work if multiple changes? tested with a few examples, but
+  #     # not sure if my tests were thorough enough. I feel like I'm missing something here
+  #     if(sbp != 1 | dbp != 2 | is.null(pp) | if(!is.null(pp)){pp != 3}){
+  #       hr <- hr + 1
+  #     }
+  #     # same as above... check for more tests
+  #     if(is.null(pp)){
+  #       hr_inc <- 4
+  #     }else{
+  #       hr_inc <- 3
+  #     }
+  #
+  #     data <- data[, c(1:3, hr, (4:ncol(data))[-hr + hr_inc])]
+  #   }
+  # }
+}
+
+
+
+
+  # Rate Pulse Product
+  if(is.null(rpp)){
+
+    # Try to find "RPP" column in data: if found, length is 1 (a number), if not found, length is 0 (i.e. logical(0) )
+    if(length(grep(paste("\\bRPP\\b", sep = ""), names(data))) == 1){
+
+      warning('"RPP" argument not specified in function, but "RPP" column found in data. \n Ensure that the "RPP" column in the data is not the desired column.')
+
+    } else if(length(grep(paste("\\bHR\\b", sep = ""), names(data))) == 1){
+
+      data$RPP <- data$SBP * data$HR
+      data$RPP <- as.numeric(data$RPP)
+
+    }
+
+  }else if( (toupper(rpp) %in% colnames(data)) == FALSE){
+
+    stop('User-defined RPP name does not match column name of supplied dataset')
+
+  }else if( (length(grep(paste("\\bHR\\b", sep = ""), names(data))) == 1) & (toupper(rpp) %in% colnames(data)) ){ # HR column is present and in position 4
+
+    col_idx <- grep(paste("\\b",toupper(rpp),"\\b", sep = ""), names(data))
+    data <- data[, c(1:4, col_idx, (5:ncol(data))[-col_idx+4])]
+
+  }else if( (length(grep(paste("\\bHR\\b", sep = ""), names(data))) == 0) & (toupper(rpp) %in% colnames(data)) ){ # HR column is NOT present and in position 4
+
+    col_idx <- grep(paste("\\b",toupper(rpp),"\\b", sep = ""), names(data))
+    data <- data[, c(1:3, col_idx, (4:ncol(data))[-col_idx+3])]
+
+  }
+
+    {
   #   }else{
   #
   #     if(rpp > ncol(data)){
@@ -284,6 +353,18 @@ process_data <- function(data, override = 0, bp_date = NULL, sbp = NULL, dbp = N
   #   idx_list$rpp <- ncol(data)
   #   message("No RPP column found. Automatically added using SBP and HR.")
   # }
+    }
+
+
+
+
+  # Mean Arterial Pressure
+  if(is.null(map)){
+
+
+
+  }
+
 
   return(data)
 }
