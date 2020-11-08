@@ -1,3 +1,7 @@
+data <- readxl::read_excel('C:\\Users\\John\\Documents\\CGM Research\\Data\\ABPM\\70417-1 ABPM.xlsx') # Delete
+data <- data[, c(5,3,8,6,7)]
+data <- as.matrix(data)
+
 #' Data Pre-processor
 #'
 #' @param data (Required) User-supplied data set. Must be either matrix or data.frame
@@ -15,11 +19,9 @@
 #'
 #' @examples
 process_data <- function(data, override = 0, bp_date = NULL, sbp = NULL, dbp = NULL, hr = NULL, pp = NULL, map = NULL, rpp = NULL){
-  data <- readxl::read_excel('C:\\Users\\John\\Documents\\CGM Research\\Data\\ABPM\\70417-1 ABPM.xlsx') # Delete
-  data <- data[, c(6,5,3)]
-  data <- as.matrix(data)
-  # idx_list <- list(bp_date = bp_date, sbp = sbp, dbp = dbp, hr = hr, pp = pp, map = map, rpp = rpp)
-  # idx <- as.numeric(unlist(idx_list))
+
+  #idx_list <- list(bp_date = bp_date, sbp = sbp, dbp = dbp, hr = hr, pp = pp, map = map, rpp = rpp)
+  #idx <- as.numeric(unlist(idx_list))
 
 
   # Ensure that data is either data.frame or matrix
@@ -62,30 +64,35 @@ process_data <- function(data, override = 0, bp_date = NULL, sbp = NULL, dbp = N
 
       stop('User-defined SBP name does not match column name of supplied dataset')
 
-      }else{
-
-        col_idx <- grep(paste("\\b",toupper(sbp),"\\b", sep = ""), names(data))
-        data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
-        data[ , 1] <- as.numeric(data[ , 1])
-      }
-
     }else{
 
-      if(sbp > ncol(data)){
-
-        stop('Invalid index for SBP. Index greater than number of available columns')
+      col_idx <- grep(paste("\\b",toupper(sbp),"\\b", sep = ""), names(data))
+      data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
+      #data[ , 1] <- as.numeric(data[ , 1])
     }
+
+  }else{
+
+    if(sbp > ncol(data)){
+
+      stop('Invalid index for SBP. Index greater than number of available columns')
+    }
+
     if(sbp < 0){
 
       stop('Invalid index for SBP. Cannot have negative index')
     }
-    if((ncol(data) == 2) & (sbp == 2)){
 
-      sbp <- sbp - 1
-    }
+    if( (ncol(data) == 2) & (sbp == 2) ){
+
+      data <- data[ , c(2 , 1)]
+
+    }else if(sbp != 1){
 
       data <- data[, c(sbp, (1:ncol(data))[-sbp])]
-      data[ , 1] <- as.numeric(data[ , 1])
+      #data[ , sbp] <- as.numeric(data[ , sbp])
+
+    }
   }
 
 
@@ -102,7 +109,7 @@ process_data <- function(data, override = 0, bp_date = NULL, sbp = NULL, dbp = N
 
       col_idx <- grep(paste("\\b",toupper(dbp),"\\b", sep = ""), names(data))
       data <- data[, c(1, col_idx, (2:ncol(data))[-col_idx+1])]
-      data[ , 2] <- as.numeric(data[ , 2])
+      #data[ , 2] <- as.numeric(data[ , 2])
     }
 
   }else{
@@ -111,18 +118,24 @@ process_data <- function(data, override = 0, bp_date = NULL, sbp = NULL, dbp = N
 
       stop('Invalid index for DBP. Index greater than number of available columns')
     }
+
     if(dbp < 0){
 
       stop('Invalid index for DBP. Cannot have negative index')
     }
-    if((ncol(data) == 2) & (dbp == 1)){
+
+    if(sbp == 1){
+
+      data <- data[, c(1, dbp, (2:ncol(data))[-dbp+1])]
+
+    }else if(dbp != 2){
 
       dbp <- dbp + 1
-    }
+      data <- data[, c(1, dbp, (2:ncol(data))[-dbp+1])]
+      #data[ , 2] <- as.numeric(data[ , 2])
 
-    data <- data[, c(1, dbp, (2:ncol(data))[-dbp+1])]
-    data[ , 2] <- as.numeric(data[ , 2])
-  }
+      }
+    }
 
 
 
@@ -130,11 +143,17 @@ process_data <- function(data, override = 0, bp_date = NULL, sbp = NULL, dbp = N
   # Pulse Pressure
   if(is.null(pp)){
 
-    data$PP <- data[ , 1] - data[ , 2]
+    if("PP" %in% names(data) == F){
+
+      data$PP <- data[ , 1] - data[ , 2]
+
+    }
+
     col_idx <- grep(paste("\\bPP\\b", sep = ""), names(data))
     data <- data[ , c(1:2, col_idx, (3:(ncol(data)))[-col_idx + 2])]
 
-  }else if(is.character(pp)){
+
+  }else if(is.character(pp)){ # if character (i.e. by name)
 
     if(toupper(pp) %in% colnames(data) == FALSE){
 
@@ -144,9 +163,10 @@ process_data <- function(data, override = 0, bp_date = NULL, sbp = NULL, dbp = N
 
       col_idx <- grep(paste("\\b",toupper(pp),"\\b", sep = ""), names(data))
       data <- data[, c(1:2, col_idx, (3:ncol(data))[-col_idx+2])]
+
       }
 
-  }else{
+  }else{ # if numeric
 
     if(pp > ncol(data)){
 
@@ -158,7 +178,11 @@ process_data <- function(data, override = 0, bp_date = NULL, sbp = NULL, dbp = N
       stop('Invalid index for PP. Cannot have negative index')
     }
 
-    data <- data[, c(1:2, pp, (3:ncol(data))[-pp+2])]
+    data <- data[, c(1:2, pp, (3:ncol(data))[-pp + 2])]
+
+    idx_list$hr + 1
+    idx_list$map + 1
+    idx_list$rpp + 1
   }
 
 
@@ -166,107 +190,148 @@ process_data <- function(data, override = 0, bp_date = NULL, sbp = NULL, dbp = N
 
   # Heart Rate
   if(!is.null(hr)){
+
     if(is.character(hr)){
-      if(toupper(hr) %in% toupper(colnames(data)) == FALSE){
+
+      if(toupper(hr) %in% colnames(data) == FALSE){
+
         stop('User-defined HR name does not match column name of supplied dataset')
+
       }else{
+
         col_idx <- grep(paste("\\b",toupper(hr),"\\b", sep = ""), names(data))
         data <- data[, c(1:3, col_idx, (4:ncol(data))[-col_idx+3])]
       }
     }else{
+
       if(hr > ncol(data)){
+
         stop('Invalid index for HR. Index greater than number of available columns')
       }
+
       if(hr < 0){
+
         stop('Invalid index for HR. Cannot have negative index')
       }
-      data <- data[, c(1:3, hr, (4:ncol(data))[-(hr+3)])]
-    }
-  }
 
 
-  # Rate Pulse Product
-  if(is.null(rpp) & !is.null(hr)){
-
-    data$RPP <- data[ , 1] * data[ , 4]
-
-  }else if(is.character(rpp)){
-
-    if(toupper(rpp) %in% toupper(colnames(data)) == FALSE){
-
-        stop('User-defined RPP name does not match column name of supplied dataset')
-
-    }else{
-
-      col_idx <- grep(paste("\\b",toupper(rpp),"\\b", sep = ""), names(data))
-      data <- data[, c(1:2, col_idx, (3:ncol(data))[-col_idx+4])]
-    }
-
-    }else{
-
-      if(rpp > ncol(data)){
-
-        stop('Invalid index for RPP. Index greater than number of available columns')
-
-        }
-
-      if(rpp < 0){
-
-        stop('Invalid index for RPP. Cannot have negative index')
-
-        }
-
-      data <- data[, c(1:2, rpp, (3:ncol(data))[-(rpp+4)])]
-
+      # Check this, not entirely sure if this logic is correct... will this work if multiple changes? tested with a few examples, but
+      # not sure if my tests were thorough enough. I feel like I'm missing something here
+      if(sbp != 1 | dbp != 2 | is.null(pp) | if(!is.null(pp)){pp != 3}){
+        hr <- hr + 1
+      }
+      # same as above... check for more tests
+      if(is.null(pp)){
+        hr_inc <- 4
+      }else{
+        hr_inc <- 3
       }
 
-
-}
-
-  #################
-
-  if(is.null(pp)){
-    data$PP <- data[, 1] - data[, 2]
-  }
-
-  #################
-
-
-
-  # Automatically detect columns unless explicitly specified by the user via override = 1
-  if(override == 0){
-
-    # Create copy for automatic detection back-up
-    idx_list_orig <- list(bp_date = bp_date, sbp = sbp, dbp = dbp, hr = hr, pp = pp, map = map, rpp = rpp)
-
-    if(any( names(data) %in% toupper(names(idx_list)) ) ){
-      warning('Matching column names automatically detected. To manually correct column indices, use override = 1')
-      idx_list[which(toupper(names(idx_list)) %in% names(data) == T)] <- match(toupper(names(idx_list)), names(data))[!is.na(match(toupper(names(idx_list)), names(data)) )]
-    }
-      # if column automatically detected, ensure that the column index doesn't already exist
-    if(any( table(unlist(idx_list)) > 1) ){
-      warning('Column index automatically detected, but duplicate of user-specified index. Reverting back to user-specified selection from function argument given by user.')
-      idx_list <- idx_list_orig
+      data <- data[, c(1:3, hr, (4:ncol(data))[-hr + hr_inc])]
     }
   }
 
-  # Add RPP column if none exist
-  if(is.null(idx_list$rpp) & (!is.null(idx_list$sbp) & !is.null(idx_list$hr))){
-    data$RPP <- data[, idx_list$sbp] * data[, idx_list$hr]
-    idx_list$rpp <- ncol(data)
-    message("No RPP column found. Automatically added using SBP and HR.")
-  }
 
-  data <- data[, c(idx_list$bp_date,
-                   idx_list$sbp,
-                   idx_list$dbp,
-                   idx_list$hr,
-                   idx_list$pp,
-                   idx_list$map,
-                   idx_list$rpp)]
+
+
+  # # Rate Pulse Product
+  # if(is.null(rpp) & !is.null(hr)){
+  #
+  #   data$RPP <- data[ , 1] * data[ , 4]
+  #
+  # }else if(is.character(rpp)){
+  #
+  #   if(toupper(rpp) %in% colnames(data) == FALSE){
+  #
+  #       stop('User-defined RPP name does not match column name of supplied dataset')
+  #
+  #   }else{
+  #
+  #     col_idx <- grep(paste("\\b",toupper(rpp),"\\b", sep = ""), names(data))
+  #     data <- data[, c(1:2, col_idx, (3:ncol(data))[-col_idx+4])]
+  #   }
+  #
+  #   }else{
+  #
+  #     if(rpp > ncol(data)){
+  #
+  #       stop('Invalid index for RPP. Index greater than number of available columns')
+  #
+  #       }
+  #
+  #     if(rpp < 0){
+  #
+  #       stop('Invalid index for RPP. Cannot have negative index')
+  #
+  #       }
+  #
+  #     # This needs to be fixed:
+  #     if(rpp != ncol(data)){
+  #
+  #       rpp <- rpp + 2
+  #       data <- data[, c(1:4, rpp, (5:ncol(data))[-(rpp)])]
+  #
+  #     }else{
+  #
+  #       data <- data[, c(1:4, rpp)]
+  #
+  #     }
+  #   }
+
+  # # Add RPP column if none exist
+  # if(is.null(idx_list$rpp) & (!is.null(idx_list$sbp) & !is.null(idx_list$hr))){
+  #   data$RPP <- data[, idx_list$sbp] * data[, idx_list$hr]
+  #   idx_list$rpp <- ncol(data)
+  #   message("No RPP column found. Automatically added using SBP and HR.")
+  # }
 
   return(data)
 }
+
+
+
+
+
+
+
+
+
+
+#
+#   # Automatically detect columns unless explicitly specified by the user via override = 1
+#   if(override == 0){
+#
+#     # Create copy for automatic detection back-up
+#     idx_list_orig <- list(bp_date = bp_date, sbp = sbp, dbp = dbp, hr = hr, pp = pp, map = map, rpp = rpp)
+#
+#     if(any( names(data) %in% toupper(names(idx_list)) ) ){
+#       warning('Matching column names automatically detected. To manually correct column indices, use override = 1')
+#       idx_list[which(toupper(names(idx_list)) %in% names(data) == T)] <- match(toupper(names(idx_list)), names(data))[!is.na(match(toupper(names(idx_list)), names(data)) )]
+#     }
+#       # if column automatically detected, ensure that the column index doesn't already exist
+#     if(any( table(unlist(idx_list)) > 1) ){
+#       warning('Column index automatically detected, but duplicate of user-specified index. Reverting back to user-specified selection from function argument given by user.')
+#       idx_list <- idx_list_orig
+#     }
+#   }
+#
+#   # Add RPP column if none exist
+#   if(is.null(idx_list$rpp) & (!is.null(idx_list$sbp) & !is.null(idx_list$hr))){
+#     data$RPP <- data[, idx_list$sbp] * data[, idx_list$hr]
+#     idx_list$rpp <- ncol(data)
+#     message("No RPP column found. Automatically added using SBP and HR.")
+#   }
+#
+#   data <- data[, c(idx_list$bp_date,
+#                    idx_list$sbp,
+#                    idx_list$dbp,
+#                    idx_list$hr,
+#                    idx_list$pp,
+#                    idx_list$map,
+#                    idx_list$rpp)]
+#
+#   return(data)
+# }
 
 
 process_data(data, sbp = 3, dbp = 5) # HYPNOS
