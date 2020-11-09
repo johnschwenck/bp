@@ -1,4 +1,5 @@
 data <- readxl::read_excel('C:\\Users\\John\\Documents\\CGM Research\\Data\\ABPM\\70417-1 ABPM.xlsx') # Delete
+data <- data[, -8]
 data <- data[, c(5,3,8,6,7)]
 data <- as.matrix(data)
 
@@ -18,14 +19,9 @@ data <- as.matrix(data)
 #' @export
 #'
 #' @examples
-process_data <- function(data, override = 0, bp_date = NULL, sbp = NULL, dbp = NULL, hr = NULL, pp = NULL, map = NULL, rpp = NULL){
+#' process_data(data, sbp = "syst", dbp = "diast", bp_datetime = "date&time", id = "id", wake = "wake", visit = "visit", hr = "hr", pp = "pp", map = "map",rpp = "rpp")
+process_data <- function(data, bp_datetime = NULL, id = NULL, wake = NULL, visit = NULL, sbp = NULL, dbp = NULL, hr = NULL, pp = NULL, map = NULL, rpp = NULL){
 
-  #idx_list <- list(bp_date = bp_date, sbp = sbp, dbp = dbp, hr = hr, pp = pp, map = map, rpp = rpp)
-  #idx <- as.numeric(unlist(idx_list))
-
-  # if(!is.character(bp_date) | !is.character(sbp) | !is.character(dbp) | !is.character(hr) | !is.character(pp) | !is.character(map) | !is.character(rpp)){
-  #   stop('Arguments must all be character and correspond to column names. If a column name is a number, specify it in quotes i.e. sbp = "2" if the name of the SBP column is actually "2".')
-  # }
 
   # Ensure that data is either data.frame or matrix
   if(is.data.frame(data) == FALSE){
@@ -296,11 +292,16 @@ process_data <- function(data, override = 0, bp_date = NULL, sbp = NULL, dbp = N
 
       warning('"RPP" argument not specified in function, but "RPP" column found in data. \n Ensure that the "RPP" column in the data is not the desired column.')
 
-    } else if(length(grep(paste("\\bHR\\b", sep = ""), names(data))) == 1){
+    } else if( (length(grep(paste("\\bRPP\\b", sep = ""), names(data))) == 0) & (length(grep(paste("\\bHR\\b", sep = ""), names(data))) == 1)){
 
       data$RPP <- data$SBP * data$HR
       data$RPP <- as.numeric(data$RPP)
 
+      hr_idx <- grep(paste("\\bHR\\b", sep = ""), names(data))
+      rpp_idx <- grep(paste("\\bRPP\\b", sep = ""), names(data))
+      data <- data[, c(1:hr_idx, rpp_idx, ((hr_idx+1):ncol(data))[-rpp_idx+hr_idx])]
+
+      warning('No RPP column found. Automatically generated from SBP and HR columns.')
     }
 
   }else if( (toupper(rpp) %in% colnames(data)) == FALSE){
@@ -312,7 +313,7 @@ process_data <- function(data, override = 0, bp_date = NULL, sbp = NULL, dbp = N
     col_idx <- grep(paste("\\b",toupper(rpp),"\\b", sep = ""), names(data))
     data <- data[, c(1:4, col_idx, (5:ncol(data))[-col_idx+4])]
 
-  }else if( (length(grep(paste("\\bHR\\b", sep = ""), names(data))) == 0) & (toupper(rpp) %in% colnames(data)) ){ # HR column is NOT present and in position 4
+  }else if( (length(grep(paste("\\bHR\\b", sep = ""), names(data))) == 0) & (toupper(rpp) %in% colnames(data)) ){ # HR column is NOT present
 
     col_idx <- grep(paste("\\b",toupper(rpp),"\\b", sep = ""), names(data))
     data <- data[, c(1:3, col_idx, (4:ncol(data))[-col_idx+3])]
@@ -361,131 +362,99 @@ process_data <- function(data, override = 0, bp_date = NULL, sbp = NULL, dbp = N
   # Mean Arterial Pressure
   if(is.null(map)){
 
+    if(length(grep(paste("\\bMAP\\b", sep = ""), names(data))) == 1){
 
+      warning('MAP column found in data. \nIf this column corresponds to Mean Arterial Pressure, use map = "MAP" in the function argument.')
+
+    }
+  } else if(toupper(map) %in% colnames(data) == FALSE){
+
+      stop('User-defined MAP name does not match column name of supplied dataset')
+
+  } else {
+
+    col_idx <- grep(paste("\\b",toupper(map),"\\b", sep = ""), names(data))
+    data <- data[, c(1:2, col_idx, (3:ncol(data))[-col_idx+2])]
 
   }
 
 
-  return(data)
-}
 
 
 
+  # Wake (1: Awake | 2: Asleep)
+  if(!is.null(wake)){
 
+    if(toupper(wake) %in% colnames(data) == FALSE){
 
+      stop('User-defined ID name does not match column name of supplied dataset')
 
+    } else {
 
+      col_idx <- grep(paste("\\b",toupper(wake),"\\b", sep = ""), names(data))
+      data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
 
-
-
-#
-#   # Automatically detect columns unless explicitly specified by the user via override = 1
-#   if(override == 0){
-#
-#     # Create copy for automatic detection back-up
-#     idx_list_orig <- list(bp_date = bp_date, sbp = sbp, dbp = dbp, hr = hr, pp = pp, map = map, rpp = rpp)
-#
-#     if(any( names(data) %in% toupper(names(idx_list)) ) ){
-#       warning('Matching column names automatically detected. To manually correct column indices, use override = 1')
-#       idx_list[which(toupper(names(idx_list)) %in% names(data) == T)] <- match(toupper(names(idx_list)), names(data))[!is.na(match(toupper(names(idx_list)), names(data)) )]
-#     }
-#       # if column automatically detected, ensure that the column index doesn't already exist
-#     if(any( table(unlist(idx_list)) > 1) ){
-#       warning('Column index automatically detected, but duplicate of user-specified index. Reverting back to user-specified selection from function argument given by user.')
-#       idx_list <- idx_list_orig
-#     }
-#   }
-#
-#   # Add RPP column if none exist
-#   if(is.null(idx_list$rpp) & (!is.null(idx_list$sbp) & !is.null(idx_list$hr))){
-#     data$RPP <- data[, idx_list$sbp] * data[, idx_list$hr]
-#     idx_list$rpp <- ncol(data)
-#     message("No RPP column found. Automatically added using SBP and HR.")
-#   }
-#
-#   data <- data[, c(idx_list$bp_date,
-#                    idx_list$sbp,
-#                    idx_list$dbp,
-#                    idx_list$hr,
-#                    idx_list$pp,
-#                    idx_list$map,
-#                    idx_list$rpp)]
-#
-#   return(data)
-# }
-
-
-process_data(data, sbp = 3, dbp = 5) # HYPNOS
-process_data(data2, sbp = 10, dbp = 12)
-
-
-
-
-
-
-
-
-
-
-## Arrange variable positions of data set by user-specified index
-### Code ideas borrowed from stackexchange question: https://stackoverflow.com/a/37009127/14189332
-arrange_data <- function(data, sbp = NULL, dbp = NULL, hr = NULL, pp = NULL, map = NULL, rpp = NULL){#vars){
-
-  vars <- c(sbp = sbp, dbp = dbp, hr = hr, pp = pp, map = map, rpp = rpp)
-
-  if(is.null(vars)){
-    sbp = 1
-    vars <- c(sbp = sbp, dbp = dbp, hr = hr, pp = pp, map = map, rpp = rpp)
-    warning('No variable index arguments specified in arrange_vars. Forced "SBP" as first column.')
+    }
   }
 
-## data frame compatibility check was here
-
-  ## Uppercase all names for consistency
-  data_names <- toupper(names(data))
-  var_names <- toupper(names(vars))
-  var_rows <- length(data_names)
-
-  # Ensure that indices are numeric
-  if(is.character(vars)){
-    vars <- as.numeric(vars)
-    warning('Changed index values to numeric')
-  }
-  # Create vector of index position for convenience
-  var_pos <- vars
 
 
-  ### Miscellaneous Compatibility checks ###
 
-  # Duplicated Column indices / values
-  if(any(duplicated(vars))){
-    stop('Duplicated column indices.')
+
+
+  # Visit
+  if(!is.null(visit)){
+
+    if(toupper(visit) %in% colnames(data) == FALSE){
+
+      stop('User-defined VISIT name does not match column name of supplied dataset')
+
+    } else {
+
+      col_idx <- grep(paste("\\b",toupper(visit),"\\b", sep = ""), names(data))
+      data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
+
+    }
   }
 
-  # Make sure that all specified function arguments match columns in dataset
-  if(all(var_names %in% data_names) == F){
-    stop('Specified function arguments in arrange_vars do not match data set names. Make sure to only specify the argument variables that are present in your data. i.e. specifying that hr = 1 but there is not hr column in your data.')
+
+
+
+
+  # Date & Time (DateTime object)
+  if(!is.null(bp_datetime)){
+
+      if(toupper(bp_datetime) %in% colnames(data) == FALSE){
+
+      stop('User-defined bp_datetime name does not match column name of supplied dataset')
+
+    } else {
+
+      col_idx <- grep(paste("\\b",toupper(bp_datetime),"\\b", sep = ""), names(data))
+      data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
+
+    }
   }
 
-  if( any(var_pos < 0)){
-    stop('Variable positions must be positive')
+
+
+
+  # ID
+  if(!is.null(id)){
+
+    if(toupper(id) %in% colnames(data) == FALSE){
+
+      stop('User-defined ID name does not match column name of supplied dataset')
+
+    } else {
+
+      col_idx <- grep(paste("\\b",toupper(id),"\\b", sep = ""), names(data))
+      data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
+
+    }
   }
 
-  #
-  if( all(vars <= var_rows) == F ){
-    stop('Indices of specified function arguments cannot exceed the number of columns in the data set. i.e. You cannot specify hr = 5 if there are only 4 columns in the data.')
-  }
 
-  ### Indices for re-arranged output
-  out_vec <- character(var_rows)
-  out_vec[var_pos] <- var_names
-  out_vec[-var_pos] <- data_names[ !(data_names %in% var_names) ]
-  if( length(out_vec) != var_rows ){
-    stop('Length of re-arranged vector differs from the number of variables in the original data')
-  }
-
-  ### Final re-arranged data
-  data <- data[ , out_vec]
 
   return(data)
 }
