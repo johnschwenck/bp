@@ -7,11 +7,11 @@ Blood pressure monitoring devices work by measuring the pressures of the artery�
 
 ### Intended Functionality
 The bp package will allow the user to specify any combination of the following time-indexed variables from the supplied data set (with the minimum requirement that SBP and DBP are included) and leverage them for further analysis:
-• Systolic Blood Pressure (SBP) measured in mmHg
-• Diastolic Blood Pressure (DBP) measured in mmHg
-• Heart Rate (HR) measured in bpm
-• Pulse Pressure (PP) measured in mmHg
-• Mean Arterial Pressure (MAP) measured in mmHg
-• Rate Pressure Product (RPP) which is calculated as SBP multiplied by resting HR
+* Systolic Blood Pressure (SBP) measured in mmHg
+* Diastolic Blood Pressure (DBP) measured in mmHg
+* Heart Rate (HR) measured in bpm
+* Pulse Pressure (PP) measured in mmHg
+* Mean Arterial Pressure (MAP) measured in mmHg
+* Rate Pressure Product (RPP) which is calculated as SBP multiplied by resting HR
 
 The package will then utilize the above variables to calculate various metrics from medical and statistical literature (ARV, morning surge %, etc) in order to quantify the variability of the readings, classify subjects as either "dipper" or "non-dipper", and cluster subjects (if more than one) into their respective categories of hypertension (normal, elevated, or hypertensive).
