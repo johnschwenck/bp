@@ -1,26 +1,30 @@
-data <- readxl::read_excel('C:\\Users\\John\\Documents\\CGM Research\\Data\\ABPM\\70417-1 ABPM.xlsx') # Delete
-data <- data[, -8]
-data <- data[, c(5,3,8,6,7)]
-data <- as.matrix(data)
 
-#' Data Pre-processor
+#' Data Pre-Processor
 #'
-#' @param data (Required) User-supplied data set. Must be either matrix or data.frame
-#' @param bp_date (optional) Column index of Date or Date/Time values
-#' @param sbp (Required) Column index of Systolic Blood Pressure (SBP) values
-#' @param dbp (Required) Column index of Diastolic Blood Pressure (DBP) values
-#' @param hr (Optional) Column index of Heart Rate (HR) values
-#' @param pp (optional) Column index of Pulse Pressure (PP) values
-#' @param map (optional) Column index of Mean Arterial Pressure (MAP) values
-#' @param rpp (optional) Column index of Rate Pressure Product (RPP) values - Note that RPP can be directly calculated from HR and SBP values if not originally supplied
-#' @param override (optional) Indicates whether or not to override automatic detection of column indexes. Defaults to zero indicating that the function will automatically detect.
+#' @description A helper function to assist in pre-processing the input data for use with other functions.
+#' Typically, this function will process the data and be stored as another dataframe. See Vignette for further details
 #'
-#' @return
+#' @param data User-supplied dataset containing blood pressure data. Must contain data for Systolic blood pressure and Diastolic blood pressure at a minimum.
+#' @param sbp Required column name string corresponding to Systolic Blood Pressure (mmHg)
+#' @param dbp Required column name string corresponding to Diastolic Blood Pressure (mmHg)
+#' @param bp_datetime Optional column name string corresponding to Date/Time, but HIGHLY recommended to supply if available.
+#' @param id Optional column name string corresponding to subject ID. Typically needed for data corresponding to more than one subject.
+#' @param wake Optional column name string corresponding to sleep status. A WAKE value of 1 indicates that the subject is awake and 0 implies asleep.
+#' @param visit Optional column name string corresponding to Visit number
+#' @param hr Optional column name string corresponding to Heart Rate (bpm)
+#' @param pp Optional column name string corresponding to Pulse Pressure (SBP - DBP). If not supplied, it will be calculated automatically.
+#' @param map Optional column name string corresponding to Mean Arterial Pressure
+#' @param rpp Optional column name string corresponding to Rate Pulse Pressure (SBP * HR). If not supplied, but HR column available, will be calculated automatically.
+#'
+#' @return A processed dataframe object
 #' @export
 #'
 #' @examples
-#' process_data(data, sbp = "syst", dbp = "diast", bp_datetime = "date&time", id = "id", wake = "wake", visit = "visit", hr = "hr", pp = "pp", map = "map",rpp = "rpp")
-process_data <- function(data, bp_datetime = NULL, id = NULL, wake = NULL, visit = NULL, sbp = NULL, dbp = NULL, hr = NULL, pp = NULL, map = NULL, rpp = NULL){
+#' load('data/hypnos_data_sample.rda')
+#' data <- process_data(data = hypnos_data, bp_datetime = DATE.TIME, id = ID, wake = WAKE, visit = VISIT, sbp = SYST, dbp = DIAST, hr = HR, map = MAP)
+#' # Note that in the above example, the rpp and pp arguments were intentionally left out (left as NULL), and the process_data function was able to detect it.
+#' # If there was no rpp or pp columns provided, they will be automatically calculated
+process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = NULL, wake = NULL, visit = NULL, hr = NULL, pp = NULL, map = NULL, rpp = NULL){
 
 
   # Ensure that data is either data.frame or matrix
@@ -179,6 +183,7 @@ process_data <- function(data, bp_datetime = NULL, id = NULL, wake = NULL, visit
     }
 
     col_idx <- grep(paste("\\bPP\\b", sep = ""), names(data))
+    colnames(data)[col_idx] <- "PP"
     data <- data[ , c(1:2, col_idx, (3:(ncol(data)))[-col_idx + 2])]
 
     data$PP <- as.numeric(data$PP)
@@ -192,6 +197,7 @@ process_data <- function(data, bp_datetime = NULL, id = NULL, wake = NULL, visit
     }else{
 
       col_idx <- grep(paste("\\b",toupper(pp),"\\b", sep = ""), names(data))
+      colnames(data)[col_idx] <- "PP"
       data <- data[, c(1:2, col_idx, (3:ncol(data))[-col_idx+2])]
 
       data$PP <- as.numeric(data$PP)
@@ -243,6 +249,7 @@ process_data <- function(data, bp_datetime = NULL, id = NULL, wake = NULL, visit
       }else{
 
         col_idx <- grep(paste("\\b",toupper(hr),"\\b", sep = ""), names(data))
+        colnames(data)[col_idx] <- "HR"
         data <- data[, c(1:3, col_idx, (4:ncol(data))[-col_idx+3])]
         data$HR <- as.numeric(data$HR)
       }
@@ -311,11 +318,13 @@ process_data <- function(data, bp_datetime = NULL, id = NULL, wake = NULL, visit
   }else if( (length(grep(paste("\\bHR\\b", sep = ""), names(data))) == 1) & (toupper(rpp) %in% colnames(data)) ){ # HR column is present and in position 4
 
     col_idx <- grep(paste("\\b",toupper(rpp),"\\b", sep = ""), names(data))
+    colnames(data)[col_idx] <- "RPP"
     data <- data[, c(1:4, col_idx, (5:ncol(data))[-col_idx+4])]
 
   }else if( (length(grep(paste("\\bHR\\b", sep = ""), names(data))) == 0) & (toupper(rpp) %in% colnames(data)) ){ # HR column is NOT present
 
     col_idx <- grep(paste("\\b",toupper(rpp),"\\b", sep = ""), names(data))
+    colnames(data)[col_idx] <- "RPP"
     data <- data[, c(1:3, col_idx, (4:ncol(data))[-col_idx+3])]
 
   }
@@ -374,6 +383,7 @@ process_data <- function(data, bp_datetime = NULL, id = NULL, wake = NULL, visit
   } else {
 
     col_idx <- grep(paste("\\b",toupper(map),"\\b", sep = ""), names(data))
+    colnames(data)[col_idx] <- "MAP"
     data <- data[, c(1:2, col_idx, (3:ncol(data))[-col_idx+2])]
 
   }
@@ -392,6 +402,7 @@ process_data <- function(data, bp_datetime = NULL, id = NULL, wake = NULL, visit
     } else {
 
       col_idx <- grep(paste("\\b",toupper(wake),"\\b", sep = ""), names(data))
+      colnames(data)[col_idx] <- "WAKE"
       data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
 
     }
@@ -412,6 +423,7 @@ process_data <- function(data, bp_datetime = NULL, id = NULL, wake = NULL, visit
     } else {
 
       col_idx <- grep(paste("\\b",toupper(visit),"\\b", sep = ""), names(data))
+      colnames(data)[col_idx] <- "VISIT"
       data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
 
     }
@@ -431,8 +443,10 @@ process_data <- function(data, bp_datetime = NULL, id = NULL, wake = NULL, visit
     } else {
 
       col_idx <- grep(paste("\\b",toupper(bp_datetime),"\\b", sep = ""), names(data))
+      colnames(data)[col_idx] <- "DATE_TIME"
       data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
 
+      data$DATE_TIME <- as.POSIXct(data$DATE_TIME)
     }
   }
 
@@ -449,6 +463,7 @@ process_data <- function(data, bp_datetime = NULL, id = NULL, wake = NULL, visit
     } else {
 
       col_idx <- grep(paste("\\b",toupper(id),"\\b", sep = ""), names(data))
+      colnames(data)[col_idx] <- "ID"
       data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
 
     }

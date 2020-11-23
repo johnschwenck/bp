@@ -1,16 +1,34 @@
-# Calculate the drop in BP during sleep to determine dipping pattern
 
-# To Do: X If Awake indicator column is specified in dataset, calculate percentages according to indicator.
-#              If not, default to Awake: 6am - 11pm | Asleep: 11pm - 6am |
-#        X Give user ability to choose time frame interval if no awake indicator column provided
-#        X User-defined dipping threshold, default to 10%
-#        - Screening criteria  for {SBP > 250 | SBP < 70} and {DBP < 45 | DBP > 150} and {HR < 40 | HR > 200} according to Holt-Lunstad, Jones, and Birmingham (2009) paper
+#' Nocturnal Blood Pressure Dipping Calculation
+#'
+#' @description Calculate the percent and average drop (or potentially reverse) in nocturnal blood pressure.
+#' This function is typically used with abpm data; in the event of non-abpm data, the sleep_int argument must be utilized to specify what times correspond to sleep vs awake.
+#'
+#' NOTE: The DATE_TIME column MUST be supplied in the data in order to perform calculations
+#'
+#' @param data User-supplied data set that must contain SBP, DBP, and either DATE_TIME or WAKE columns in order to distinguish between sleep and awake
+#' @param sleep_int (optional) User-supplied sleep interval to indicate start and end time of the interval of interest. For example, sleep_int = c(22, 5) indicates a sleep period from 10pm - 5am. Must only contain 2 values and must be in 24-hour format. If no sleep_int supplied and no WAKE column provided in data set, default interval is from 11pm - 6am according to (paper)
+#' @param dip_thresh (optional) Default threshold to classify as either a dip, non-dip, or reverse pattern. The default threshold is 0.10 (i.e. 10\% dip)
+#'
+#' @return
+#' @export
+#'
+#' @examples
+dip_calc <- function(data, sleep_int = NULL, dip_thresh = .10){
 
 
-# Calculate the percent difference between two successive groups. In this case: Awake vs Asleep
+
+  # To Do: X If Awake indicator column is specified in dataset, calculate percentages according to indicator.
+  #              If not, default to Awake: 6am - 11pm | Asleep: 11pm - 6am |
+  #        X Give user ability to choose time frame interval if no awake indicator column provided
+  #        X User-defined dipping threshold, default to 10%
+  #        - Screening criteria  for {SBP > 250 | SBP < 70} and {DBP < 45 | DBP > 150} and {HR < 40 | HR > 200} according to Holt-Lunstad, Jones, and Birmingham (2009) paper
 
 
-dip_calc <- function(data, dip_thresh = .10, sleep_int = NULL){
+  # Calculate the percent difference between two successive groups. In this case: Awake vs Asleep
+
+
+
 
   # Check to see if there is a column indicating Awake vs Asleep
   if(is.null(data$WAKE)){ # No Sleep / Awake indicator column provided
@@ -26,7 +44,11 @@ dip_calc <- function(data, dip_thresh = .10, sleep_int = NULL){
 
       data$WAKE <- ifelse(lubridate::hour(data$DATE_TIME) %in% awake_int == TRUE, 1, 0)
 
-    }else{ # No Wake, Yes Date_Time, Yes sleep_int
+    }
+
+    if(!is.null(sleep_int)){ # No Wake, Yes Date_Time, Yes sleep_int
+
+          if( is.null(data$DATE_TIME) & !is.null(data$WAKE) ) # FIX !!!! sleep_int supplied, no date_time, wake column provided --> warning indicating it ignored sleep_int and did nothing else do rest of code
 
           if(!is.vector(sleep_int)){ # Not vector
 
@@ -83,8 +105,9 @@ dip_calc <- function(data, dip_thresh = .10, sleep_int = NULL){
 
   }else{ # dipping calculation with WAKE column
 
-      if(x){
-        # tests for supplied WAKE column... should have already been tested from data_process function
+      if(!is.null(sleep_int)){
+        # If sleep_int is provided (not NULL), it overwrites the WAKE indicators from the data
+
       }
 
   }
