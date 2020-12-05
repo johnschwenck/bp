@@ -8,7 +8,7 @@
 An object of class \code{data.frame} with 222 rows and 15 columns.
 }
 \source{
-<google.com>
+<https://doi.org/10.7910/DVN/EA1SAP>
 }
 \usage{
 bp_jhs
