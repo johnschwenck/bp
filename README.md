@@ -1,17 +1,59 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
 # bp
 
-### Background
-Cardiovascular (CV) disease is the leading cause of death worldwide with hypertension, specifically, affecting over 1.1 billion people annually. With such grave implications, one would imagine that there would be ample resources to analyze such data in R; surprisingly however, there are currently no R packages for such analysis. 
+<!-- badges: start -->
 
-Blood pressure monitoring devices work by measuring the pressures of the artery’s restricted blood flow; for digital devices, the vibrations are translated into electrical signals With recent technological advancements, ambulatory blood pressure monitoring (ABPM) devices offer a unique solution that take automatic readings at pre-specified intervals. ABPM allows medical professionals to analyze blood pressure during sleep which has been shown to be a more accurate predictor of CV events than daytime blood pressure. ABPM also allows researchers to discern true hypertension from "whitecoat" hypertension in an office or laboratory setting. The goal of this bp package is to provide a comprehensive tool that allows researchers to analyze blood pressure data using a variety of statistical methods and metrics.
+<!-- badges: end -->
 
-### Intended Functionality
-The bp package will allow the user to specify any combination of the following time-indexed variables from the supplied data set (with the minimum requirement that SBP and DBP are included) and leverage them for further analysis:
-* Systolic Blood Pressure (SBP) measured in mmHg
-* Diastolic Blood Pressure (DBP) measured in mmHg
-* Heart Rate (HR) measured in bpm
-* Pulse Pressure (PP) measured in mmHg
-* Mean Arterial Pressure (MAP) measured in mmHg
-* Rate Pressure Product (RPP) which is calculated as SBP multiplied by resting HR
+The goal of bp is to …
 
-The package will then utilize the above variables to calculate various metrics from medical and statistical literature (ARV, morning surge %, etc) in order to quantify the variability of the readings, classify subjects as either "dipper" or "non-dipper", and cluster subjects (if more than one) into their respective categories of hypertension (normal, elevated, or hypertensive).
+## Installation
+
+You can install the released version of bp from
+[CRAN](https://CRAN.R-project.org) with:
+
+``` r
+install.packages("bp")
+```
+
+And the development version from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("johnschwenck/bp")
+```
+
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+``` r
+library(bp)
+## basic example code
+```
+
+What is special about using `README.Rmd` instead of just `README.md`?
+You can include R chunks like so:
+
+``` r
+summary(cars)
+#>      speed           dist       
+#>  Min.   : 4.0   Min.   :  2.00  
+#>  1st Qu.:12.0   1st Qu.: 26.00  
+#>  Median :15.0   Median : 36.00  
+#>  Mean   :15.4   Mean   : 42.98  
+#>  3rd Qu.:19.0   3rd Qu.: 56.00  
+#>  Max.   :25.0   Max.   :120.00
+```
+
+You’ll still need to render `README.Rmd` regularly, to keep `README.md`
+up-to-date.
+
+You can also embed plots, for example:
+
+<img src="man/figures/README-pressure-1.png" width="100%" />
+
+In that case, don’t forget to commit and push the resulting figure
+files, so they display on GitHub\!

@@ -4,11 +4,33 @@
 \alias{arv}
 \title{Average Real Variability (ARV)}
 \usage{
-arv()
+arv(data, inc_date = 0, bp_type = 0)
+}
+\arguments{
+\item{data}{Required argument. Pre-processed dataframe containing SBP and
+DBP with optional ID, VISIT, WAKE, and DATE columns}
+
+\item{inc_date}{Optional argument. Default is 0. inc_date = 1 will include
+Date as a grouping level. For ABPM data this is typically omitted as sleep
+is recorded over multiple days. This argument is useful for self-monitoring
+as with the bp_jhs data}
+
+\item{bp_type}{Optional argument. Determines whether to calculate ARV for SBP
+values or DBP values. Default is 0 corresponding to output for both SBP & DBP.
+For both SBP and DBP ARV values use bp_type = 0, for SBP-only use bp_type = 1,
+and for DBP-only use bp_type = 2}
 }
 \value{
-
+\code{arv} returns ....
 }
 \description{
-Average Real Variability (ARV)
+Calculate the Average Real Variability (ARV) for various levels of granularity
+based on what is supplied (ID, VISIT, WAKE, and / or DATE)
+}
+\examples{
+#data <- hypnos_data
+#data <- process_data(data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
+# id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp = "rpp")
+
+#arv(data)
 }
