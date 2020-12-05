@@ -2,6 +2,7 @@
 
 export("%>%")
 export(arv)
+export(bp_range)
 export(process_data)
 import(stats)
 importFrom(magrittr,"%>%")

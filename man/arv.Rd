@@ -28,9 +28,13 @@ Calculate the Average Real Variability (ARV) for various levels of granularity
 based on what is supplied (ID, VISIT, WAKE, and / or DATE)
 }
 \examples{
-#data <- hypnos_data
-#data <- process_data(data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
-# id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp = "rpp")
+# Load data
+data(hypnos_data)
 
-#arv(data)
+# Process data
+data <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
+id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp = "rpp")
+
+# ARV Calculation
+arv(data)
 }

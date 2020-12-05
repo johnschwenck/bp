@@ -15,18 +15,24 @@
 #' and for DBP-only use bp_type = 2
 #'
 #' @return \code{arv} returns ....
-#' @import stats
-#' @examples
-#' #data <- hypnos_data
-#' #data <- process_data(data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
-#' # id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp = "rpp")
 #'
-#' #arv(data)
+#' @import stats
+#'
+#' @examples
+#' # Load data
+#' data(hypnos_data)
+#'
+#' # Process data
+#' data <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
+#' id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp = "rpp")
+#'
+#' # ARV Calculation
+#' arv(data)
 #' @export
 arv <- function(data, inc_date = 0, bp_type = 0){
 
   SBP = DBP = . = NULL
-  rm(list = c('SaBP', 'DBP', '.'))
+  rm(list = c('SBP', 'DBP', '.'))
 
   if(bp_type == 0 | bp_type == 1){
 
