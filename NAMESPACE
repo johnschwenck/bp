@@ -2,7 +2,10 @@
 
 export("%>%")
 export(arv)
+export(bp_mag)
 export(bp_range)
+export(cv)
 export(process_data)
+export(sv)
 import(stats)
 importFrom(magrittr,"%>%")

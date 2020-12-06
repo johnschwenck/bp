@@ -8,9 +8,10 @@ arv(data, inc_date = 0, bp_type = 0)
 }
 \arguments{
 \item{data}{Required argument. Pre-processed dataframe containing SBP and
-DBP with optional ID, VISIT, WAKE, and DATE columns}
+DBP with optional ID, VISIT, WAKE, and DATE columns if available.
+Use \code{process_data} to properly format data.}
 
-\item{inc_date}{Optional argument. Default is 0. inc_date = 1 will include
+\item{inc_date}{Optional argument. Default is FALSE. inc_date = TRUE will include
 Date as a grouping level. For ABPM data this is typically omitted as sleep
 is recorded over multiple days. This argument is useful for self-monitoring
 as with the bp_jhs data}
@@ -24,17 +25,32 @@ and for DBP-only use bp_type = 2}
 \code{arv} returns ....
 }
 \description{
-Calculate the Average Real Variability (ARV) for various levels of granularity
-based on what is supplied (ID, VISIT, WAKE, and / or DATE)
+Calculate the Average Real Variability (ARV) at various levels of granularity
+based on what is supplied (ID, VISIT, WAKE, and / or DATE). ARV is a measure
+of disperion that takes into account the temporal structure of the data and relies
+on the sum of absolute differences in successive observations, unlike the
+successive variation (SV) which relies on the sum of squared differences.
+\deqn{SV = (\sum|x_{i+1} - x_i|/(n-1))^{1/2}}
 }
 \examples{
 # Load data
 data(hypnos_data)
+data(bp_jhs)
 
-# Process data
-data <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
+# Process hypnos_data
+data1 <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
 id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp = "rpp")
+# Process bp_jhs data
+data2 <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", bp_datetime = "DateTime",
+hr = "Pulse.bpm.")
 
 # ARV Calculation
-arv(data)
+arv(data1)
+arv(data2)
+}
+\references{
+#' #' Mena et al. (2005) A reliable index for the prognostic significance of
+blood pressure variability
+\emph{Journal of Hypertension} \strong{23(5)}.505-11,
+\doi{10.1097/01.hjh.0000160205.81652.5a}.
 }

@@ -65,7 +65,7 @@ dataframe. See Vignette for further details.
 # Load hypnos_data
 data(hypnos_data)
 
-# Process data for \code{hypnos_data}
+# Process data for hypnos_data
 data1 <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
 id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp = "rpp")
 
@@ -74,7 +74,7 @@ data1
 # Load bp_jhs data
 data(bp_jhs)
 
-# Process data for \code{bp_jhs}
+# Process data for bp_jhs
 data2 <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", bp_datetime = "DateTime",
 hr = "Pulse.bpm.")
 

@@ -19,22 +19,17 @@
 #' @examples
 #' # Load hypnos_data
 #' data(hypnos_data)
-#'
-#' # Process data
-#' data1 <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
-#' id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp = "rpp")
-#'
-#' # Calculate BP range without date
-#' bp_range(data1)
-#'
-#' # Load bp_jhs data
 #' data(bp_jhs)
 #'
-#' # Process data for \code{bp_jhs}
+#' # Process hypnos_data
+#' data1 <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
+#' id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp = "rpp")
+#' # Process bp_jhs data
 #' data2 <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", bp_datetime = "DateTime",
 #' hr = "Pulse.bpm.")
 #'
-#' # Calculate BP range with date
+#' # Calculate BP range
+#' bp_range(data1)
 #' bp_range(data2, inc_date = 1)
 bp_range <- function(data, inc_date = 0){
 
@@ -64,7 +59,9 @@ bp_range <- function(data, inc_date = 0){
               SBP_range = ifelse(dplyr::n() == 1, NA, max(SBP) - min(SBP)),
               DBP_max = max(DBP),
               DBP_min = min(DBP),
-              DBP_range = ifelse(dplyr::n() == 1, NA, max(DBP) - min(DBP)))
+              DBP_range = ifelse(dplyr::n() == 1, NA, max(DBP) - min(DBP)),
+              SD = sd(SBP),
+              N = dplyr::n())
 
   return(out)
 }
