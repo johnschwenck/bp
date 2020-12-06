@@ -1,39 +1,54 @@
 
 #' Nocturnal Blood Pressure Dipping Calculation
 #'
+#' @description
 #' Calculate the percent and average drop (or potentially reverse) in nocturnal blood pressure.
-#' This function is typically used with ABPM data with a corresponding a \code{WAKE} column available
-#' to indicate awake vs asleep.
+#' This function is typically used with ABPM data, or at minimum, data with a corresponding a
+#' \code{WAKE} column available to indicate awake vs asleep.
 #'
-#' In the event of non-ABPM data, or a data set without a corresponding \code{WAKE} column, then a
-#' \code{DATE_TIME} column \strong{must} be present in order to denote which times correspond to sleep and which
-#' times correspond to awake. If the sleep_int function argument is specified, awake/asleep
-#' indicators will be assigned as such according the the \code{DATE_TIME} column, otherwise it will
-#' default to a sleep period between 11PM - 6AM as specified in the literature (see reference).
-#'
-#' @param data User-supplied data set that must contain \code{SBP}, \code{DBP}, and either \code{DATE_TIME} or \code{WAKE}
+#' @param data
+#' User-supplied data set that must contain \code{SBP}, \code{DBP}, and either \code{DATE_TIME} or \code{WAKE}
 #' columns in order to distinguish between sleep and awake
 #'
-#' @param sleep_int (optional) User-supplied sleep interval to indicate start and end time of
+#' In the event of non-ABPM data (i.e. a data set without a corresponding \code{WAKE} column), then a
+#' \code{DATE_TIME} column \strong{must} be present in order to denote which times correspond to sleep and which
+#' times correspond to awake.
+#'
+#' @param sleep_int
+#' (optional) User-supplied sleep interval to indicate start and end time of
 #' the sleep interval of interest. Must only contain 2 values and must be 24-hour denoted integers
 #'
 #' Example: \code{sleep_int = c(22,5)} indicates a sleep period from 10pm - 5am.
 #'
-#' \strong{NOTE:} If \code{sleep_int} is not supplied and no \code{WAKE} column exists in the data set,
-#' then the interval defaults to 11pm - 6am (see reference). Furthermore, the \code{sleep_int} argument
+#' \strong{NOTE:} If the \code{sleep_int} function argument is specified, and no \code{WAKE} column
+#' exists, then awake/asleep indicators will be assigned according the the \code{DATE_TIME}
+#' column (which must exist). Otherwise, if \code{sleep_int} is not supplied, then the
+#' WAKE column will default to a sleep period between 11PM - 6AM as specified in the
+#' literature (see reference).
+#'
+#' Furthermore, the \code{sleep_int} argument
 #' will override the \code{WAKE} column, which may cause unintended consequences in the event that the
 #' data set already contains a \code{WAKE} column.
 #'
-#' @param dip_thresh Default dipping threshold set to 0.10 (i.e. 10%)
+#' @param dip_thresh
+#' Default dipping threshold set to 0.10 (i.e. 10\%)
 #'
-#' @param inc_date Default to FALSE. Indicates whether or not to include the date in the grouping of
+#' @param inc_date
+#' Default to FALSE. Indicates whether or not to include the date in the grouping of
 #' the final output
 #'
-#' @return
+#' @references
+#' Holt-Lunstad, J., Jones, B.Q., and Birmingham, W. (2009). The influence of close relationships
+#' on nocturnal blood pressure dipping,
+#' \emph{International Journal of Psychophysiology} \strong{71}, 211-217,
+#' \doi{10.1016/j.ijpsycho.2008.09.008}.
+#'
+#'
+#' @return explanations
 #' @export
 #'
 #' @examples
-#'
+#' #test code
 dip_calc <- function(data, sleep_int = NULL, dip_thresh = .10, inc_date = FALSE){
 
 
@@ -48,8 +63,8 @@ dip_calc <- function(data, sleep_int = NULL, dip_thresh = .10, inc_date = FALSE)
   # Calculate the percent difference between two successive groups. In this case: Awake vs Asleep
 
 
-  SBP = DBP = . = NULL
-  rm(list = c('SBP', 'DBP', '.'))
+  avg_SBP = SBP = DBP = . = NULL
+  rm(list = c('avg_SBP','SBP', 'DBP', '.'))
 
 
   if(is.null(data$WAKE)){ # No Sleep / Awake indicator column provided (WAKE column)
@@ -259,14 +274,14 @@ dip_calc <- function(data, sleep_int = NULL, dip_thresh = .10, inc_date = FALSE)
 
   # Group data by whichever of the three above variables are present in the data
   dip <- data %>%
-    group_by_at(vars(grps) ) %>%
-    summarise(avg_SBP = mean(SBP),
-              avg_DBP = mean(DBP),
-              N = n() )
+    dplyr::group_by_at(dplyr::vars(grps) ) %>%
+    dplyr::summarise(avg_SBP = mean(SBP),
+                     avg_DBP = mean(DBP),
+                     N = dplyr::n() )
 
   dip_pct <- dip %>%
-    summarise( dip = -(1 - pct(avg_SBP)) ) %>%
-    mutate(classification = ifelse(dip <= -dip_thresh, "dipper",
+    dplyr::summarise( dip = -(1 - pct(avg_SBP)) ) %>%
+    dplyr::mutate(classification = ifelse(dip <= -dip_thresh, "dipper",
                                    ifelse(dip > 0, "reverse", "non-dipper")) )
 
   return( list(dip, dip_pct) )

@@ -22,7 +22,7 @@
 #' @return \code{arv} returns ....
 #'
 #' @references
-#' #' #' Mena et al. (2005) A reliable index for the prognostic significance of
+#' Mena et al. (2005) A reliable index for the prognostic significance of
 #' blood pressure variability
 #' \emph{Journal of Hypertension} \strong{23(5)}.505-11,
 #' \doi{10.1097/01.hjh.0000160205.81652.5a}.

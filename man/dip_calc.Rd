@@ -8,38 +8,46 @@ dip_calc(data, sleep_int = NULL, dip_thresh = 0.1, inc_date = FALSE)
 }
 \arguments{
 \item{data}{User-supplied data set that must contain \code{SBP}, \code{DBP}, and either \code{DATE_TIME} or \code{WAKE}
-columns in order to distinguish between sleep and awake}
+columns in order to distinguish between sleep and awake
+
+In the event of non-ABPM data (i.e. a data set without a corresponding \code{WAKE} column), then a
+\code{DATE_TIME} column \strong{must} be present in order to denote which times correspond to sleep and which
+times correspond to awake.}
 
 \item{sleep_int}{(optional) User-supplied sleep interval to indicate start and end time of
 the sleep interval of interest. Must only contain 2 values and must be 24-hour denoted integers
 
 Example: \code{sleep_int = c(22,5)} indicates a sleep period from 10pm - 5am.
 
-\strong{NOTE:} If \code{sleep_int} is not supplied and no \code{WAKE} column exists in the data set,
-then the interval defaults to 11pm - 6am (see reference). Furthermore, the \code{sleep_int} argument
+\strong{NOTE:} If the \code{sleep_int} function argument is specified, and no \code{WAKE} column
+exists, then awake/asleep indicators will be assigned according the the \code{DATE_TIME}
+column (which must exist). Otherwise, if \code{sleep_int} is not supplied, then the
+WAKE column will default to a sleep period between 11PM - 6AM as specified in the
+literature (see reference).
+
+Furthermore, the \code{sleep_int} argument
 will override the \code{WAKE} column, which may cause unintended consequences in the event that the
 data set already contains a \code{WAKE} column.}
 
-\item{dip_thresh}{Default dipping threshold set to 0.10 (i.e. 10%)}
+\item{dip_thresh}{Default dipping threshold set to 0.10 (i.e. 10\%)}
 
 \item{inc_date}{Default to FALSE. Indicates whether or not to include the date in the grouping of
 the final output}
 }
 \value{
-
+explanations
 }
 \description{
 Calculate the percent and average drop (or potentially reverse) in nocturnal blood pressure.
-This function is typically used with ABPM data with a corresponding a \code{WAKE} column available
-to indicate awake vs asleep.
-}
-\details{
-In the event of non-ABPM data, or a data set without a corresponding \code{WAKE} column, then a
-\code{DATE_TIME} column \strong{must} be present in order to denote which times correspond to sleep and which
-times correspond to awake. If the sleep_int function argument is specified, awake/asleep
-indicators will be assigned as such according the the \code{DATE_TIME} column, otherwise it will
-default to a sleep period between 11PM - 6AM as specified in the literature (see reference).
+This function is typically used with ABPM data, or at minimum, data with a corresponding a
+\code{WAKE} column available to indicate awake vs asleep.
 }
 \examples{
-
+#test code
+}
+\references{
+Holt-Lunstad, J., Jones, B.Q., and Birmingham, W. (2009). The influence of close relationships
+on nocturnal blood pressure dipping,
+\emph{International Journal of Psychophysiology} \strong{71}, 211-217,
+\doi{10.1016/j.ijpsycho.2008.09.008}.
 }
