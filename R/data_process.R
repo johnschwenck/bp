@@ -360,6 +360,37 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
 
 
 
+  # Date-Only
+  if(length(grep("^DATE$", names(data))) == 1){
+
+    # If DATE column found
+
+    warning('DATE column found in data and coerced to as.Date() format.')
+
+    data[,grep("^DATE$", names(data))] <- as.Date(data[,grep("^DATE$", names(data))])
+
+    col_idx <- grep("^DATE$", names(data))
+    colnames(data)[col_idx] <- "DATE"
+    data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
+
+  } else if(length(grep("^DATE_TIME$", names(data))) == 1){
+
+    # If no DATE column found
+
+    warning('Created DATE column from DATE_TIME column')
+
+    # Create DATE column using as.Date of DATE_TIME
+    data$DATE <- as.Date(data$DATE_TIME)
+
+    col_idx <- grep("^DATE$", names(data))
+    colnames(data)[col_idx] <- "DATE"
+    data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
+
+  }
+
+
+
+
   # ID
   if(!is.null(id)){
 
