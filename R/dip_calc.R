@@ -1,25 +1,45 @@
 
 #' Nocturnal Blood Pressure Dipping Calculation
 #'
-#' @description Calculate the percent and average drop (or potentially reverse) in nocturnal blood pressure.
-#' This function is typically used with abpm data; in the event of non-abpm data, the sleep_int argument must be utilized to specify what times correspond to sleep vs awake.
+#' Calculate the percent and average drop (or potentially reverse) in nocturnal blood pressure.
+#' This function is typically used with ABPM data with a corresponding a \code{WAKE} column available
+#' to indicate awake vs asleep.
 #'
-#' NOTE: The DATE_TIME column MUST be supplied in the data in order to perform calculations
+#' In the event of non-ABPM data, or a data set without a corresponding \code{WAKE} column, then a
+#' \code{DATE_TIME} column \strong{must} be present in order to denote which times correspond to sleep and which
+#' times correspond to awake. If the sleep_int function argument is specified, awake/asleep
+#' indicators will be assigned as such according the the \code{DATE_TIME} column, otherwise it will
+#' default to a sleep period between 11PM - 6AM as specified in the literature (see reference).
 #'
-#' @param data User-supplied data set that must contain SBP, DBP, and either DATE_TIME or WAKE columns in order to distinguish between sleep and awake
-#' @param sleep_int (optional) User-supplied sleep interval to indicate start and end time of the interval of interest. For example, sleep_int = c(22, 5) indicates a sleep period from 10pm - 5am. Must only contain 2 values and must be in 24-hour format. If no sleep_int supplied and no WAKE column provided in data set, default interval is from 11pm - 6am according to (paper)
-#' @param dip_thresh (optional) Default threshold to classify as either a dip, non-dip, or reverse pattern. The default threshold is 0.10 (i.e. 10\% dip)
+#' @param data User-supplied data set that must contain \code{SBP}, \code{DBP}, and either \code{DATE_TIME} or \code{WAKE}
+#' columns in order to distinguish between sleep and awake
+#'
+#' @param sleep_int (optional) User-supplied sleep interval to indicate start and end time of
+#' the sleep interval of interest. Must only contain 2 values and must be 24-hour denoted integers
+#'
+#' Example: \code{sleep_int = c(22,5)} indicates a sleep period from 10pm - 5am.
+#'
+#' \strong{NOTE:} If \code{sleep_int} is not supplied and no \code{WAKE} column exists in the data set,
+#' then the interval defaults to 11pm - 6am (see reference). Furthermore, the \code{sleep_int} argument
+#' will override the \code{WAKE} column, which may cause unintended consequences in the event that the
+#' data set already contains a \code{WAKE} column.
+#'
+#' @param dip_thresh Default dipping threshold set to 0.10 (i.e. 10%)
+#'
+#' @param inc_date Default to FALSE. Indicates whether or not to include the date in the grouping of
+#' the final output
 #'
 #' @return
 #' @export
 #'
 #' @examples
-dip_calc <- function(data, sleep_int = NULL, dip_thresh = .10){
+#'
+dip_calc <- function(data, sleep_int = NULL, dip_thresh = .10, inc_date = FALSE){
 
 
 
   # To Do: X If Awake indicator column is specified in dataset, calculate percentages according to indicator.
-  #              If not, default to Awake: 6am - 11pm | Asleep: 11pm - 6am |
+  #           If not, default to Awake: 6am - 11pm | Asleep: 11pm - 6am |
   #        X Give user ability to choose time frame interval if no awake indicator column provided
   #        X User-defined dipping threshold, default to 10%
   #        - Screening criteria  for {SBP > 250 | SBP < 70} and {DBP < 45 | DBP > 150} and {HR < 40 | HR > 200} according to Holt-Lunstad, Jones, and Birmingham (2009) paper
@@ -28,112 +48,231 @@ dip_calc <- function(data, sleep_int = NULL, dip_thresh = .10){
   # Calculate the percent difference between two successive groups. In this case: Awake vs Asleep
 
 
+  SBP = DBP = . = NULL
+  rm(list = c('SBP', 'DBP', '.'))
 
 
-  # Check to see if there is a column indicating Awake vs Asleep
-  if(is.null(data$WAKE)){ # No Sleep / Awake indicator column provided
+  if(is.null(data$WAKE)){ # No Sleep / Awake indicator column provided (WAKE column)
 
-    if(is.null(data$DATE_TIME)){ # No Date_Time column provided, unable to calculate dipping metrics # No Wake, No Date_time
+    # Check to see if there is a user-defined sleep interval
 
-      stop('Either sleep/awake indicator column or date_time column is required to calculate the dipping metrics.')
+    # No sleep_int present
+    if(is.null(sleep_int)){
 
-    }else if(is.null(sleep_int)){ # If no user-specified time interval, default to 11pm - 6am according to paper # No wake, Yes Date_time, No sleep_int
+      # Check to see if DATE_TIME column is present
 
-      sleep_int = c(23, 0, 1, 2, 3, 4, 5, 6)
-      awake_int <- (seq(1:24)-1)[!(seq(1:24)-1) %in% sleep_int]
+      # No WAKE, No sleep_int, No DATE_TIME --> error
+      if(is.null(data$DATE_TIME)){
 
-      data$WAKE <- ifelse(lubridate::hour(data$DATE_TIME) %in% awake_int == TRUE, 1, 0)
+        stop('Unable to calculate BP dip. No DATE_TIME or WAKE columns present and no user-supplied sleep_int.')
+
+      } else {
+
+        # No WAKE, No sleep_int, Yes DATE_TIME --> WAKE = default interval of 11PM - 6AM
+        sleep_int_seq = c(23, 0, 1, 2, 3, 4, 5, 6)
+        awake_int_seq <- (seq(1:24)-1)[!(seq(1:24)-1) %in% sleep_int]
+
+        data$WAKE <- ifelse(lubridate::hour(data$DATE_TIME) %in% awake_int_seq == TRUE, 1, 0)
+
+      }
+
+      # sleep_int present
+    } else {
+
+      # Check to see if DATE_TIME column is present
+
+      # No WAKE, Yes sleep_int, No DATE_TIME --> error
+      if(is.null(data$DATE_TIME)){
+
+        stop('Unable to calculate BP dip. No DATE_TIME column present to match user-supplied sleep_int
+                         and no WAKE column found in dataframe.')
+
+      }
+      # No WAKE, Yes sleep_int, Yes DATE_TIME --> WAKE = sleep_int
+      else {
+
+        # Compatibility checks for sleep_int
+
+        if(!is.vector(sleep_int)){ # Not vector
+
+          stop('sleep_int must be a vector specifying the sleep interval. For example: sleep_int = c(22,5) implies a sleep period from 22:00 to 05:00')
+
+        }else if( any( !is.numeric(sleep_int) | is.na(sleep_int) ) == TRUE){ # Yes vector, No numeric
+
+          stop('One or more of the elements of the supplied sleep_int vector are not numeric and/or NA')
+
+        }
+
+        # Coerce decimal values to integers
+        if( all(sleep_int == floor(sleep_int)) == FALSE ){
+
+          warning('Coerced floating point values within sleep_int vector to integer')
+          sleep_int <- as.integer(sleep_int)
+
+        }
+
+        # Ensure that there are only two number specified in the vector
+        if(length(sleep_int) != 2){
+          stop('sleep_int must be a 2 x 1 vector with a start and end time. For example: sleep_int = c(22,5) implies a sleep period from 22:00 until 05:00')
+        }
+
+        # Ensure that repeated intervals such as sleep_int = c(2,2) don't occur
+        if(sleep_int[1] == sleep_int[2]){
+
+          stop('sleep_int time interval values cannot be equal')
+
+        }
+
+        # Obtain the proper sequence of numbers and account for numbers passing into the next day
+        if(sleep_int[1] < sleep_int[2]){
+
+          # Create sequence from starting time assuming first number is smaller than second
+          sleep_int_seq <- seq( sleep_int[1], sleep_int[2] )
+
+        }else if(sleep_int[1] > sleep_int[2]){
+
+          # Create sequence when first number is larger than second (passes midnight)
+          sleep_int_seq <- c( sleep_int[1] : 23, 0 : sleep_int[2])
+        }
+
+        # Complement of sleep interval sequence
+        awake_int_seq <- (seq(1 : 24) - 1)[!(seq(1 : 24) - 1) %in% sleep_int_seq]
+
+        if(length(awake_int_seq) + length(sleep_int_seq) != 24){
+          stop('sleep and awake intervals do not add to 24')
+        }
+
+        data$WAKE <- ifelse(lubridate::hour(data$DATE_TIME) %in% awake_int_seq == TRUE, 1, 0)
+
+      }
 
     }
 
-    if(!is.null(sleep_int)){ # No Wake, Yes Date_Time, Yes sleep_int
 
-          if( is.null(data$DATE_TIME) & !is.null(data$WAKE) ) # FIX !!!! sleep_int supplied, no date_time, wake column provided --> warning indicating it ignored sleep_int and did nothing else do rest of code
+    # WAKE column present:
+  }else{
 
-          if(!is.vector(sleep_int)){ # Not vector
+    # Check to see if there is a user-defined sleep interval
 
-            stop('sleep_int must be a vector specifying the sleep interval. For example: sleep_int = c(22,5) implies a sleep period from 22:00 to 05:00')
+    # sleep_int present
+    if(!is.null(sleep_int)){
 
-          }else if( any( !is.numeric(sleep_int) | is.na(sleep_int) ) == TRUE){ # Yes vector, No numeric
+      # Check to see if DATE_TIME column is present
 
-            stop('One or more of the elements of the supplied sleep_int vector are not numeric and/or NA')
+      # Yes WAKE, Yes sleep_int, No DATE_TIME --> do nothing, throw warning
+      if(is.null(data$DATE_TIME)){
 
-          }
+        warning('No DATE_TIME column found to match user-defined sleep_int with.
+                  Defaulting to WAKE column found in dataframe for calculation.')
 
-          # Coerce decimal values to integers
-          if( all(sleep_int == floor(sleep_int)) == FALSE ){
+      }
+      # Yes WAKE, Yes sleep_int, Yes DATE_TIME
+      else{
 
-            warning('Coerced floating point values within sleep_int vector to integer')
-            sleep_int <- as.integer(sleep_int)
+        # Override WAKE column by specifying times according to sleep_int
+        # Throw warning
 
-          }
+        warning('Disregarded WAKE column for BP dip calculation, instead used sleep_int specified by user.
+                      If this is unintended, do not specify sleep_int in function argument.')
 
-          # ensure that there are only two number specified in the vector
-          if(length(sleep_int) != 2){
-            stop('sleep_int must be a 2 x 1 vector with a start and end time. For example: sleep_int = c(22,5) implies a sleep period from 22:00 until 05:00')
-          }
 
-          # Ensure that repeated intervals such as sleep_int = c(2,2) doesn't occur
-          if(sleep_int[1] == sleep_int[2]){
+        # Compatibility checks for sleep_int
 
-            stop('sleep_int time interval values cannot be equal')
+        if(!is.vector(sleep_int)){ # Not vector
 
-          }
+          stop('sleep_int must be a vector specifying the sleep interval. For example: sleep_int = c(22,5)
+                     implies a sleep period from 22:00 to 05:00')
 
-              # Obtain the proper sequence of numbers and account for numbers passing into the next day
-              if(sleep_int[1] < sleep_int[2]){
+        }else if( any( !is.numeric(sleep_int) | is.na(sleep_int) ) == TRUE){ # Yes vector, No numeric
 
-                # Create sequence from starting time assuming first number is smaller than second
-                sleep_int_seq <- seq( sleep_int[1], sleep_int[2] )
+          stop('One or more of the elements of the supplied sleep_int vector are not numeric and/or NA')
 
-              }else if(sleep_int[1] > sleep_int[2]){
+        }
 
-                # Create sequence when first number is larger than second (passes midnight)
-                sleep_int_seq <- c( sleep_int[1] : 23, 0 : sleep_int[2])
-              }
+        # Coerce decimal values to integers
+        if( all(sleep_int == floor(sleep_int)) == FALSE ){
 
-              # Complement of sleep interval sequence
-              awake_int_seq <- (seq(1 : 24) - 1)[!(seq(1 : 24) - 1) %in% sleep_int_seq]
+          warning('Coerced floating point values within sleep_int vector to integer')
+          sleep_int <- as.integer(sleep_int)
 
-              if(length(awake_int_seq) + length(sleep_int_seq) != 24){
-                stop('sleep and awake intervals do not add to 24')
-              }
+        }
 
-          data$WAKE <- ifelse(lubridate::hour(data$DATE_TIME) %in% awake_int_seq == TRUE, 1, 0)
+        # Ensure that there are only two number specified in the vector
+        if(length(sleep_int) != 2){
+          stop('sleep_int must be a 2 x 1 vector with a start and end time. For example: sleep_int = c(22,5)
+                     implies a sleep period from 22:00 until 05:00')
+        }
+
+        # Ensure that repeated intervals such as sleep_int = c(2,2) don't occur
+        if(sleep_int[1] == sleep_int[2]){
+
+          stop('sleep_int time interval values cannot be equal')
+
+        }
+
+        # Obtain the proper sequence of numbers and account for numbers passing into the next day
+        if(sleep_int[1] < sleep_int[2]){
+
+          # Create sequence from starting time assuming first number is smaller than second
+          sleep_int_seq <- seq( sleep_int[1], sleep_int[2] )
+
+        }else if(sleep_int[1] > sleep_int[2]){
+
+          # Create sequence when first number is larger than second (passes midnight)
+          sleep_int_seq <- c( sleep_int[1] : 23, 0 : sleep_int[2])
+        }
+
+        # Complement of sleep interval sequence
+        awake_int_seq <- (seq(1 : 24) - 1)[!(seq(1 : 24) - 1) %in% sleep_int_seq]
+
+        if(length(awake_int_seq) + length(sleep_int_seq) != 24){
+          stop('sleep and awake intervals do not add to 24')
+        }
+
+        data$WAKE <- ifelse(lubridate::hour(data$DATE_TIME) %in% awake_int_seq == TRUE, 1, 0)
 
       }
 
-  }else{ # dipping calculation with WAKE column
-
-      if(!is.null(sleep_int)){
-        # If sleep_int is provided (not NULL), it overwrites the WAKE indicators from the data
-
-      }
+    }
 
   }
+
+
+
+
+  # Determine how granular to calculate based on which columns are available
+  if(inc_date == TRUE){
+    grps = c("ID", "VISIT", "WAKE", "DATE")
+  }else{
+    grps = c("ID", "VISIT", "WAKE")
+  }
+
+  grps = grps[which(grps %in% colnames(data) == TRUE)]
 
 
   # Begin dipping calculation
 
+  # helper function to be used in dip_pct
   pct = function(X_vec) {
     return(X_vec[1]/X_vec[2])
   }
 
-  grps = c("ID", "VISIT", "WAKE")
-  grps = grps[which(grps %in% colnames(data) == TRUE)]
-
   # Group data by whichever of the three above variables are present in the data
   dip <- data %>%
     group_by_at(vars(grps) ) %>%
-    summarise(Avg_BP = mean(SBP))
+    summarise(avg_SBP = mean(SBP),
+              avg_DBP = mean(DBP),
+              N = n() )
 
   dip_pct <- dip %>%
-    summarise(dip = -(1 - pct(Avg_BP)) ) %>%
-    mutate(out = ifelse(dip <= -dip_thresh, "dipper",
-                        ifelse(dip > 0, "reverse", "non-dipper")))
+    summarise( dip = -(1 - pct(avg_SBP)) ) %>%
+    mutate(classification = ifelse(dip <= -dip_thresh, "dipper",
+                                   ifelse(dip > 0, "reverse", "non-dipper")) )
 
   return( list(dip, dip_pct) )
 
+
 }
+
 
 
