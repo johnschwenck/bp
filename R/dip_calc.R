@@ -79,7 +79,7 @@ dip_calc <- function(data, sleep_int = NULL, dip_thresh = .10, inc_date = FALSE)
       # No WAKE, No sleep_int, No DATE_TIME --> error
       if(is.null(data$DATE_TIME)){
 
-        stop('Unable to calculate BP dip. No DATE_TIME or WAKE columns present and no user-supplied sleep_int.')
+        stop('Unable to calculate BP dip. No DATE_TIME or WAKE columns present and no user-supplied sleep_int. Make sure to process all data using the process_data() function.')
 
       } else {
 
