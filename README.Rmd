@@ -71,27 +71,40 @@ After all available variables are identified and processed, the resulting proces
 
 The package will then utilize the above variables to calculate various metrics from medical and statistical literature (ARV, morning surge %, etc) in order to quantify the variability of the readings, classify subjects as either "dipper" or "non-dipper", and cluster subjects (if more than one) into their respective categories of hypertension (normal, elevated, or hypertensive).
 
-## Example
+## Example - HYPNOS data
 
-This is a basic example which shows you how to solve a common problem:
+There are two main steps involved: 
 
-```{r example}
+1. Load and process data into a new usable dataframe using the `process_data` function for all further analysis
+
+```{r}
+#devtools::install_github("johnschwenck/bp")
 library(bp)
-## basic example code
+
+## Load hypnos_data
+data(hypnos_data)
+
+## Process hypnos_data
+data <- process_data(hypnos_data, 
+                     sbp = 'syst', 
+                     dbp = 'diast', 
+                     bp_datetime = 'date.time', 
+                     hr = 'hr', 
+                     pp = 'PP', 
+                     map = 'MaP', 
+                     rpp = 'Rpp', 
+                     id = 'id', 
+                     visit = 'Visit', 
+                     wake = 'wake')
+
+```
+**NOTE:** the `process_data` function is insensitive to capitalization of the supplied data column names. For this example, even though the original column name "SYST" exists in the `hypnos_data`, "syst" is still an acceptable name to be given to the function as shown. For emphasis, all of the above column names were intentionally entered using the wrong capitalization.
+
+`SBP` and `DBP` must be specified for any other functions to work properly.
+
+
+2. Using the newly processed `data`, calculate various metrics. Now that the `hypnos_data` has been processed, all functions will now rely on `data` instead. The calculation of the nocturnal dipping classification is shown below:
+```{r}
+dip_calc(data)
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
-
-```{r cars}
-summary(cars)
-```
-
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date.
-
-You can also embed plots, for example:
-
-```{r pressure, echo = FALSE}
-plot(pressure)
-```
-
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub!
