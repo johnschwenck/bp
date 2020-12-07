@@ -89,12 +89,19 @@ After all available variables are identified and processed, the
 resulting processed dataframe is used for all other functions. See
 examples below for further details.
 
+### Available Metrics
+
 The package will then utilize the above variables to calculate various
-metrics from medical and statistical literature (ARV, morning surge %,
-etc) in order to quantify the variability of the readings, classify
-subjects as either “dipper” or “non-dipper”, and cluster subjects (if
-more than one) into their respective categories of hypertension (normal,
-elevated, or hypertensive).
+metrics from medical and statistical literature in order to quantify and
+classify the variability of the readings into their respective
+categories of hypertension (normal, elevated, or hypertensive).
+
+  - `arv` - Average Real Variability
+  - `bp_mag` - Blood Pressure Magnitude (peak and trough)
+  - `bp_range` - Blood Pressure Range
+  - `cv` - Coefficient of Variation
+  - `sv` - Successive Variation
+  - `dip_calc` - Nocturnal Dipping % and Classification
 
 ## Example - HYPNOS data
 
