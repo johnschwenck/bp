@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/johnschwenck/bp?branch=master&svg=true)](https://ci.appveyor.com/project/johnschwenck/bp)
 <!-- badges: end -->
 
-### bp: Blood Pressure Analysis for R
+## bp: Blood Pressure Analysis for R
 Cardiovascular disease (CVD) is the leading cause of death worldwide with Hypertension, specifically, affecting over 1.1 billion people annually. The goal of the \code{bp} package is to provide a comprehensive toolbox for analyzing blood pressure data using a variety of statistical methods and metrics in an effort to bring more clarity to CVD.
 
 The \code{bp} package includes two sample data sets:
@@ -28,7 +28,7 @@ The \code{bp} package includes two sample data sets:
 - `hypnos_data`: a sample of a larger HYPNOS study containing ABPM data for multiple subjects using continuous monitoring devices
 - `bp_jhs`: a single-subject data set from a [2019 pilot study](https://dataverse.harvard.edu/dataverse/r4r) containing non-ABPM data from a self-monitoring Omron Evolv device 
 
-## Installation
+### Installation
 
 You can install the released version of bp from [CRAN](https://CRAN.R-project.org) with:
 
@@ -75,7 +75,7 @@ The package will then utilize the above variables to calculate various metrics f
 
 There are two main steps involved: 
 
-1. Load and process data into a new usable dataframe using the `process_data` function for all further analysis
+1. Load and process data into a new usable dataframe for all further analysis using the `process_data` function 
 
 ```{r}
 #devtools::install_github("johnschwenck/bp")

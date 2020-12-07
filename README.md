@@ -11,7 +11,7 @@ status](https://travis-ci.com/johnschwenck/bp.svg?branch=master)](https://travis
 status](https://ci.appveyor.com/api/projects/status/github/johnschwenck/bp?branch=master&svg=true)](https://ci.appveyor.com/project/johnschwenck/bp)
 <!-- badges: end -->
 
-### bp: Blood Pressure Analysis for R
+## bp: Blood Pressure Analysis for R
 
 Cardiovascular disease (CVD) is the leading cause of death worldwide
 with Hypertension, specifically, affecting over 1.1 billion people
@@ -27,7 +27,7 @@ The  package includes two sample data sets:
     study](https://dataverse.harvard.edu/dataverse/r4r) containing
     non-ABPM data from a self-monitoring Omron Evolv device
 
-## Installation
+### Installation
 
 You can install the released version of bp from
 [CRAN](https://CRAN.R-project.org) with:
@@ -100,8 +100,8 @@ elevated, or hypertensive).
 
 There are two main steps involved:
 
-1.  Load and process data into a new usable dataframe using the
-    `process_data` function for all further analysis
+1.  Load and process data into a new usable dataframe for all further
+    analysis using the `process_data` function
 
 <!-- end list -->
 
