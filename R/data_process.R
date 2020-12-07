@@ -59,11 +59,11 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
 
     if(is.matrix(data) == FALSE){
 
-      stop('Invalid data type. Please use either data.frame or matrix')
+      stop('Invalid data type. Please use either data.frame or matrix\n')
 
     }else{
 
-      warning('Converted matrix data type to data.frame')
+      warning('Converted matrix data type to data.frame\n')
 
       data <- as.data.frame(data)
 
@@ -72,16 +72,16 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
 
 
   # Convert all column names to upper case for consistency
-  if(is.data.frame(data)){
-    colnames(data) <- toupper(colnames(data))
-  }else{
-    stop('Error: did not convert to data frame')
+  if(!is.data.frame(data)){
+    stop('Error: did not convert to data frame\n')
   }
+
+  colnames(data) <- toupper(colnames(data))
 
   # Throw error if SBP and DBP columns aren't specified
   if(is.null(sbp) | is.null(dbp)){
 
-    stop('Both "SBP" and "DBP" column names must be specified.')
+    stop('Both "SBP" and "DBP" column names must be specified.\n')
 
   }
 
@@ -93,11 +93,11 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
 
     if(toupper(sbp) %in% colnames(data) == FALSE){
 
-      warning('Could not find user-defined SBP argument name in dataset. \ni.e. for example, if user improperly defines sbp = "syst" but that column name does not exist in the dataset, then there will be no matches for "syst". Check spelling of SBP argument.')
+      warning('Could not find user-defined SBP argument name in dataset. \ni.e. for example, if user improperly defines sbp = "syst" but that column name does not exist in the dataset, \nthen there will be no matches for "syst". \nCheck spelling of SBP argument.\n')
 
       if(length(grep(paste("\\bSBP\\b", sep = ""), names(data))) == 1){
 
-        stop('Fix user-defined argument name for SBP. \nNote: A column in the dataset DOES match the name "SBP": if this is the correct column, indicate as such in function argument. \ni.e. sbp = "SBP" \n ')
+        stop('Fix user-defined argument name for SBP. \nNote: A column in the dataset DOES match the name "SBP": \nif this is the correct column, indicate as such in function argument. \ni.e. sbp = "SBP" \n ')
 
       }
 
@@ -113,7 +113,7 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
       }
     }
   } else {
-    stop('User-defined SBP name must be character.')
+    stop('User-defined SBP name must be character.\n')
   }# if working with numeric below, remove this bracket
 
 
@@ -125,11 +125,11 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
 
     if(toupper(dbp) %in% colnames(data) == FALSE){
 
-      warning('User-defined DBP name does not match column name of supplied dataset. \ni.e. for example, if user improperly defines dbp = "diast" but there is no column name in the dataset, then there will be no matches for "diast". Check spelling of DBP argument.')
+      warning('User-defined DBP name does not match column name of supplied dataset. \ni.e. for example, if user improperly defines dbp = "diast" but there is no column name in the dataset, \nthen there will be no matches for "diast". \nCheck spelling of DBP argument.\n')
 
       if(length(grep(paste("\\bDBP\\b", sep = ""), names(data))) == 1){
 
-        stop('Fix user-defined argument name for DBP. \nNote: A column in the dataset DOES match the name "DBP": if this is the correct column, indicate as such in function argument. \ni.e. sbp = "DBP" \n ')
+        stop('Fix user-defined argument name for DBP. \nNote: A column in the dataset DOES match the name "DBP": \nif this is the correct column, indicate as such in function argument. \ni.e. sbp = "DBP" \n ')
 
       }
     }else{
@@ -144,7 +144,7 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
       }
     }
   } else {
-    stop('User-defined DBP name must be character.')
+    stop('User-defined DBP name must be character.\n')
   }
 
 
@@ -156,7 +156,7 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
     if(length(grep(paste("\\bPP\\b", sep = ""), names(data))) == 0){
 
       data$PP <- data$SBP - data$DBP
-      warning('No PP column found. Automatically generated from SBP and DBP columns.')
+      message('No PP column found. Automatically generated from SBP and DBP columns.\n')
 
     }
 
@@ -170,7 +170,7 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
 
     if(toupper(pp) %in% colnames(data) == FALSE){ # is pp argument found in data colnames
 
-      stop('User-defined PP name does not match column name of supplied dataset')
+      stop('User-defined PP name does not match column name of supplied dataset\n')
 
     }else{
 
@@ -182,7 +182,7 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
     }
   } else {
 
-    stop('User-defined PP name must be character.')
+    stop('User-defined PP name must be character.\n')
   }
 
 
@@ -195,7 +195,7 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
 
     if(length(grep(paste("\\bHR\\b", sep = ""), names(data))) == 1){
 
-      warning('HR column found in data. \nIf this column corresponds to Heart Rate, use hr = "HR" in the function argument.')
+      warning('HR column found in data. \nIf this column corresponds to Heart Rate, \nuse hr = "HR" in the function argument.\n')
 
     }
 
@@ -203,7 +203,7 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
 
     if(toupper(hr) %in% colnames(data) == FALSE){
 
-      stop('User-defined HR name does not match column name of supplied dataset')
+      stop('User-defined HR name does not match column name of supplied dataset\n')
 
     }else{
 
@@ -213,7 +213,7 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
       data$HR <- as.numeric(data$HR)
     }
   } else {
-    stop('User-defined HR name must be character.')
+    stop('User-defined HR name must be character.\n')
   }
 
 
@@ -238,12 +238,12 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
       rpp_idx <- grep(paste("\\bRPP\\b", sep = ""), names(data))
       data <- data[, c(1:hr_idx, rpp_idx, ((hr_idx+1):ncol(data))[-rpp_idx+hr_idx])]
 
-      warning('No RPP column found. Automatically generated from SBP and HR columns.')
+      message('No RPP column found. Automatically generated from SBP and HR columns.\n')
     }
 
   }else if( (toupper(rpp) %in% colnames(data)) == FALSE){
 
-    stop('User-defined RPP name does not match column name of supplied dataset')
+    stop('User-defined RPP name does not match column name of supplied dataset\n')
 
   }else if( (length(grep(paste("\\bHR\\b", sep = ""), names(data))) == 1) & (toupper(rpp) %in% colnames(data)) ){ # HR column is present and in position 4
 
@@ -266,14 +266,25 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
   # Mean Arterial Pressure
   if(is.null(map)){
 
-    if(length(grep(paste("\\bMAP\\b", sep = ""), names(data))) == 1){
+    if(length(grep(paste("\\bMAP\\b", sep = ""), names(data))) == 0){
 
-      warning('MAP column found in data. \nIf this column corresponds to Mean Arterial Pressure, use map = "MAP" in the function argument.')
+      data$MAP <- (1/3) * data$SBP + (2/3) * data$DBP
+      message('No MAP column found. Automatically generated from SBP and DBP columns.\n')
+
+      col_idx <- grep(paste("\\bMAP\\b", sep = ""), names(data))
+      colnames(data)[col_idx] <- "MAP"
+      data <- data[, c(1:2, col_idx, (3:ncol(data))[-col_idx+2])]
+
+      data$MAP <- as.numeric(data$MAP)
+
+    }else if(length(grep(paste("\\bMAP\\b", sep = ""), names(data))) == 1){
+
+      warning('MAP column found in data. \nIf this column corresponds to Mean Arterial Pressure, \nuse map = "MAP" in the function argument.\n')
 
     }
   } else if(toupper(map) %in% colnames(data) == FALSE){
 
-    stop('User-defined MAP name does not match column name of supplied dataset')
+    stop('User-defined MAP name does not match column name of supplied dataset\n')
 
   } else {
 
@@ -292,7 +303,7 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
 
     if(toupper(wake) %in% colnames(data) == FALSE){
 
-      stop('User-defined ID name does not match column name of supplied dataset')
+      stop('User-defined ID name does not match column name of supplied dataset\n')
 
     }
 
@@ -301,7 +312,7 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
 
     if(length(unique(data$WAKE)) > 2){
 
-      warning('Ignoring wake argument. Wake column must only contain 2 unique values corresponding to awake or asleep status. Typically, these are denoted as 1 for Awake and 0 for Asleep.')
+      warning('Ignoring wake argument. Wake column must only contain 2 unique values corresponding to awake or asleep status. \nTypically, these are denoted as 1 for Awake and 0 for Asleep.\n')
 
     }else{
 
@@ -323,7 +334,7 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
 
     if(toupper(visit) %in% colnames(data) == FALSE){
 
-      stop('User-defined VISIT name does not match column name of supplied dataset')
+      stop('User-defined VISIT name does not match column name of supplied dataset\n')
 
     } else {
 
@@ -345,7 +356,7 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
 
     if(toupper(bp_datetime) %in% colnames(data) == FALSE){
 
-      stop('User-defined bp_datetime name does not match column name of supplied dataset')
+      stop('User-defined bp_datetime name does not match column name of supplied dataset\n')
 
     } else {
 
@@ -365,7 +376,7 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
 
     # If DATE column found
 
-    warning('DATE column found in data and coerced to as.Date() format.')
+    message('NOTE: DATE column found in data and coerced to as.Date() format.\n')
 
     data[,grep("^DATE$", names(data))] <- as.Date(data[,grep("^DATE$", names(data))])
 
@@ -377,7 +388,7 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
 
     # If no DATE column found
 
-    warning('Created DATE column from DATE_TIME column')
+    message('NOTE: Created DATE column from DATE_TIME column\n')
 
     # Create DATE column using as.Date of DATE_TIME
     data$DATE <- as.Date(data$DATE_TIME)
@@ -396,7 +407,7 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
 
     if(toupper(id) %in% colnames(data) == FALSE){
 
-      stop('User-defined ID name does not match column name of supplied dataset')
+      stop('User-defined ID name does not match column name of supplied dataset\n')
 
     } else {
 
