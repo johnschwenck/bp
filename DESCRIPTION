@@ -1,6 +1,6 @@
 Package: bp
 Type: Package
-Title: An R Package for Analyzing Blood Pressure
+Title: Blood Pressure Analysis in R
 Version: 0.1.0
 Author: person("John","Schwenck", email = "jschwenck12@gmail.com", role = c("aut", "cre"))
 Maintainer: John Schwenck <jschwenck12@gmail.com>
