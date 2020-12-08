@@ -1,7 +1,8 @@
 #' Blood Pressure Range
 #'
-#' Calculates the range (max - min) of both SBP and DBP values with the option
-#' to specify date as an additional level of granularity
+#' Calculates the range (max - min) of both SBP and DBP values in addition to max and
+#' min values for reference with the option to specify date as an additional level
+#' of granularity
 #'
 #' @param data Required dataframe with SBP and DBP columns corresponding to
 #' Systolic and Diastolic BP. This dataframe should come from \code{data_process}
@@ -12,7 +13,7 @@
 #'
 #' @return A tibble with SBP_max, SBP_min, SBP_range, DBP_max, DBP_min, DBP_range
 #' and any additional optional columns included in data such as \code{ID}, \code{VISIT},
-#' \code{WAKE}, and \code{DATE}
+#' \code{WAKE}, and \code{DATE}. If inc_date = TRUE, each row will correspond to a date.
 #'
 #' @export
 #'

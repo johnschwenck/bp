@@ -22,7 +22,8 @@ For \strong{both} SBP and DBP ARV values use bp_type = 0, for \strong{SBP-only}
 use bp_type = 1, and for \strong{DBP-only} use bp_type = 2}
 }
 \value{
-EXPLANATION
+A tibble object with a row corresponding to each subject, or alternatively
+a row corresponding to each date if inc_date = TRUE
 }
 \description{
 Calculate the successive variation (SV) at various levels of granularity

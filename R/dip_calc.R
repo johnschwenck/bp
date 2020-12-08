@@ -44,23 +44,41 @@
 #' \doi{10.1016/j.ijpsycho.2008.09.008}.
 #'
 #'
-#' @return explanations
+#' @return A list containing 2 tibble objects. One for the grouped average values for SBP and DBP and
+#' another for the dip % and classification. If inc_date = TRUE these two tibbles will be broken down
+#' further by date
+#'
 #' @export
 #'
 #' @examples
-#' #test code
+#' ## Load hypnos_data
+#' data(hypnos_data)
+#'
+#' ## Process hypnos_data
+#' data <- process_data(hypnos_data,
+#'                      sbp = 'syst',
+#'                      dbp = 'diast',
+#'                      bp_datetime = 'date.time',
+#'                      hr = 'hr',
+#'                      pp = 'PP',
+#'                      map = 'MaP',
+#'                      rpp = 'Rpp',
+#'                      id = 'id',
+#'                      visit = 'Visit',
+#'                      wake = 'wake')
+#'
+#' dip_calc(data)
 dip_calc <- function(data, sleep_int = NULL, dip_thresh = .10, inc_date = FALSE){
 
 
 
-  # To Do: X If Awake indicator column is specified in dataset, calculate percentages according to indicator.
+  # Features:
+  #        X If Awake indicator column is specified in dataset, calculate percentages according to indicator.
   #           If not, default to Awake: 6am - 11pm | Asleep: 11pm - 6am |
   #        X Give user ability to choose time frame interval if no awake indicator column provided
   #        X User-defined dipping threshold, default to 10%
   #        - Screening criteria  for {SBP > 250 | SBP < 70} and {DBP < 45 | DBP > 150} and {HR < 40 | HR > 200} according to Holt-Lunstad, Jones, and Birmingham (2009) paper
-
-
-  # Calculate the percent difference between two successive groups. In this case: Awake vs Asleep
+  #        X Calculate the percent difference between two successive groups. In this case: Awake vs Asleep
 
 
   avg_SBP = SBP = DBP = . = NULL

@@ -35,7 +35,9 @@ data set already contains a \code{WAKE} column.}
 the final output}
 }
 \value{
-explanations
+A list containing 2 tibble objects. One for the grouped average values for SBP and DBP and
+another for the dip % and classification. If inc_date = TRUE these two tibbles will be broken down
+further by date
 }
 \description{
 Calculate the percent and average drop (or potentially reverse) in nocturnal blood pressure.
@@ -43,7 +45,23 @@ This function is typically used with ABPM data, or at minimum, data with a corre
 \code{WAKE} column available to indicate awake vs asleep.
 }
 \examples{
-#test code
+## Load hypnos_data
+data(hypnos_data)
+
+## Process hypnos_data
+data <- process_data(hypnos_data,
+                     sbp = 'syst',
+                     dbp = 'diast',
+                     bp_datetime = 'date.time',
+                     hr = 'hr',
+                     pp = 'PP',
+                     map = 'MaP',
+                     rpp = 'Rpp',
+                     id = 'id',
+                     visit = 'Visit',
+                     wake = 'wake')
+
+dip_calc(data)
 }
 \references{
 Holt-Lunstad, J., Jones, B.Q., and Birmingham, W. (2009). The influence of close relationships

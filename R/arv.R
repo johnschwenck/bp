@@ -19,7 +19,8 @@
 #' For both SBP and DBP ARV values use bp_type = 0, for SBP-only use bp_type = 1,
 #' and for DBP-only use bp_type = 2
 #'
-#' @return \code{arv} returns ....
+#' @return A tibble object with a row corresponding to each subject, or alternatively
+#' a row corresponding to each date, if inc_date = TRUE
 #'
 #' @references
 #' Mena et al. (2005) A reliable index for the prognostic significance of

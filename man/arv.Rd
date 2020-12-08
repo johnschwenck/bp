@@ -22,12 +22,13 @@ For both SBP and DBP ARV values use bp_type = 0, for SBP-only use bp_type = 1,
 and for DBP-only use bp_type = 2}
 }
 \value{
-\code{arv} returns ....
+A tibble object with a row corresponding to each subject, or alternatively
+a row corresponding to each date, if inc_date = TRUE
 }
 \description{
 Calculate the Average Real Variability (ARV) at various levels of granularity
 based on what is supplied (ID, VISIT, WAKE, and / or DATE). ARV is a measure
-of disperion that takes into account the temporal structure of the data and relies
+of dispersion that takes into account the temporal structure of the data and relies
 on the sum of absolute differences in successive observations, unlike the
 successive variation (SV) which relies on the sum of squared differences.
 \deqn{SV = (\sum|x_{i+1} - x_i|/(n-1))^{1/2}}

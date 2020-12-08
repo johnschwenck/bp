@@ -93,12 +93,12 @@ After the data has been processed, we can now utilize the built-in metrics from 
 
 Function    | Metric Name                             | Source
 ----------- | --------------------------------------- | ----------
-arv         | Average Real Variability                | [Mena et al](https://doi.org/10.1097/01.hjh.0000160205.81652.5a)
-bp_mag      | Blood Pressure Magnitude                | [Munter et al](https://doi.org/10.1097/HJH.0b013e32834cf213 )
-bp_range    | Blood Pressure Range                    | [Levitan et al](https://doi.org/10.1038/jhh.2013.19)
-cv          | Coefficient of Variation                | [Munter et al](https://doi.org/10.1097/HJH.0b013e32834cf213 )
-sv          | Successive Variation                    | [Munter et al](https://doi.org/10.1097/HJH.0b013e32834cf213 )
-dip_calc    | Nocturnal Dipping \% and Classification | [Okhubo et al](https://doi.org/10.1016/s0895-7061(97)00274-4)
+arv         | Average Real Variability                | [Mena et al (2005)](https://doi.org/10.1097/01.hjh.0000160205.81652.5a)
+bp_mag      | Blood Pressure Magnitude                | [Munter et al (2011)](https://doi.org/10.1097/HJH.0b013e32834cf213 )
+bp_range    | Blood Pressure Range                    | [Levitan et al (2013)](https://doi.org/10.1038/jhh.2013.19)
+cv          | Coefficient of Variation                | [Munter et al (2011)](https://doi.org/10.1097/HJH.0b013e32834cf213 )
+sv          | Successive Variation                    | [Munter et al (2011)](https://doi.org/10.1097/HJH.0b013e32834cf213 )
+dip_calc    | Nocturnal Dipping \% and Classification | [Okhubo et al (1997)](https://doi.org/10.1016/s0895-7061(97)00274-4)
 
 **Time-Dependent Dispersion Metrics**  
 
@@ -192,3 +192,7 @@ doi: 10.1097/HJH.0b013e32834cf213
 4. O’Brien E, Sheridan J, O’Malley K . Dippers and non-dippers. Lancet 1988; 2: 397.
 
 5. Ohkubo T, Imai Y, Tsuji I, Nagai K, Watanabe N, Minami N, Kato J, Kikuchi N, Nishiyama A, Aihara A, Sekino M, Satoh H, Hisamichi S. Relation between nocturnal decline in blood pressure and mortality. The Ohasama Study. *Am J Hypertens*. 1997 Nov;10(11):1201-7. doi: 10.1016/s0895-7061(97)00274-4. PMID: 9397237.
+
+6. Mena L, Pintos S, Queipo NV, Aizpúrua JA, Maestre G, Sulbarán T. A reliable index for the prognostic significance of blood pressure variability. *J Hypertens*. 2005 Mar;23(3):505-11. doi: 10.1097/01.hjh.0000160205.81652.5a. PMID: 15716690.
+
+7. Holt-Lunstad J, Jones BQ, Birmingham W. The influence of close relationships on nocturnal blood pressure dipping. Int J Psychophysiol. 2009 Mar;71(3):211-7. doi: 10.1016/j.ijpsycho.2008.09.008. Epub 2008 Oct 5. PMID: 18930771.
