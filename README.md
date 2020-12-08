@@ -29,14 +29,16 @@ The  package includes two sample data sets:
 
 ### Installation
 
-You can install the released version of bp from
-[CRAN](https://CRAN.R-project.org) with:
+<!-- You can install the released version of bp from [CRAN](https://CRAN.R-project.org) with: -->
 
-``` r
-install.packages("bp")
-```
+<!-- ``` r -->
 
-And the development version from [GitHub](https://github.com/) with:
+<!-- install.packages("bp") -->
+
+<!-- ``` -->
+
+You can install the development version from
+[GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
@@ -131,8 +133,7 @@ data <- process_data(hypnos_data,
                      id = 'id', 
                      visit = 'Visit', 
                      wake = 'wake')
-#> Warning in process_data(hypnos_data, sbp = "syst", dbp = "diast", bp_datetime =
-#> "date.time", : DATE column found in data and coerced to as.Date() format.
+#> NOTE: DATE column found in data and coerced to as.Date() format.
 ```
 
 **NOTE:** the `process_data` function is insensitive to capitalization
