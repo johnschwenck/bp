@@ -95,11 +95,11 @@ After the data has been processed, we can now utilize the built-in metrics from 
 Function    | Metric Name                             | Source
 ----------- | --------------------------------------- | ----------
 arv         | Average Real Variability                | [Mena et al](https://doi.org/10.1097/01.hjh.0000160205.81652.5a)
-bp_mag      | Blood Pressure Magnitude                | test
-bp_range    | Blood Pressure Range                    | test
-cv          | Coefficient of Variation                | [Mancia et al](https://doi.org/10.1161/01.HYP.21.4.510)
-sv          | Successive Variation                    | test
-dip_calc    | Nocturnal Dipping \% and Classification | test
+bp_mag      | Blood Pressure Magnitude                | [Munter et al](https://doi.org/10.1097/HJH.0b013e32834cf213 )
+bp_range    | Blood Pressure Range                    | [Levitan et al](https://doi.org/10.1038/jhh.2013.19)
+cv          | Coefficient of Variation                | [Munter et al](https://doi.org/10.1097/HJH.0b013e32834cf213 )
+sv          | Successive Variation                    | [Munter et al](https://doi.org/10.1097/HJH.0b013e32834cf213 )
+dip_calc    | Nocturnal Dipping \% and Classification | [Okhubo et al](https://doi.org/10.1016/s0895-7061(97)00274-4)
 
 **Time-Dependent Metrics**  
 
@@ -138,10 +138,18 @@ Here, we notice something different. Because there weren't `ID`, `VISIT`, or `WA
 ```{r}
 tail(bp_mag(data2, inc_date = TRUE))
 ```
-***Interpretation:*** While it may not seem obvious at first glance, the blood pressure magnitude (whether a peak or a trough) is calculated as $peak = max(BP) - mean(BP)$ and $trough = mean(BP) - min(BP)$ where BP could correspond to either SBP or DBP. If we manually inspect the data from `2019-07-31` we see that N = 2 measurements and within the `bp_jhs` data set we see the two measurements are 126 and 128 for SBP and 77, and 76 for DBP. $\bar{x}_{SBP} = \frac{(126+128)}{2} = 127$ and $\bar{x}_{SBP} = \frac{(78+76)}{2} = 76.5$ so the respective peak and trough values from our output make sense.
+***Interpretation:*** While it may not seem obvious at first glance, the blood pressure magnitude (whether a peak or a trough) is calculated as $peak = max(BP) - mean(BP)$ and $trough = mean(BP) - min(BP)$ where BP could correspond to either SBP or DBP. If we manually inspect the data from `2019-07-31` we see that N = 2 measurements and within the `bp_jhs` data set we see the two measurements are 126 and 128 for SBP and 77, and 76 for DBP. $\bar{x}_{SBP} = \frac{(126+128)}{2} = 127$ and $\bar{x}_{DBP} = \frac{(78+76)}{2} = 76.5$ so the respective peak and trough values from our output make sense.
   
 ##### Visualization
-We have data we have metrics lets visualize
+So far, we have processed the original data, we have run a couple metrics to get a clearer picture of the variability, now let's visualize it.
+
+Continuing with our previous example using the `bp_jhs` data set, let's suppose we wanted to explore how to peaks and troughs changed over time
+```{r fig1, fig.height = 4.5, fig.width = 7.5, fig.align = "center"}
+viz_data <- bp_mag(data2, inc_date = TRUE)
+plot(viz_data[which(viz_data$Peak_SBP > 0 & viz_data$N > 1),]$DATE, viz_data[which(viz_data$Peak_SBP > 0 & viz_data$N > 1),]$Peak_SBP, type = 'l', col = "red", xlab ="DATE", ylab = "Magnitude")
+lines(viz_data[which(viz_data$Peak_SBP > 0 & viz_data$N > 1),]$DATE, viz_data[which(viz_data$Trough_SBP > 0 & viz_data$N > 1),]$Trough_SBP, col = "darkgreen")
+legend("topright", legend = c("Peak", "Trough"), col = c("red","darkgreen"), lty =1)
+```
 
 
 ## Future Directions
@@ -153,10 +161,18 @@ In the short term, the following new features are to be incorporated with the ne
 * Shiny App for visualization and PDF export
 * Package website
 * Additional metrics: morning BP surge, morning bp surge power, SDIM
+* add an inc_time optional argument that breaks down groupings by time (similar to by day, but more useful for ABPM when time of day is of interest)
 
 -------------
 ### References
 
 1. Mancia, G., Di Rienzo, M., & Parati, G. (1993). Ambulatory blood pressure monitoring use in hypertension research and clinical practice. *Hypertension*, 21(4), 510-524.
 
-2. test2
+2. Levitan, E., Kaciroti, N., Oparil, S. et al. Relationships between metrics of visit-to-visit variability of blood pressure. *J Hum Hypertens* 27, 589–593 (2013). https://doi.org/10.1038/jhh.2013.19
+
+3. Muntner, Paula,b; Joyce, Carac; Levitan, Emily B.a; Holt, Elizabethd; Shimbo, Daichie; Webber, Larry S.c; Oparil, Suzanneb; Re, Richardf; Krousel-Wood, Maried,g Reproducibility of visit-to-visit variability of blood pressure measured as part of routine clinical care, *Journal of Hypertension*: December 2011 - Volume 29 - Issue 12 - p 2332-2338
+doi: 10.1097/HJH.0b013e32834cf213 
+
+4. O’Brien E, Sheridan J, O’Malley K . Dippers and non-dippers. Lancet 1988; 2: 397.
+
+5. Ohkubo T, Imai Y, Tsuji I, Nagai K, Watanabe N, Minami N, Kato J, Kikuchi N, Nishiyama A, Aihara A, Sekino M, Satoh H, Hisamichi S. Relation between nocturnal decline in blood pressure and mortality. The Ohasama Study. *Am J Hypertens*. 1997 Nov;10(11):1201-7. doi: 10.1016/s0895-7061(97)00274-4. PMID: 9397237.
