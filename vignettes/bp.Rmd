@@ -1,0 +1,114 @@
+---
+title: "Blood Pressure Analysis in R: A Vignette"
+author:
+  - name: John Schwenck
+    affiliation: Texas A\&M University
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Blood Pressure Analysis in R: A Vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+abstract: "In an effort to better understand the factors that influence hypertension and cardiovascular disease, recent technology such as ambulatory blood pressure monitors (ABPM) have been employed in clinical practice to assess trends over an entire 24-hour period. However, despite these advancements, and until now, there has yet to be a comprehensive open-source R package that provides the necessary tools for analyzing such data. The `bp` package provides an extensive framework for researchers to analyze both ABPM and non-ABPM blood pressure data in R through a variety of statistical methods and metrics from the literature."
+keywords: "blood pressure analysis, hypertension, cardiovascular disease"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+library(bp)
+```
+
+
+-------------
+
+## Introduction
+Despite the tremendous progress in the medical field, cardiovascular (CV) disease remains the leading cause of death worldwide. Hypertension, specifically, affects over 1.1 billion people annually according to the American Heart Association. This package serves to visualize and quantify various aspects of hypertension in a more digestible format using various metrics proposed in the literature. 
+
+Blood pressure data can be analyzed at varying degrees of granularity depending on the reading frequency, presence of a sleep indicator, and whether or not the temporal structure is accounted for. These factors almost always depend on the type of device used, where ABPM monitors are predominantly used for the short term (within 24 hours) and home monitoring devices or office readings are used for measuring variability over the medium and long term (day-to-day, visit-to-visit, etc). Unlike continuous heart rate monitors or continuous glucose monitors, there are currently no large-scale continuous blood pressure monitors available for the middle to long term, posing a unique challenge for research.
+
+###### Blood Pressure Monitors
+Blood pressure monitoring devices work by measuring the pressure of the artery’s restricted blood flow; for digital devices, the vibrations are translated into electrical signals. Unlike home monitors that only take readings upon the subject's initiation, ambulatory blood pressure monitoring (ABPM) devices take automatic readings at pre-specified intervals over a 24-hour period or longer.
+
+ABPM allows medical professionals to analyze blood pressure during sleep which has been shown to be a more accurate predictor of CV events than daytime blood pressure. ABPM also allows researchers to discern true hypertension from "whitecoat" hypertension in an office or laboratory setting. 
+
+###### Blood Pressure Variability
+Of primary concern to researchers is the ability to accurately quantify blood pressure variability. 
+
+## The `bp` Package
+The general workflow of the `bp` package consists of a data processing stage and an analysis stage. The processing stage formats the input data so that it adheres to the rest of the `bp` functions. The analysis stage uses the processed data to quantify various attributes of the relationships within the blood pressure data.
+
+##### Data Processing with the `process_data` function
+Before any analysis can be done, the user-supplied data set must be first processed into the proper format using `process_data` to adhere to package data structure requirements and naming conventions. This function ensures that user-supplied data columns aren't double counted or missed, since blood pressure data are often inconsistent and come from a wide variety of formats. While a tedious initial step, it will save time in the long-run as the resulting processed data will not require any future specification, which can then be directly plugged into the metric functions. It is worth noting that if the user-supplied data set already adheres to the column naming conventions and data types, then the `process_data` function will be unnecessary. However, it is good practice to still make use of this function as a sanity check to verify all available variables.
+
+The basic workflow is to load in the user-supplied and un-processed raw data, process it with the `process_data` function and save to a new dataframe. Note that the capitalization does not matter when specifying the columns.
+```{r}
+## Load the sample hypnos_data
+## In this scenario, the hypnos_data acts as the "user-supplied" data that is to be processed
+data("hypnos_data")
+
+## Assign the output of the process_data function to a new dataframe object
+data <- process_data(hypnos_data,
+                     sbp = 'syst',
+                     dbp = 'diast',
+                     bp_datetime = 'date.time',
+                     id = 'id',
+                     visit = 'visit',
+                     hr = 'hr',
+                     wake = 'wake',
+                     pp = 'pp',
+                     map = 'map',
+                     rpp = 'rpp')
+```
+Notice how the column names of the original `hypnos_data` changed in the processed `data`. Notably, `SYST` became `SBP`, `DIAST` became `DBP`, and`DATE.TIME` became `DATE_TIME`.
+```{r}
+names(hypnos_data)
+names(data)
+```
+
+While the results seem to be trivial at first glance, let's see what happens when we use a much different data set with a completely different naming convention - the `bp_jhs` data set. Unlike `hypnos_data` which has all of the available columns needed in the `process_data` function with multiple subjects, `bp_jhs` is a single-subject data set without many of the multi-subject identifiers such as `ID`, `VISIT`, or `WAKE` (as it is non-ABPM data). Further, there is no `MAP` or `PP` column, but these (as we will see) can be automatically created. 
+```{r warning=FALSE, message=TRUE}
+## Load the sample bp_jhs data set
+## As before, this is what will be referred to as the "user-supplied" data set
+data("bp_jhs")
+
+## Assign the output of the process_data function to a new dataframe object
+data <- process_data(bp_jhs,
+                     sbp = 'sys.mmhg.',
+                     dbp = 'dias.mmhg.',
+                     bp_datetime = 'datetime',
+                     hr = 'PULSE.BPM.')
+head(data, 5)
+```
+After a quick inspection of the original `bp_jhs` data set and the newly processed `data` data set, it should be evident that there was a lot going on "under the hood" of the `process_data` function. As we can see from the column names, the awkward nuisance of typing `sys.mmhg.`, `dias.mmhg.`, `pulse.bpm.`, and `datetime` have now been replaced with the more concise `SBP`, `DBP`, `HR`, and `DATE_TIME` names, respectively. Additionally, `MAP`, `PP`, and `RPP` were all calculated as additional variables using the existing data.
+```{r}
+names(bp_jhs)
+names(data)
+```
+**NOTE:** For consistency, `process_data` will coerce all column names to upper-case.
+
+##### Blood Pressure Metrics
+After the data has been processed, we can now utilize the built-in metrics from the literature
+
+##### Visualization
+We have data we have metrics lets visualize
+
+
+## Future Directions
+
+As our understanding of cardiovascular disease continues to grow, this package will remain ongoing project. As such, collaboration is highly encouraged. Corrections to existing metrics, extensions or new method proposals, and code optimization are all welcome. 
+
+In the short term, the following new features are to be incorporated with the next release of the package: 
+
+* Shiny App for visualization and PDF export
+* Package website
+* Additional metrics: morning BP surge, morning bp surge power, SDIM
+
+-------------
+### References
+
+1. test
+
+2. test2
