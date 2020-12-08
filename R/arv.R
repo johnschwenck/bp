@@ -2,7 +2,7 @@
 #'
 #' Calculate the Average Real Variability (ARV) at various levels of granularity
 #' based on what is supplied (ID, VISIT, WAKE, and / or DATE). ARV is a measure
-#' of disperion that takes into account the temporal structure of the data and relies
+#' of dispersion that takes into account the temporal structure of the data and relies
 #' on the sum of absolute differences in successive observations, unlike the
 #' successive variation (SV) which relies on the sum of squared differences.
 #' \deqn{SV = (\sum|x_{i+1} - x_i|/(n-1))^{1/2}}

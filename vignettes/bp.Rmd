@@ -101,24 +101,29 @@ cv          | Coefficient of Variation                | [Munter et al](https://d
 sv          | Successive Variation                    | [Munter et al](https://doi.org/10.1097/HJH.0b013e32834cf213 )
 dip_calc    | Nocturnal Dipping \% and Classification | [Okhubo et al](https://doi.org/10.1016/s0895-7061(97)00274-4)
 
-**Time-Dependent Metrics**  
+**Time-Dependent Dispersion Metrics**  
 
 * `arv` - **Average Real Variability**
-  + this is test text
+  + A measure of dispersion using the sum of absolute differences in successive observations
 * `sv` - **Successive Variation**
-  + this is test text
+  + A measure of dispersion using the sum of squared differences in successive observations
   
-**Time-Independent Metrics**  
+**Time-Independent Dispersion Metrics**  
 
 * `bp_mag` - **Blood Pressure Magnitude** (peak and trough)
-  + this is test text
+  + Peak measures the distance from the average value to the maximum value
+  + Trough measures the distance from the minimum value to the average value
 * `bp_range` - **Blood Pressure Range**
-  + this is test text
+  + Range measures the distance from the minimum value to the maximum value
 * `cv` - **Coefficient of Variation**
-  + this is test text
+  + Coefficient of Variation is a ratio of the standard deviation / average
+
+**Sleep-dependent Metrics**
+
 * `dip_calc` - **Nocturnal Dipping \% and Classification**
   + this is test text
-  
+
+
 Let's say we are working with the `hypnos_data` and would like to compare the time-dependent nature of the `arv` with the `sv` for each subject. 
 ```{r}
 head(arv(data1))
@@ -143,12 +148,24 @@ tail(bp_mag(data2, inc_date = TRUE))
 ##### Visualization
 So far, we have processed the original data, we have run a couple metrics to get a clearer picture of the variability, now let's visualize it.
 
-Continuing with our previous example using the `bp_jhs` data set, let's suppose we wanted to explore how to peaks and troughs changed over time
+Continuing with our previous example using the `bp_jhs` data set, let's suppose we wanted to explore how to peaks and troughs of systolic blood pressure changed over time
 ```{r fig1, fig.height = 4.5, fig.width = 7.5, fig.align = "center"}
 viz_data <- bp_mag(data2, inc_date = TRUE)
 plot(viz_data[which(viz_data$Peak_SBP > 0 & viz_data$N > 1),]$DATE, viz_data[which(viz_data$Peak_SBP > 0 & viz_data$N > 1),]$Peak_SBP, type = 'l', col = "red", xlab ="DATE", ylab = "Magnitude")
 lines(viz_data[which(viz_data$Peak_SBP > 0 & viz_data$N > 1),]$DATE, viz_data[which(viz_data$Trough_SBP > 0 & viz_data$N > 1),]$Trough_SBP, col = "darkgreen")
 legend("topright", legend = c("Peak", "Trough"), col = c("red","darkgreen"), lty =1)
+```
+From the above time series chart, notice that the values are absolute magnitudes for both peak and trough. So, when peak exceeds trough, as was evident during late-May and early-June, the interpretation is that blood pressure rose more on average than it fell. In other words, the **variability** of the blood pressure data is right-skewed more toward the high end. In contrast, in the very beginning the variability was more left-skewed favoring the low end of the spectrum since there were more troughs than peaks. We can verify this by looking at the very first day of measurements on `2020-04-16` as shown below:
+```{r}
+head(viz_data[which(viz_data$Peak_SBP > 0 & viz_data$N > 1),])
+```
+
+
+Suppose now that we turn our attention back to the `hypnos_data` example where we joined the `ARV` and `CV` metrics together. We would now like to visualize these for all of the subjects to see if we can discern any patterns. From the first scatterplot matrix we see that the between-subject values differ and from the second scatterplot matrix we see that there is a very stark contrast between `ARV` and `CV` during sleep vs awake.  
+```{r fig2, fig.height = 4.5, fig.width = 6.5, fig.align = "center"}
+viz_arv_cv <- dplyr::left_join(arv(data1), cv(data1))
+pairs(viz_arv_cv[,4:(ncol(viz_arv_cv)-1)], upper.panel = NULL, col = factor(viz_arv_cv$ID))
+pairs(data1[,6:11], upper.panel = NULL, col = factor(data1$WAKE))
 ```
 
 
@@ -168,7 +185,7 @@ In the short term, the following new features are to be incorporated with the ne
 
 1. Mancia, G., Di Rienzo, M., & Parati, G. (1993). Ambulatory blood pressure monitoring use in hypertension research and clinical practice. *Hypertension*, 21(4), 510-524.
 
-2. Levitan, E., Kaciroti, N., Oparil, S. et al. Relationships between metrics of visit-to-visit variability of blood pressure. *J Hum Hypertens* 27, 589–593 (2013). https://doi.org/10.1038/jhh.2013.19
+2. Levitan, E., Kaciroti, N., Oparil, S. et al. Relationships between metrics of visit-to-visit variability of blood pressure. *J Hum Hypertens* 27, 589–593 (2013). doi: 10.1038/jhh.2013.19
 
 3. Muntner, Paula,b; Joyce, Carac; Levitan, Emily B.a; Holt, Elizabethd; Shimbo, Daichie; Webber, Larry S.c; Oparil, Suzanneb; Re, Richardf; Krousel-Wood, Maried,g Reproducibility of visit-to-visit variability of blood pressure measured as part of routine clinical care, *Journal of Hypertension*: December 2011 - Volume 29 - Issue 12 - p 2332-2338
 doi: 10.1097/HJH.0b013e32834cf213 
