@@ -50,7 +50,7 @@ The basic workflow is to load in the user-supplied and un-processed raw data, pr
 data("hypnos_data")
 
 ## Assign the output of the process_data function to a new dataframe object
-data <- process_data(hypnos_data,
+data1 <- process_data(hypnos_data,
                      sbp = 'syst',
                      dbp = 'diast',
                      bp_datetime = 'date.time',
@@ -65,7 +65,7 @@ data <- process_data(hypnos_data,
 Notice how the column names of the original `hypnos_data` changed in the processed `data`. Notably, `SYST` became `SBP`, `DIAST` became `DBP`, and`DATE.TIME` became `DATE_TIME`.
 ```{r}
 names(hypnos_data)
-names(data)
+names(data1)
 ```
 
 While the results seem to be trivial at first glance, let's see what happens when we use a much different data set with a completely different naming convention - the `bp_jhs` data set. Unlike `hypnos_data` which has all of the available columns needed in the `process_data` function with multiple subjects, `bp_jhs` is a single-subject data set without many of the multi-subject identifiers such as `ID`, `VISIT`, or `WAKE` (as it is non-ABPM data). Further, there is no `MAP` or `PP` column, but these (as we will see) can be automatically created. 
@@ -75,23 +75,71 @@ While the results seem to be trivial at first glance, let's see what happens whe
 data("bp_jhs")
 
 ## Assign the output of the process_data function to a new dataframe object
-data <- process_data(bp_jhs,
+data2 <- process_data(bp_jhs,
                      sbp = 'sys.mmhg.',
                      dbp = 'dias.mmhg.',
                      bp_datetime = 'datetime',
                      hr = 'PULSE.BPM.')
-head(data, 5)
+head(data2, 5)
 ```
-After a quick inspection of the original `bp_jhs` data set and the newly processed `data` data set, it should be evident that there was a lot going on "under the hood" of the `process_data` function. As we can see from the column names, the awkward nuisance of typing `sys.mmhg.`, `dias.mmhg.`, `pulse.bpm.`, and `datetime` have now been replaced with the more concise `SBP`, `DBP`, `HR`, and `DATE_TIME` names, respectively. Additionally, `MAP`, `PP`, and `RPP` were all calculated as additional variables using the existing data.
+After a quick inspection of the original `bp_jhs` data set and the newly processed `data` data set, it should be evident that there was a lot going on "under the hood" of the `process_data` function. As we can see from the column names, the awkward nuisance of typing `sys.mmhg.`, `dias.mmhg.`, `pulse.bpm.`, and `datetime` have now been replaced with the more concise `SBP`, `DBP`, `HR`, and `DATE_TIME` names, respectively. Additionally, `MAP`, `PP`, and `RPP` were all calculated as additional columns which previously did not exist in the data.
 ```{r}
 names(bp_jhs)
-names(data)
+names(data2)
 ```
 **NOTE:** For consistency, `process_data` will coerce all column names to upper-case.
 
 ##### Blood Pressure Metrics
-After the data has been processed, we can now utilize the built-in metrics from the literature
+After the data has been processed, we can now utilize the built-in metrics from the literature to characterize the blood pressure variability. To start, the following metrics are what is currently offered through the `bp` package:
 
+Function    | Metric Name                             | Source
+----------- | --------------------------------------- | ----------
+arv         | Average Real Variability                | [Mena et al](https://doi.org/10.1097/01.hjh.0000160205.81652.5a)
+bp_mag      | Blood Pressure Magnitude                | test
+bp_range    | Blood Pressure Range                    | test
+cv          | Coefficient of Variation                | [Mancia et al](https://doi.org/10.1161/01.HYP.21.4.510)
+sv          | Successive Variation                    | test
+dip_calc    | Nocturnal Dipping \% and Classification | test
+
+**Time-Dependent Metrics**  
+
+* `arv` - **Average Real Variability**
+  + this is test text
+* `sv` - **Successive Variation**
+  + this is test text
+  
+**Time-Independent Metrics**  
+
+* `bp_mag` - **Blood Pressure Magnitude** (peak and trough)
+  + this is test text
+* `bp_range` - **Blood Pressure Range**
+  + this is test text
+* `cv` - **Coefficient of Variation**
+  + this is test text
+* `dip_calc` - **Nocturnal Dipping \% and Classification**
+  + this is test text
+  
+Let's say we are working with the `hypnos_data` and would like to compare the time-dependent nature of the `arv` with the `sv` for each subject. 
+```{r}
+head(arv(data1))
+head(sv(data1))
+```
+Comparing vertically can be challenging, so with some help from `dplyr` we can obtain the following:
+```{r}
+head(dplyr::left_join(arv(data1), cv(data1)))
+```
+Note that this is possible thanks to the work we did in standardizing column names from the processing step.
+
+Suppose instad we wanted to look at peaks and troughs of the single-subject data set `bp_jhs`. We would then call the `bp_mag` function on our data.
+```{r}
+head(bp_mag(data2))
+```
+Here, we notice something different. Because there weren't `ID`, `VISIT`, or `WAKE` columns, the `bp_mag` aggregated everything together. This is technically correct, but say we wanted to glean more information by breaking our data down by `DATE` instead; we would need to include the `inc_date = TRUE` optional argument to the function.
+```{r}
+tail(bp_mag(data2, inc_date = TRUE))
+```
+***Interpretation:*** While it may not seem obvious at first glance, the blood pressure magnitude (whether a peak or a trough) is calculated as $peak = max(BP) - mean(BP)$ and $trough = mean(BP) - min(BP)$ where BP could correspond to either SBP or DBP. If we manually inspect the data from `2019-07-31` we see that N = 2 measurements and within the `bp_jhs` data set we see the two measurements are 126 and 128 for SBP and 77, and 76 for DBP. $\bar{x}_{SBP} = \frac{(126+128)}{2} = 127$ and $\bar{x}_{SBP} = \frac{(78+76)}{2} = 76.5$ so the respective peak and trough values from our output make sense.
+  
 ##### Visualization
 We have data we have metrics lets visualize
 
@@ -109,6 +157,6 @@ In the short term, the following new features are to be incorporated with the ne
 -------------
 ### References
 
-1. test
+1. Mancia, G., Di Rienzo, M., & Parati, G. (1993). Ambulatory blood pressure monitoring use in hypertension research and clinical practice. *Hypertension*, 21(4), 510-524.
 
 2. test2
