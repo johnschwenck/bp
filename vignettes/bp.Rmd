@@ -25,17 +25,16 @@ library(bp)
 -------------
 
 ## Introduction
-Despite the tremendous progress in the medical field, cardiovascular (CV) disease remains the leading cause of death worldwide. Hypertension, specifically, affects over 1.1 billion people annually according to the American Heart Association. This package serves to visualize and quantify various aspects of hypertension in a more digestible format using various metrics proposed in the literature. 
+Despite the tremendous progress in the medical field, cardiovascular disease (CVD) remains the leading cause of death worldwide. Hypertension, specifically, affects over 1.1 billion people annually according to the American Heart Association. This package serves to visualize and quantify various aspects of hypertension in a more digestible format using various metrics proposed in the literature. 
 
 Blood pressure data can be analyzed at varying degrees of granularity depending on the reading frequency, presence of a sleep indicator, and whether or not the temporal structure is accounted for. These factors almost always depend on the type of device used, where ABPM monitors are predominantly used for the short term (within 24 hours) and home monitoring devices or office readings are used for measuring variability over the medium and long term (day-to-day, visit-to-visit, etc). Unlike continuous heart rate monitors or continuous glucose monitors, there are currently no large-scale continuous blood pressure monitors available for the middle to long term, posing a unique challenge for research.
+
+Of primary concern to researchers is the ability to accurately quantify blood pressure variability (BPV). BPV has been shown to be an important factor in predicting cardiovascular events and sudden death, especially during susceptible periods such as the first two hours of waking up. There have been many proposed methods for characterizing this variability; this package seeks to incorporate as many of these metrics as possible.
 
 ###### Blood Pressure Monitors
 Blood pressure monitoring devices work by measuring the pressure of the artery’s restricted blood flow; for digital devices, the vibrations are translated into electrical signals. Unlike home monitors that only take readings upon the subject's initiation, ambulatory blood pressure monitoring (ABPM) devices take automatic readings at pre-specified intervals over a 24-hour period or longer.
 
-ABPM allows medical professionals to analyze blood pressure during sleep which has been shown to be a more accurate predictor of CV events than daytime blood pressure. ABPM also allows researchers to discern true hypertension from "whitecoat" hypertension in an office or laboratory setting. 
-
-###### Blood Pressure Variability
-Of primary concern to researchers is the ability to accurately quantify blood pressure variability. 
+ABPM allows medical professionals to analyze blood pressure during sleep which has been shown to be a more accurate predictor of cardiovascular events than daytime blood pressure. ABPM also allows researchers to discern true hypertension from "whitecoat" hypertension in an office or laboratory setting. 
 
 ## The `bp` Package
 The general workflow of the `bp` package consists of a data processing stage and an analysis stage. The processing stage formats the input data so that it adheres to the rest of the `bp` functions. The analysis stage uses the processed data to quantify various attributes of the relationships within the blood pressure data.
@@ -121,7 +120,7 @@ dip_calc    | Nocturnal Dipping \% and Classification | [Okhubo et al](https://d
 **Sleep-dependent Metrics**
 
 * `dip_calc` - **Nocturnal Dipping \% and Classification**
-  + this is test text
+  + Nocturnal dipping percentage is the \% drop in blood pressure while asleep compared with awake. Requires an indication of when a subject is asleep to know how to calculate: `1 - (avg sleep BP / avg daytime BP)`. The severity of the dipping percentage indicates the corresponding classification of that individual (dipper, non-dipper, reverse dipper).
 
 
 Let's say we are working with the `hypnos_data` and would like to compare the time-dependent nature of the `arv` with the `sv` for each subject. 
