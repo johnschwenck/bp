@@ -72,12 +72,17 @@ After all available variables are identified and processed, the resulting proces
 ### Available Metrics
 The package will then utilize the above variables to calculate various metrics from medical and statistical literature in order to quantify and classify the variability of the readings into their respective categories of hypertension (normal, elevated, or hypertensive).
 
-* `arv` - Average Real Variability
-* `bp_mag` - Blood Pressure Magnitude (peak and trough)
-* `bp_range` - Blood Pressure Range
-* `cv` - Coefficient of Variation
-* `sv` - Successive Variation
-* `dip_calc` - Nocturnal Dipping \% and Classification
+The following metrics are currently offered through the `bp` package:
+
+Function    | Metric Name                                 | Source
+----------- | ------------------------------------------- | ----------
+arv         | Average Real Variability                    | [Mena et al (2005)](https://doi.org/10.1097/01.hjh.0000160205.81652.5a)
+bp_mag      | Blood Pressure Magnitude (peak and trough)  | [Munter et al (2011)](https://doi.org/10.1097/HJH.0b013e32834cf213 )
+bp_range    | Blood Pressure Range                        | [Levitan et al (2013)](https://doi.org/10.1038/jhh.2013.19)
+cv          | Coefficient of Variation                    | [Munter et al (2011)](https://doi.org/10.1097/HJH.0b013e32834cf213 )
+sv          | Successive Variation                        | [Munter et al (2011)](https://doi.org/10.1097/HJH.0b013e32834cf213 )
+dip_calc    | Nocturnal Dipping \% and Classification     | [Okhubo et al (1997)](https://doi.org/10.1016/s0895-7061(97)00274-4)
+
 
 ## Example - HYPNOS data
 

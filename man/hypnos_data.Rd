@@ -18,6 +18,24 @@ Type 2 diabetes, not using insulin therapy and with a glycosylated hemoglobin (H
 \details{
 ABPM measurements
 
-description of variables
+\describe{
+
+\item{NR.}{Integer. The index corresponding to the reading of a particular subject for a given visit.}
+\item{DATE.TIME}{Character. The date-time value corresponding to the given reading.}
+\item{SYST}{Integer. The systolic blood pressure reading.}
+\item{MAP}{Integer. The mean arterial pressure value.}
+\item{DIAST}{Integer. The diastolic blood pressure reading.}
+\item{HR}{Integer. The heart rate value (measured in beats per minute -- bpm).}
+\item{PP}{Integer. The pulse pressure value calculated as the systolic value - the diastolic value.}
+\item{RPP}{Integer. The rate pressure product calculated as the systolic reading multiplied by the heart rate value.}
+\item{COMMENT}{Character. Text pertaining to specific readings or individuals. This has been omitted for privacy reasons.}
+\item{WAKE}{Integer. A logical indicator value corresponding to whether or not a subject is awake (\code{WAKE = 1}) or not.}
+\item{ID}{Integer. A unique identifier for each subject.}
+\item{VISIT}{Integer. A value associated with the visit number or a particular subject.}
+\item{DATE}{Character. A date-valued column indicating the date of the given reading. Dates are specified according to their
+actual date (i.e. 01:00 corresponds to the next date, even if the subject is awake. Awake-state is indicated via \code{WAKE}).}
+\item{TIME}{Character. A time value corresponding to the DATE.TIME column.}
+
+}
 }
 \keyword{datasets}

@@ -3,17 +3,39 @@
 \docType{data}
 \name{bp_jhs}
 \alias{bp_jhs}
-\title{Blood Pressure - John Schwenck}
+\title{Blood Pressure - 1 Subject - John Schwenck}
 \format{
-An object of class \code{data.frame} with 222 rows and 15 columns.
+A data frame with the following columns:
+\describe{
+
+\item{DateTime}{A POSIXct-formatted column corresponding to the date and time of the corresponding reading in local time.}
+\item{Date}{A Date-formatted column indicating the date of the corresponding reading up until 4AM the following day.}
+\item{Month}{Integer. The month corresponding to the Date column.}
+\item{Day}{Integer. The day of the month corresponding to the Date column.}
+\item{Year}{Integer. The year corresponding to the Date column.}
+\item{DayofWk}{Character. The day of the week corresponding to the Date column.}
+\item{Time}{Character. The time corresponding to the DateTime column.}
+\item{Hour}{Integer. The hour corresponding to the DateTime column.}
+\item{Meal_Time}{Character. The estimated meal time corresponding to the DateTime column.}
+\item{Sys.mmHg.}{Integer. The systolic blood pressure reading.}
+\item{SysExcess}{Integer. The difference between the Sys.mmHg. column and the pre-determined 135 systolic blood pressure threshold.}
+\item{Dias.mmHg.}{Integer. The diastolic blood pressure reading.}
+\item{DiaExcess}{Integer. The difference between the Dias.mmHg. column and the pre-determined 85 diastolic blood pressure threshold.}
+\item{bpDelta}{Integer. The difference between the Sys.mmHg. and Dias.mmHg. column. This is also known as the Pulse Pressure.}
+\item{Pulse.bpm.}{Integer. The heart rate value (measured in beats per minute -- bpm).}
+
+}
 }
 \source{
-<https://doi.org/10.7910/DVN/EA1SAP>
+\url{https://doi.org/10.7910/DVN/EA1SAP}
 }
 \usage{
 bp_jhs
 }
 \description{
-Blood Pressure - John Schwenck
+Single-subject self-monitored blood pressure readings over 108 days (April 15, 2019 - August 01, 2019).
+This data set has been processed and uploaded to the Harvard Dataverse for public use. It contains
+variables pertaining to Date/Time, Systolic BP, Diastolic BP, and Heart Rate. The data assumes a threshold
+blood pressure of 135 / 85 which is used to calculate excess amounts.
 }
 \keyword{datasets}
