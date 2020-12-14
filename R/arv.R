@@ -80,7 +80,7 @@ arv <- function(data, inc_date = 0, bp_type = 0){
 
   if(length(grps) == 0){
 
-    warning('No columns specified for ID, VISIT, or WAKE. All ARV values aggregated.')
+    message('NOTE: No columns specified for ID, VISIT, or WAKE. All ARV values aggregated.')
 
   }
 
