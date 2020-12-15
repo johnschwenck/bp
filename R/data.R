@@ -5,6 +5,8 @@
 #' variables pertaining to Date/Time, Systolic BP, Diastolic BP, and Heart Rate. The data assumes a threshold
 #' blood pressure of 135 / 85 which is used to calculate excess amounts.
 #'
+#' @source \url{https://doi.org/10.7910/DVN/EA1SAP}
+#'
 #' @format A data frame with the following columns:
 #' \describe{
 #'
@@ -26,19 +28,16 @@
 #'
 #' }
 #'
-#' @source \url{https://doi.org/10.7910/DVN/EA1SAP}
-#'
 "bp_jhs"
 
 
 #' HYPNOS Study - 5 Subject Sample
 #'
-#' Dexcom G4 CGM measurements for 5 subjects with Type II diabetes. These data are part of a larger study sample that
+#' ABPM measurements for 5 subjects with Type II diabetes. These data are part of a larger study sample that
 #' consisted of patients with Type 2 diabetes recruited from the general community. To be eligible, patients with
 #' Type 2 diabetes, not using insulin therapy and with a glycosylated hemoglobin (HbA$_1c$) value at least 6.5
 #'
-#' ABPM measurements
-#'
+#' @format A data frame with the following columns:
 #' \describe{
 #'
 #' \item{NR.}{Integer. The index corresponding to the reading of a particular subject for a given visit.}
