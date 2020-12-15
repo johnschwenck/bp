@@ -5,19 +5,7 @@
 \alias{hypnos_data}
 \title{HYPNOS Study - 5 Subject Sample}
 \format{
-An object of class \code{data.frame} with 250 rows and 14 columns.
-}
-\usage{
-hypnos_data
-}
-\description{
-Dexcom G4 CGM measurements for 5 subjects with Type II diabetes. These data are part of a larger study sample that
-consisted of patients with Type 2 diabetes recruited from the general community. To be eligible, patients with
-Type 2 diabetes, not using insulin therapy and with a glycosylated hemoglobin (HbA$_1c$) value at least 6.5
-}
-\details{
-ABPM measurements
-
+A data frame with the following columns:
 \describe{
 
 \item{NR.}{Integer. The index corresponding to the reading of a particular subject for a given visit.}
@@ -37,5 +25,13 @@ actual date (i.e. 01:00 corresponds to the next date, even if the subject is awa
 \item{TIME}{Character. A time value corresponding to the DATE.TIME column.}
 
 }
+}
+\usage{
+hypnos_data
+}
+\description{
+ABPM measurements for 5 subjects with Type II diabetes. These data are part of a larger study sample that
+consisted of patients with Type 2 diabetes recruited from the general community. To be eligible, patients with
+Type 2 diabetes, not using insulin therapy and with a glycosylated hemoglobin (HbA$_1c$) value at least 6.5
 }
 \keyword{datasets}
