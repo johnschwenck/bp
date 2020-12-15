@@ -2,9 +2,14 @@
 #' Nocturnal Blood Pressure Dipping Calculation
 #'
 #' @description
-#' Calculate the percent and average drop (or potentially reverse) in nocturnal blood pressure.
+#' Calculate the percent and average decline (or potentially reverse) in nocturnal blood pressure.
 #' This function is typically used with ABPM data, or at minimum, data with a corresponding a
 #' \code{WAKE} column available to indicate awake vs asleep.
+#'
+#' Nocturnal blood pressure decline is an indicator of an individual's natural circadian rhythm. Studies
+#' have shown that individuals with diminished circadian rhythms are more likely to exhibit target organ damage.
+#' There is a "U-shaped" relationship that exists among the magnitude of nocturnal blood pressure decline; the
+#' extreme dippers and the non-dippers (including reverse dippers) are both more prone to mortality risk than normal dippers.
 #'
 #' @param data
 #' User-supplied data set that must contain \code{SBP}, \code{DBP}, and either \code{DATE_TIME} or \code{WAKE}
@@ -31,22 +36,34 @@
 #' data set already contains a \code{WAKE} column.
 #'
 #' @param dip_thresh
-#' Default dipping threshold set to 0.10 (i.e. 10\%)
+#' Default threshold for normal "Dipping" set to 0.10 (i.e. 10\%)
+#'
+#' @param extreme_thresh
+#' Default threshold for "Extreme Dipping" set to 0.20 (i.e. 20\%) NOTE: dip_thresh cannot exceed extreme_thresh
 #'
 #' @param inc_date
 #' Default to FALSE. Indicates whether or not to include the date in the grouping of
 #' the final output
 #'
 #' @references
-#' Holt-Lunstad, J., Jones, B.Q., and Birmingham, W. (2009). The influence of close relationships
-#' on nocturnal blood pressure dipping,
-#' \emph{International Journal of Psychophysiology} \strong{71}, 211-217,
-#' \doi{10.1016/j.ijpsycho.2008.09.008}.
+#' Okhubo, T., Imai, Y., Tsuji, K., Nagai, K., Watanabe, N., Minami, J., Kato, J., Kikuchi, N., Nishiyama, A.,
+#' Aihara, A., Sekino, M., Satoh, H., and Hisamichi, S. (1997). Relation Between Nocturnal Decline in Blood
+#' Pressure and Mortality: The Ohasama Study,
+#' \emph{American Journal of Hypertension} \strong{10(11)}, 1201--1207,
+#' \doi{10.1016/S0895-7061(97)00274-4}.
 #'
+#' @return A list containing 2 tibble objects. The first tibble object lists grouped average values for SBP and DBP
+#' for awake and asleep periods. The second \code{dip_pct} tibble object lists the dipping percentage and
+#' classification according to the results from the first \code{dip} tibble. If inc_date = TRUE these two
+#' tibbles will be broken down further by date. There are 4 classifications a subject can have (assuming a
+#' default dipping threshold of 10\% and extreme dipping threshold of 20\% according to the original source):
 #'
-#' @return A list containing 2 tibble objects. One for the grouped average values for SBP and DBP and
-#' another for the dip % and classification. If inc_date = TRUE these two tibbles will be broken down
-#' further by date
+#' \itemize{
+#'    \item{Reverse Dipper - no nocturnal decline (greater or equal to 0\%)}
+#'    \item{Non-Dipper - a nocturnal decline between 0 - 10\%}
+#'    \item{Dipper - a nocturnal decline between 10\% and the extreme dipping \% (20\%)}
+#'    \item{Extreme Dipper - a nocturnal decline exceeding 20\%}
+#' }
 #'
 #' @export
 #'
@@ -68,7 +85,7 @@
 #'                      wake = 'wake')
 #'
 #' dip_calc(data)
-dip_calc <- function(data, sleep_int = NULL, dip_thresh = .10, inc_date = FALSE){
+dip_calc <- function(data, sleep_int = NULL, dip_thresh = 0.10, extreme_thresh = 0.20, inc_date = FALSE){
 
 
 
@@ -81,8 +98,8 @@ dip_calc <- function(data, sleep_int = NULL, dip_thresh = .10, inc_date = FALSE)
   #        X Calculate the percent difference between two successive groups. In this case: Awake vs Asleep
 
 
-  avg_SBP = SBP = DBP = . = NULL
-  rm(list = c('avg_SBP','SBP', 'DBP', '.'))
+  avg_SBP = avg_DBP = dip_sys = dip_dias = class_sys = class_dias = SBP = DBP = . = NULL
+  rm(list = c('avg_SBP','avg_DBP','dip_sys','dip_dias','class_sys','class_dias','SBP', 'DBP', '.'))
 
 
   if(is.null(data$WAKE)){ # No Sleep / Awake indicator column provided (WAKE column)
@@ -271,6 +288,15 @@ dip_calc <- function(data, sleep_int = NULL, dip_thresh = .10, inc_date = FALSE)
   }
 
 
+  # Check compatibility of dip_thresh and extreme_thresh if not default (user-specified)
+  if(dip_thresh != 0.10 | extreme_thresh != 0.20){
+    if(dip_thresh == extreme_thresh){
+      warning('Threshold for "Dipper" status and "Extreme Dipper" status are identical')
+    }
+    if(dip_thresh > extreme_thresh){
+      stop('"dipping" threshold cannot exceed "extreme dipping" threshold')
+    }
+  }
 
 
   # Determine how granular to calculate based on which columns are available
@@ -296,11 +322,29 @@ dip_calc <- function(data, sleep_int = NULL, dip_thresh = .10, inc_date = FALSE)
     dplyr::summarise(avg_SBP = mean(SBP),
                      avg_DBP = mean(DBP),
                      N = dplyr::n() )
+#
+#   dip_pct <- dip %>%
+#     dplyr::summarise( dip_sys = -(1 - pct(avg_SBP)),
+#                       dip_dias = -(1 - pct(avg_DBP)) ) %>%
+#     dplyr::mutate(class_sys = ifelse(dip_sys <= -dip_thresh, "dipper",
+#                                    ifelse(dip > 0, "reverse", "non-dipper")),
+#                   class_dias = ifelse(dip_dias <= -dip_thresh, "dipper",
+#                                       ifelse(dip_dias > 0, "reverse", "non-dipper"))) %>%
+#     dplyr::relocate(class_sys, .after = dip_sys)
 
   dip_pct <- dip %>%
-    dplyr::summarise( dip = -(1 - pct(avg_SBP)) ) %>%
-    dplyr::mutate(classification = ifelse(dip <= -dip_thresh, "dipper",
-                                   ifelse(dip > 0, "reverse", "non-dipper")) )
+
+    dplyr::summarise( dip_sys = -(1 - pct(avg_SBP)),
+                     dip_dias = -(1 - pct(avg_DBP)) ) %>%
+
+    dplyr::mutate(class_sys = ifelse(  dip_sys >= 0, "reverse",
+                              ifelse(  dip_sys > -dip_thresh, "non-dipper",
+                              ifelse( (dip_sys <= -dip_thresh) & (dip_sys >= -extreme_thresh), "dipper","extreme"))),
+                 class_dias = ifelse(  dip_dias >= 0, "reverse",
+                              ifelse(  dip_dias > -dip_thresh, "non-dipper",
+                              ifelse( (dip_dias <= -dip_thresh) & (dip_dias >= -extreme_thresh), "dipper","extreme")))) %>%
+
+    dplyr::relocate(class_sys, .after = dip_sys)
 
   return( list(dip, dip_pct) )
 

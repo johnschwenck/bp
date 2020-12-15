@@ -4,7 +4,13 @@
 \alias{dip_calc}
 \title{Nocturnal Blood Pressure Dipping Calculation}
 \usage{
-dip_calc(data, sleep_int = NULL, dip_thresh = 0.1, inc_date = FALSE)
+dip_calc(
+  data,
+  sleep_int = NULL,
+  dip_thresh = 0.1,
+  extreme_thresh = 0.2,
+  inc_date = FALSE
+)
 }
 \arguments{
 \item{data}{User-supplied data set that must contain \code{SBP}, \code{DBP}, and either \code{DATE_TIME} or \code{WAKE}
@@ -29,20 +35,36 @@ Furthermore, the \code{sleep_int} argument
 will override the \code{WAKE} column, which may cause unintended consequences in the event that the
 data set already contains a \code{WAKE} column.}
 
-\item{dip_thresh}{Default dipping threshold set to 0.10 (i.e. 10\%)}
+\item{dip_thresh}{Default threshold for normal "Dipping" set to 0.10 (i.e. 10\%)}
+
+\item{extreme_thresh}{Default threshold for "Extreme Dipping" set to 0.20 (i.e. 20\%) NOTE: dip_thresh cannot exceed extreme_thresh}
 
 \item{inc_date}{Default to FALSE. Indicates whether or not to include the date in the grouping of
 the final output}
 }
 \value{
-A list containing 2 tibble objects. One for the grouped average values for SBP and DBP and
-another for the dip % and classification. If inc_date = TRUE these two tibbles will be broken down
-further by date
+A list containing 2 tibble objects. The first tibble object lists grouped average values for SBP and DBP
+for awake and asleep periods. The second \code{dip_pct} tibble object lists the dipping percentage and
+classification according to the results from the first \code{dip} tibble. If inc_date = TRUE these two
+tibbles will be broken down further by date. There are 4 classifications a subject can have (assuming a
+default dipping threshold of 10\% and extreme dipping threshold of 20\% according to the original source):
+
+\itemize{
+   \item{Reverse Dipper - no nocturnal decline (greater or equal to 0\%)}
+   \item{Non-Dipper - a nocturnal decline between 0 - 10\%}
+   \item{Dipper - a nocturnal decline between 10\% and the extreme dipping \% (20\%)}
+   \item{Extreme Dipper - a nocturnal decline exceeding 20\%}
+}
 }
 \description{
-Calculate the percent and average drop (or potentially reverse) in nocturnal blood pressure.
+Calculate the percent and average decline (or potentially reverse) in nocturnal blood pressure.
 This function is typically used with ABPM data, or at minimum, data with a corresponding a
 \code{WAKE} column available to indicate awake vs asleep.
+
+Nocturnal blood pressure decline is an indicator of an individual's natural circadian rhythm. Studies
+have shown that individuals with diminished circadian rhythms are more likely to exhibit target organ damage.
+There is a "U-shaped" relationship that exists among the magnitude of nocturnal blood pressure decline; the
+extreme dippers and the non-dippers (including reverse dippers) are both more prone to mortality risk than normal dippers.
 }
 \examples{
 ## Load hypnos_data
@@ -64,8 +86,9 @@ data <- process_data(hypnos_data,
 dip_calc(data)
 }
 \references{
-Holt-Lunstad, J., Jones, B.Q., and Birmingham, W. (2009). The influence of close relationships
-on nocturnal blood pressure dipping,
-\emph{International Journal of Psychophysiology} \strong{71}, 211-217,
-\doi{10.1016/j.ijpsycho.2008.09.008}.
+Okhubo, T., Imai, Y., Tsuji, K., Nagai, K., Watanabe, N., Minami, J., Kato, J., Kikuchi, N., Nishiyama, A.,
+Aihara, A., Sekino, M., Satoh, H., and Hisamichi, S. (1997). Relation Between Nocturnal Decline in Blood
+Pressure and Mortality: The Ohasama Study,
+\emph{American Journal of Hypertension} \strong{10(11)}, 1201--1207,
+\doi{10.1016/S0895-7061(97)00274-4}.
 }
