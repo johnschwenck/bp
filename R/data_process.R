@@ -4,7 +4,8 @@
 #' @description A helper function to assist in pre-processing the user-supplied
 #' input data for use with other functions.
 #' Typically, this function will process the data and be stored as another
-#' dataframe. See Vignette for further details.
+#' dataframe. This function ensures that the supplied data complies with every
+#' function within the \code{bp} package. See Vignette for further details.
 #'
 #' @param data User-supplied dataset containing blood pressure data. Must
 #' contain data for Systolic blood pressure and Diastolic blood pressure at a
@@ -29,7 +30,8 @@
 #' Pressure (SBP * HR). If not supplied, but HR column available, then
 #' RPP will be calculated automatically.
 #'
-#' @return A processed dataframe object
+#' @return A processed dataframe object that cooperates with every other
+#' function within the bp package - all column names and formats comply.
 #' @export
 #'
 #' @examples
