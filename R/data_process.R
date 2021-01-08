@@ -10,25 +10,32 @@
 #' @param data User-supplied dataset containing blood pressure data. Must
 #' contain data for Systolic blood pressure and Diastolic blood pressure at a
 #' minimum.
-#' @param sbp Required column name string corresponding to Systolic Blood
+#' @param sbp Required column name (character string) corresponding to Systolic Blood
 #' Pressure (mmHg)
-#' @param dbp Required column name string corresponding to Diastolic Blood
+#' @param dbp Required column name (character string) corresponding to Diastolic Blood
 #' Pressure (mmHg)
-#' @param bp_datetime Optional column name string corresponding to Date/Time,
+#' @param bp_datetime Optional column name (character string) corresponding to Date/Time,
 #' but HIGHLY recommended to supply if available.
-#' @param id Optional column name string corresponding to subject ID. Typically
+#' @param id Optional column name (character string) corresponding to subject ID. Typically
 #' needed for data corresponding to more than one subject.
-#' @param wake Optional column name string corresponding to sleep status. A
+#' @param wake Optional column name (character string) corresponding to sleep status. A
 #' WAKE value of 1 indicates that the subject is awake and 0 implies asleep.
-#' @param visit Optional column name string corresponding to Visit number
-#' @param hr Optional column name string corresponding to Heart Rate (bpm)
-#' @param pp Optional column name string corresponding to Pulse Pressure
+#' @param visit Optional column name (character string) corresponding to Visit number
+#' @param hr Optional column name (character string) corresponding to Heart Rate (bpm)
+#' @param pp Optional column name (character string) corresponding to Pulse Pressure
 #' (SBP - DBP). If not supplied, it will be calculated automatically.
-#' @param map Optional column name string corresponding to Mean Arterial
+#' @param map Optional column name (character string) corresponding to Mean Arterial
 #' Pressure
-#' @param rpp Optional column name string corresponding to Rate Pulse
+#' @param rpp Optional column name (character string) corresponding to Rate Pulse
 #' Pressure (SBP * HR). If not supplied, but HR column available, then
 #' RPP will be calculated automatically.
+#' @param ToD_int Optional vector that overrides the default interval for the Time-of-Day periods.
+#' By default, the Morning, Afternoon, Evening, and Night periods are set at 6, 12, 18, 0 respectively,
+#' where 0 corresponds to the 24th hour of the day (i.e. Midnight). By inputting a vector for the
+#' \code{ToD_int} function argument, the default period can be re-arranged accordingly.
+#' For example, ToD_int = c(5, 13, 18, 23) would correspond to a period for
+#' Morning starting at 5:00 (until 13:00), Afternoon starting at 13:00 (until 18:00),
+#' Evening starting at 18:00 (until 23:00), and Night starting at 23:00 (until 5:00)
 #'
 #' @return A processed dataframe object that cooperates with every other
 #' function within the bp package - all column names and formats comply.
@@ -53,7 +60,7 @@
 #'
 #' data2
 #'
-process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = NULL, wake = NULL, visit = NULL, hr = NULL, pp = NULL, map = NULL, rpp = NULL){
+process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = NULL, wake = NULL, visit = NULL, hr = NULL, pp = NULL, map = NULL, rpp = NULL, ToD_int = NULL){
 
 
   # Ensure that data is either data.frame or matrix
@@ -350,7 +357,9 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
   }
 
 
-
+  # Prepare all variables used via dplyr
+  SBP_Category = DBP_Category = Time_of_Day = NULL
+  rm(list = c(SBP_Category, DBP_Category, Time_of_Day))
 
 
   # Date & Time (DateTime object)
@@ -371,11 +380,101 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
       data$Weekday = ordered(weekdays(as.Date(data$DATE_TIME), abbreviate = TRUE),
                              levels = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"))
 
-      # Assume --> Night: 0 - 6, Morning: 6 - 12, Afternoon: 12 - 18, Evening: 18 - 24
-      data <- data %>% dplyr::mutate(Time_of_Day = dplyr::case_when(lubridate::hour(DATE_TIME) < 6 ~ "Night",
-                              lubridate::hour(DATE_TIME) >= 6 & lubridate::hour(DATE_TIME) < 12 ~ "Morning",
-                              lubridate::hour(DATE_TIME) >= 12 & lubridate::hour(DATE_TIME) < 18 ~ "Afternoon",
-                              lubridate::hour(DATE_TIME) >= 18 & lubridate::hour(DATE_TIME) < 24 ~ "Evening",))
+      # Time of Day
+      if(is.null(ToD_int)){
+
+        # Assume --> Night: 0 - 6, Morning: 6 - 12, Afternoon: 12 - 18, Evening: 18 - 24
+        data <- data %>% dplyr::mutate(Time_of_Day =
+                                         dplyr::case_when(lubridate::hour(DATE_TIME) >= 0  & lubridate::hour(DATE_TIME) < 6  ~ "Night",
+                                                          lubridate::hour(DATE_TIME) >= 6  & lubridate::hour(DATE_TIME) < 12 ~ "Morning",
+                                                          lubridate::hour(DATE_TIME) >= 12 & lubridate::hour(DATE_TIME) < 18 ~ "Afternoon",
+                                                          lubridate::hour(DATE_TIME) >= 18 & lubridate::hour(DATE_TIME) < 24 ~ "Evening",))
+
+      # ToD_int should be a vector that contains the starting hour for Morning, Afternoon, Evening, Night in that order
+      }else {
+
+      if(!is.vector(ToD_int)){
+
+        warning('ToD_int must be of type vector. Coerced input to vector.')
+        ToD_int <- as.vector(ToD_int)
+
+      }else if( length(ToD_int) != 4 ){
+
+        stop('Time of Day Interval (ToD_int) must only contain 4 numbers corresponding to the start of the Morning, Afternoon, Evening, and Night periods.')
+
+      }else if( any(ToD_int > 24) == TRUE ){
+
+        stop('Time of Day Interval (ToD_int) must only lie within the 0 - 24 hour interval. Use 24-hour time.')
+
+      }else if( any( duplicated( ToD_int ) ) == TRUE ){
+
+        stop('Cannot have overlapping / duplicate values within the ToD interval.')
+
+      }else if( ToD_int[1] == 24 ){
+
+        ToD_int[1] <- 0
+
+      }else if( ToD_int[length(ToD_int)] == 24 ){
+
+        ToD_int[length(ToD_int)] <- 0
+
+      }else if( utils::head(ToD_int, 1) == utils::tail(ToD_int, 1) ){
+
+          stop('Same starting and ending Time of Day interval values. Coerced ending value to next hour.')
+
+          # if(head(ToD_int, 1) == 23){
+          #
+          #   ToD_int[ 1 ] <- 0
+          #   ToD_int[ length(ToD_int) ] <- 23
+          #
+          # }else{
+          #
+          #   ToD_int[ 1 ] <- ToD_int[ 1 ] + 1
+          # }
+
+      }else if( all(ToD_int[2:3] == cummax(ToD_int[2:3])) == FALSE ){
+
+        stop('values within interval must be increasing for the Morning and Afternoon periods (the second and third values in the interval).')
+
+      }
+
+      tmp <- c(ToD_int, ToD_int[1])
+      difftmp <- diff(tmp)
+      difftmp[which(difftmp < 0)] <- (24 - tmp[which(difftmp < 0)]) + tmp[which(difftmp < 0)+1]
+      testval <- sum(difftmp)
+
+      if(testval > 24){
+        stop('Invalid interval for Time of Day. Ensure that hours do not overlap each other and are consistent within a 24 hour period.')
+        }
+
+      if( (ToD_int[1] < ToD_int[2]) & (ToD_int[3] < ToD_int[4]) ){
+
+        data <- data %>% dplyr::mutate(Time_of_Day =
+                         dplyr::case_when(lubridate::hour(DATE_TIME) >= ToD_int[4] | lubridate::hour(DATE_TIME) < ToD_int[1]  ~ "Night",
+                                          lubridate::hour(DATE_TIME) >= ToD_int[1] & lubridate::hour(DATE_TIME) < ToD_int[2] ~ "Morning",
+                                          lubridate::hour(DATE_TIME) >= ToD_int[2] & lubridate::hour(DATE_TIME) < ToD_int[3] ~ "Afternoon",
+                                          lubridate::hour(DATE_TIME) >= ToD_int[3] & lubridate::hour(DATE_TIME) < ToD_int[4] ~ "Evening"))
+
+      }else if( (ToD_int[1] > ToD_int[2]) & (ToD_int[3] < ToD_int[4]) ){
+
+        data <- data %>% dplyr::mutate(Time_of_Day =
+                         dplyr::case_when(lubridate::hour(DATE_TIME) >= ToD_int[4] & lubridate::hour(DATE_TIME) < ToD_int[1]  ~ "Night",
+                                        ((lubridate::hour(DATE_TIME) >= ToD_int[1] & lubridate::hour(DATE_TIME) < 24)) | (lubridate::hour(DATE_TIME) < ToD_int[2]) ~ "Morning",
+                                          lubridate::hour(DATE_TIME) >= ToD_int[2] & lubridate::hour(DATE_TIME) < ToD_int[3] ~ "Afternoon",
+                                          lubridate::hour(DATE_TIME) >= ToD_int[3] & lubridate::hour(DATE_TIME) < ToD_int[4] ~ "Evening",))
+
+      }else if( (ToD_int[1] < ToD_int[2]) & (ToD_int[3] > ToD_int[4]) ){
+
+        data <- data %>% dplyr::mutate(Time_of_Day =
+                         dplyr::case_when(lubridate::hour(DATE_TIME) >= ToD_int[4] & lubridate::hour(DATE_TIME) < ToD_int[1]  ~ "Night",
+                                          lubridate::hour(DATE_TIME) >= ToD_int[1] & lubridate::hour(DATE_TIME) < ToD_int[2] ~ "Morning",
+                                          lubridate::hour(DATE_TIME) >= ToD_int[2] & lubridate::hour(DATE_TIME) < ToD_int[3] ~ "Afternoon",
+                                        ((lubridate::hour(DATE_TIME) >= ToD_int[3]) & (lubridate::hour(DATE_TIME) < 24)) | (lubridate::hour(DATE_TIME) < ToD_int[4]) ~ "Evening"))
+
+      }
+
+
+      }
     }
   }
 
@@ -432,9 +531,6 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
 
   # BP Categories / Stages
   # Only require SBP and DBP
-
-  SBP_Category = DBP_Category = NULL
-  rm(list = c(SBP_Category, DBP_Category))
 
   data <- data %>%
     dplyr::mutate(SBP_Category = dplyr::case_when(SBP <= 100 ~ "Hypotension",

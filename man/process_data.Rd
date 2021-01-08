@@ -15,7 +15,8 @@ process_data(
   hr = NULL,
   pp = NULL,
   map = NULL,
-  rpp = NULL
+  rpp = NULL,
+  ToD_int = NULL
 )
 }
 \arguments{
@@ -23,43 +24,53 @@ process_data(
 contain data for Systolic blood pressure and Diastolic blood pressure at a
 minimum.}
 
-\item{sbp}{Required column name string corresponding to Systolic Blood
+\item{sbp}{Required column name (character string) corresponding to Systolic Blood
 Pressure (mmHg)}
 
-\item{dbp}{Required column name string corresponding to Diastolic Blood
+\item{dbp}{Required column name (character string) corresponding to Diastolic Blood
 Pressure (mmHg)}
 
-\item{bp_datetime}{Optional column name string corresponding to Date/Time,
+\item{bp_datetime}{Optional column name (character string) corresponding to Date/Time,
 but HIGHLY recommended to supply if available.}
 
-\item{id}{Optional column name string corresponding to subject ID. Typically
+\item{id}{Optional column name (character string) corresponding to subject ID. Typically
 needed for data corresponding to more than one subject.}
 
-\item{wake}{Optional column name string corresponding to sleep status. A
+\item{wake}{Optional column name (character string) corresponding to sleep status. A
 WAKE value of 1 indicates that the subject is awake and 0 implies asleep.}
 
-\item{visit}{Optional column name string corresponding to Visit number}
+\item{visit}{Optional column name (character string) corresponding to Visit number}
 
-\item{hr}{Optional column name string corresponding to Heart Rate (bpm)}
+\item{hr}{Optional column name (character string) corresponding to Heart Rate (bpm)}
 
-\item{pp}{Optional column name string corresponding to Pulse Pressure
+\item{pp}{Optional column name (character string) corresponding to Pulse Pressure
 (SBP - DBP). If not supplied, it will be calculated automatically.}
 
-\item{map}{Optional column name string corresponding to Mean Arterial
+\item{map}{Optional column name (character string) corresponding to Mean Arterial
 Pressure}
 
-\item{rpp}{Optional column name string corresponding to Rate Pulse
+\item{rpp}{Optional column name (character string) corresponding to Rate Pulse
 Pressure (SBP * HR). If not supplied, but HR column available, then
 RPP will be calculated automatically.}
+
+\item{ToD_int}{Optional vector that overrides the default interval for the Time-of-Day periods.
+By default, the Morning, Afternoon, Evening, and Night periods are set at 6, 12, 18, 0 respectively,
+where 0 corresponds to the 24th hour of the day (i.e. Midnight). By inputting a vector for the
+\code{ToD_int} function argument, the default period can be re-arranged accordingly.
+For example, ToD_int = c(5, 13, 18, 23) would correspond to a period for
+Morning starting at 5:00 (until 13:00), Afternoon starting at 13:00 (until 18:00),
+Evening starting at 18:00 (until 23:00), and Night starting at 23:00 (until 5:00)}
 }
 \value{
-A processed dataframe object
+A processed dataframe object that cooperates with every other
+function within the bp package - all column names and formats comply.
 }
 \description{
 A helper function to assist in pre-processing the user-supplied
 input data for use with other functions.
 Typically, this function will process the data and be stored as another
-dataframe. See Vignette for further details.
+dataframe. This function ensures that the supplied data complies with every
+function within the \code{bp} package. See Vignette for further details.
 }
 \examples{
 # Load hypnos_data
