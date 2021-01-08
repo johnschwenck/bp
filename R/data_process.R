@@ -367,6 +367,15 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
       data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
 
       data$DATE_TIME <- as.POSIXct(data$DATE_TIME) # coerce to proper time format
+
+      data$Weekday = ordered(weekdays(as.Date(data$DATE_TIME), abbreviate = TRUE),
+                             levels = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"))
+
+      # Assume --> Night: 0 - 6, Morning: 6 - 12, Afternoon: 12 - 18, Evening: 18 - 24
+      data <- data %>% dplyr::mutate(Time_of_Day = dplyr::case_when(lubridate::hour(DATE_TIME) < 6 ~ "Night",
+                              lubridate::hour(DATE_TIME) >= 6 & lubridate::hour(DATE_TIME) < 12 ~ "Morning",
+                              lubridate::hour(DATE_TIME) >= 12 & lubridate::hour(DATE_TIME) < 18 ~ "Afternoon",
+                              lubridate::hour(DATE_TIME) >= 18 & lubridate::hour(DATE_TIME) < 24 ~ "Evening",))
     }
   }
 
@@ -420,6 +429,30 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
     }
   }
 
+
+  # BP Categories / Stages
+  # Only require SBP and DBP
+
+  SBP_Category = DBP_Category = NULL
+  rm(list = c(SBP_Category, DBP_Category))
+
+  data <- data %>%
+    dplyr::mutate(SBP_Category = dplyr::case_when(SBP <= 100 ~ "Hypotension",
+                                    SBP > 100 & SBP <= 120 ~ "Normal",
+                                    SBP > 120 & SBP <= 130 ~ "Elevated",
+                                    SBP > 130 & SBP <= 140 ~ "Stage 1",
+                                    SBP > 140 & SBP <= 180 ~ "Stage 2",
+                                    SBP > 180 ~ "Crisis"),
+           SBP_Category = factor(SBP_Category, levels = c("Hypotension", "Normal", "Elevated", "Stage 1", "Stage 2", "Crisis")),
+
+           DBP_Category = dplyr::case_when(DBP <= 60 ~ "Hypotension",
+                                    DBP > 60  & DBP <= 80 ~ "Normal",
+                                    DBP > 80  & DBP <= 85 ~ "Elevated",
+                                    DBP > 85  & DBP <= 90 ~ "Stage 1",
+                                    DBP > 90 & DBP <= 120 ~ "Stage 2",
+                                    DBP > 120 ~ "Crisis"),
+           DBP_Category = factor(DBP_Category, levels = c("Hypotension", "Normal", "Elevated", "Stage 1", "Stage 2", "Crisis")),
+           )
 
 
   return(data)
