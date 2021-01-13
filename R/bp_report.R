@@ -1,21 +1,102 @@
 #' Blood Pressure Report
 #'
-#' @description Test
+#' @description The \code{bp_report} function serves to aggregate various data visuals and metrics
+#' pertaining to the supplied data set into a clean formatted report.
 #'
-#' @param data Test
-#' @param filename Test
-#' @param width Test
-#' @param height Test
-#' @param filetype Test
+#' @param data Required argument. A processed dataframe resulting from the \code{process_data}
+#' function to properly format data set. In order for the \code{bp_report} function to work properly,
+#' the following variables must be present and properly formatted:
+#' \itemize{
+#'
+#' \item{\code{SBP}}
+#' \item{\code{DBP}}
+#' \item{\code{DATE_TIME}} - Used in the \code{process_data} function to create additional columns
+#' that are needed for the \code{bp_report} function (SBP_Category, DBP_Category, Weekday, and
+#' Time_of_Day.)
+#' \item{\code{SBP_Category}} - Automatically calculated in the \code{process_data} function
+#' \item{\code{DBP_Category}} - Automatically calculated in the \code{process_data} function
+#' \item{\code{Weekday}} - Automatically calculated in the \code{process_data} function
+#' \item{\code{Time_of_Day}} - Automatically calculated in the \code{process_data} function
+#' \item{\code{ID}} - (If applicable) Used for separating out different individuals, if more than one
+#' \item{\code{VISIT}} - (If applicable) Used for separating out an individuals' different visits,
+#' if more than one
+#'
+#' }
+#'
+#' @param filename A string corresponding to the name of the report. The default is
+#' "bp_report". The string cannot begin with a number or non-alphabetical character.
+#' \cr
+#' \cr Note: DO NOT include the file type extension (such as ".pdf" or ".png") at the end of the string;
+#' the \code{bp_report} function will automatically join the name with the file type.
+#'
+#' @param width An numeric value corresponding to the width of the output document.
+#' The default is set to 12 inches.
+#'
+#' @param height An numeric value corresponding to the height of the output document.
+#' The default is set to 8.53 inches.
+#'
+#' @param units A character string corresponding to the unit of measurement that the width and height
+#' correspond to in the exported output. The default is inches ("in"), but centimeters ("cm") and
+#' millimeters ("mm") are also available.
+#'
+#' @param filetype A string corresponding to he particular type of file that the report is to be saved as.
+#' Although PDF is the default possible options include:
+#' \itemize{
+#'
+#' \item{pdf} (default)
+#' \item{png}
+#' \item{jpeg}
+#' \item{tiff}
+#' \item{bmp}
+#' \item{eps}
+#' \item{ps}
+#'
+#' }
+#'
 #' @param loc Test
-#' @param save_report Test
 #'
-#' @return Test
+#' @param save_report A binary indicator (1 or 0) that determines whether or not to save the output.
+#' The default is \code{save_report = 1} indicating that the report will be saved. Regardless of the
+#' input, the report will still appear in the RStudio Plots pane.
+#'
+#' @return A report visual containing various blood pressure metrics and visuals and a saved report (if
+#' indicated) on the specified path. If no path specified, the report will be saved at the current
+#' working directory which can be checked using \code{getwd()}
+#'
 #' @export
 #'
 #' @examples
-#' # Test
-bp_report <- function(data, filename = "bp_report.pdf", width = 12, height = 8.53, filetype = 'pdf', loc = NULL, save_report = 1){
+#' data("bp_jhs")
+#' data("hypnos_data")
+#' hyp_proc <- process_data(hypnos_data,
+#'                          sbp = "syst",
+#'                          dbp = "DIAST",
+#'                          bp_datetime = "date.time",
+#'                          id = "id",
+#'                          wake = "wake",
+#'                          visit = "visit",
+#'                          hr = "hr",
+#'                          map = "map",
+#'                          rpp = "rpp",
+#'                          pp = "pp",
+#'                          ToD_int = c(5, 13, 18, 23))
+#'
+#' jhs_proc <- process_data(bp_jhs,
+#'                          sbp = "Sys.mmHg.",
+#'                          dbp = "Dias.mmHg.",
+#'                          bp_datetime = "DateTime",
+#'                          hr = "pulse.bpm.")
+#' rm(hypnos_data, bp_jhs)
+#'
+#' # Single-subject Report
+#' # Note: save_report set to 0 for illustrative purposes of the example, not to actually save
+#' bp_report(jhs_proc, filetype = 'png', save_report = 0)
+#'
+#' # Multi-subject Report
+#' # Note: save_report set to 0 for illustrative purposes of the example, not to actually save
+#' bp_report(hyp_proc, save_report = 0)
+#'
+bp_report <- function(data, filename = "bp_report", width = 11, height = 8.5, filetype = 'pdf', units = "in", loc = NULL, save_report = 1){
 
 
   ######################################################################################
@@ -37,9 +118,9 @@ bp_report <- function(data, filename = "bp_report.pdf", width = 12, height = 8.5
   grid::grid.newpage() # necessary?
 
   # Run functions once to save time
-  dow_tod_plots_tmp <- dow_tod_plots(data)
-  scat1 <- bp_scatter(data)
-  hist_tmp <- bp_hist(data)
+  dow_tod_plots_tmp <- dow_tod_plots(data) # requires SBP, DBP, Weekday, Time_of_Day, SBP_Category, DBP_Category
+  scat1 <- bp_scatter(data) # requires SBP, DBP, possibly VISIT
+  hist_tmp <- bp_hist(data) # requires SBP, DBP, SBP_Category, DBP_Category
 
   # Right-side plots
   p1 <- gridExtra::grid.arrange( gridExtra::arrangeGrob(hist_tmp[[1]], nrow = 1), # side by side histogram of SBP / DBP totals
@@ -131,7 +212,7 @@ bp_report <- function(data, filename = "bp_report.pdf", width = 12, height = 8.5
   }else if(save_report == 1){
 
     # Save final report
-    ggplot2::ggsave(grid::grid.draw(final_1), filename = filename, device = filetype, width = width, height = height)
+    ggplot2::ggsave(grid::grid.draw(final_1), filename = paste(filename,".",filetype, sep = ""), device = filetype, width = width, height = height, units = units)
 
 
   }
