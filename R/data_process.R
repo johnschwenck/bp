@@ -10,25 +10,36 @@
 #' @param data User-supplied dataset containing blood pressure data. Must
 #' contain data for Systolic blood pressure and Diastolic blood pressure at a
 #' minimum.
+#'
 #' @param sbp Required column name (character string) corresponding to Systolic Blood
 #' Pressure (mmHg)
+#'
 #' @param dbp Required column name (character string) corresponding to Diastolic Blood
 #' Pressure (mmHg)
+#'
 #' @param bp_datetime Optional column name (character string) corresponding to Date/Time,
 #' but HIGHLY recommended to supply if available.
+#'
 #' @param id Optional column name (character string) corresponding to subject ID. Typically
 #' needed for data corresponding to more than one subject.
+#'
 #' @param wake Optional column name (character string) corresponding to sleep status. A
 #' WAKE value of 1 indicates that the subject is awake and 0 implies asleep.
+#'
 #' @param visit Optional column name (character string) corresponding to Visit number
+#'
 #' @param hr Optional column name (character string) corresponding to Heart Rate (bpm)
+#'
 #' @param pp Optional column name (character string) corresponding to Pulse Pressure
 #' (SBP - DBP). If not supplied, it will be calculated automatically.
+#'
 #' @param map Optional column name (character string) corresponding to Mean Arterial
 #' Pressure
+#'
 #' @param rpp Optional column name (character string) corresponding to Rate Pulse
 #' Pressure (SBP * HR). If not supplied, but HR column available, then
 #' RPP will be calculated automatically.
+#'
 #' @param ToD_int Optional vector that overrides the default interval for the Time-of-Day periods.
 #' By default, the Morning, Afternoon, Evening, and Night periods are set at 6, 12, 18, 0 respectively,
 #' where 0 corresponds to the 24th hour of the day (i.e. Midnight). By inputting a vector for the
@@ -37,13 +48,43 @@
 #' Morning starting at 5:00 (until 13:00), Afternoon starting at 13:00 (until 18:00),
 #' Evening starting at 18:00 (until 23:00), and Night starting at 23:00 (until 5:00)
 #'
+#' @param sbp_stages_alt (Optional) Determines the lower and upper limits for each stage
+#' of systolic blood pressure (\code{SBP}). If supplied, the input must be a vector
+#' containing 7 integers that correspond to the limits of each stage. The default vector would be
+#' given by \code{c(80, 100, 120, 130, 140, 180, 200)} where:
+#' \itemize{
+#'
+#'    \item Low - default: < 100 (specifically 80 - 100)
+#'    \item Normal - default: 100 - 120
+#'    \item Elevated - default: 120 - 130
+#'    \item Stage 1 - default: 130 - 140
+#'    \item Stage 2 - default: 140 - 180
+#'    \item Crisis - default: > 180 (specifically 180 - 200)
+#'
+#' }
+#'
+#' @param dbp_stages_alt (Optional) Determines the lower and upper limits for each stage
+#' of diastolic blood pressure (\code{DBP}). If supplied, the input must be a vector
+#' containing 7 integers that correspond to the limits of each stage. The default vector would be
+#' given by \code{c(25, 60, 80, 85, 90, 120, 140)} where:
+#' \itemize{
+#'
+#'    \item Low - default: < 60 (specifically 25 - 60)
+#'    \item Normal - default: 60 - 80
+#'    \item Elevated - default: 80 - 85
+#'    \item Stage 1 - default: 85 - 90
+#'    \item Stage 2 - default: 90 - 120
+#'    \item Crisis - default: > 120 (specifically 120 - 140)
+#'
+#' }
+#'
 #' @return A processed dataframe object that cooperates with every other
 #' function within the bp package - all column names and formats comply.
 #' @export
 #'
 #' @examples
 #' # Load hypnos_data
-#' data(hypnos_data)
+#' data("hypnos_data")
 #'
 #' # Process data for hypnos_data
 #' data1 <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
@@ -52,7 +93,7 @@
 #' data1
 #'
 #' # Load bp_jhs data
-#' data(bp_jhs)
+#' data("bp_jhs")
 #'
 #' # Process data for bp_jhs
 #' data2 <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", bp_datetime = "DateTime",
@@ -60,7 +101,20 @@
 #'
 #' data2
 #'
-process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = NULL, wake = NULL, visit = NULL, hr = NULL, pp = NULL, map = NULL, rpp = NULL, ToD_int = NULL){
+process_data <- function(data,
+                         sbp = NULL,
+                         dbp = NULL,
+                         bp_datetime = NULL,
+                         id = NULL,
+                         wake = NULL,
+                         visit = NULL,
+                         hr = NULL,
+                         pp = NULL,
+                         map = NULL,
+                         rpp = NULL,
+                         ToD_int = NULL,
+                         sbp_stages_alt = NULL,
+                         dbp_stages_alt = NULL){
 
 
   # Ensure that data is either data.frame or matrix
@@ -532,22 +586,26 @@ process_data <- function(data, sbp = NULL, dbp = NULL, bp_datetime = NULL, id = 
   # BP Categories / Stages
   # Only require SBP and DBP
 
-  data <- data %>%
-    dplyr::mutate(SBP_Category = dplyr::case_when(SBP <= 100 ~ "Hypotension",
-                                    SBP > 100 & SBP <= 120 ~ "Normal",
-                                    SBP > 120 & SBP <= 130 ~ "Elevated",
-                                    SBP > 130 & SBP <= 140 ~ "Stage 1",
-                                    SBP > 140 & SBP <= 180 ~ "Stage 2",
-                                    SBP > 180 ~ "Crisis"),
-           SBP_Category = factor(SBP_Category, levels = c("Hypotension", "Normal", "Elevated", "Stage 1", "Stage 2", "Crisis")),
+  # Compatibility Check for user-supplied stages if applicable
+  sbp_stages <- stage_check(sbp_stages_alt, dbp_stages_alt)[[1]]
+  dbp_stages <- stage_check(sbp_stages_alt, dbp_stages_alt)[[2]]
 
-           DBP_Category = dplyr::case_when(DBP <= 60 ~ "Hypotension",
-                                    DBP > 60  & DBP <= 80 ~ "Normal",
-                                    DBP > 80  & DBP <= 85 ~ "Elevated",
-                                    DBP > 85  & DBP <= 90 ~ "Stage 1",
-                                    DBP > 90 & DBP <= 120 ~ "Stage 2",
-                                    DBP > 120 ~ "Crisis"),
-           DBP_Category = factor(DBP_Category, levels = c("Hypotension", "Normal", "Elevated", "Stage 1", "Stage 2", "Crisis")),
+  data <- data %>%
+    dplyr::mutate(SBP_Category = dplyr::case_when(SBP <= sbp_stages[2] ~ "Low",
+                                    SBP > sbp_stages[2] & SBP <= sbp_stages[3] ~ "Normal",
+                                    SBP > sbp_stages[3] & SBP <= sbp_stages[4] ~ "Elevated",
+                                    SBP > sbp_stages[4] & SBP <= sbp_stages[5] ~ "Stage 1",
+                                    SBP > sbp_stages[5] & SBP <= sbp_stages[6] ~ "Stage 2",
+                                    SBP > sbp_stages[6] ~ "Crisis"),
+           SBP_Category = factor(SBP_Category, levels = c("Low", "Normal", "Elevated", "Stage 1", "Stage 2", "Crisis")),
+
+           DBP_Category = dplyr::case_when(DBP <= dbp_stages[2] ~ "Low",
+                                    DBP > dbp_stages[2]  & DBP <= dbp_stages[3] ~ "Normal",
+                                    DBP > dbp_stages[3]  & DBP <= dbp_stages[4] ~ "Elevated",
+                                    DBP > dbp_stages[4]  & DBP <= dbp_stages[5] ~ "Stage 1",
+                                    DBP > dbp_stages[5] & DBP <= dbp_stages[6] ~ "Stage 2",
+                                    DBP > dbp_stages[6] ~ "Crisis"),
+           DBP_Category = factor(DBP_Category, levels = c("Low", "Normal", "Elevated", "Stage 1", "Stage 2", "Crisis")),
            )
 
 

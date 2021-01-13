@@ -16,7 +16,9 @@ process_data(
   pp = NULL,
   map = NULL,
   rpp = NULL,
-  ToD_int = NULL
+  ToD_int = NULL,
+  sbp_stages_alt = NULL,
+  dbp_stages_alt = NULL
 )
 }
 \arguments{
@@ -60,6 +62,36 @@ where 0 corresponds to the 24th hour of the day (i.e. Midnight). By inputting a 
 For example, ToD_int = c(5, 13, 18, 23) would correspond to a period for
 Morning starting at 5:00 (until 13:00), Afternoon starting at 13:00 (until 18:00),
 Evening starting at 18:00 (until 23:00), and Night starting at 23:00 (until 5:00)}
+
+\item{sbp_stages_alt}{(Optional) Determines the lower and upper limits for each stage
+of systolic blood pressure (\code{SBP}). If supplied, the input must be a vector
+containing 7 integers that correspond to the limits of each stage. The default vector would be
+given by \code{c(80, 100, 120, 130, 140, 180, 200)} where:
+\itemize{
+
+   \item Low - default: < 100 (specifically 80 - 100)
+   \item Normal - default: 100 - 120
+   \item Elevated - default: 120 - 130
+   \item Stage 1 - default: 130 - 140
+   \item Stage 2 - default: 140 - 180
+   \item Crisis - default: > 180 (specifically 180 - 200)
+
+}}
+
+\item{dbp_stages_alt}{(Optional) Determines the lower and upper limits for each stage
+of diastolic blood pressure (\code{DBP}). If supplied, the input must be a vector
+containing 7 integers that correspond to the limits of each stage. The default vector would be
+given by \code{c(25, 60, 80, 85, 90, 120, 140)} where:
+\itemize{
+
+   \item Low - default: < 60 (specifically 25 - 60)
+   \item Normal - default: 60 - 80
+   \item Elevated - default: 80 - 85
+   \item Stage 1 - default: 85 - 90
+   \item Stage 2 - default: 90 - 120
+   \item Crisis - default: > 120 (specifically 120 - 140)
+
+}}
 }
 \value{
 A processed dataframe object that cooperates with every other
@@ -74,7 +106,7 @@ function within the \code{bp} package. See Vignette for further details.
 }
 \examples{
 # Load hypnos_data
-data(hypnos_data)
+data("hypnos_data")
 
 # Process data for hypnos_data
 data1 <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
@@ -83,7 +115,7 @@ id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp
 data1
 
 # Load bp_jhs data
-data(bp_jhs)
+data("bp_jhs")
 
 # Process data for bp_jhs
 data2 <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", bp_datetime = "DateTime",
