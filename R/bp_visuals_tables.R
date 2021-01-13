@@ -346,6 +346,10 @@ dow_tod_plots <- function(data){
   img3 <- grid::rasterGrob(png::readPNG( file.path(tmploc, "sbp_tod.png") ))
   img4 <- grid::rasterGrob(png::readPNG( file.path(tmploc, "dbp_tod.png") ))
 
+  file.remove(file.path(tmploc, "sbp_dow.png"), recursive = TRUE)
+  file.remove(file.path(tmploc, "dbp_dow.png"), recursive = TRUE)
+  file.remove(file.path(tmploc, "sbp_tod.png"), recursive = TRUE)
+  file.remove(file.path(tmploc, "dbp_tod.png"), recursive = TRUE)
 
   #t1 <- grid.arrange(img1, img2, img3, img4, nrow = 2, ncol = 2)
 

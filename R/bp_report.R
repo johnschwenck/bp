@@ -209,7 +209,7 @@ bp_report <- function(data, filename = "bp_report", width = 11, height = 8.5, fi
 
   if(save_report == 0){
 
-    warning('Report not saved. To save, specify save_report = 1 in function argument.')
+    message('Report not saved. To save, specify save_report = 1 in function argument.')
 
   }else if(save_report == 1){
 
