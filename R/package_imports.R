@@ -1,2 +1,2 @@
-#' @import ggplot2 stats
+#' @import ggplot2 stats gt
 NULL
