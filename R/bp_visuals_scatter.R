@@ -5,6 +5,14 @@ bp_scatter <- function(data, sbp_stages_alt = NULL, dbp_stages_alt = NULL){
   SBP = DBP = VISIT = NULL
   rm(list = c(SBP, DBP, VISIT))
 
+  # Ensure that the necessary columns exist in data set
+  if( all(c("SBP", "DBP") %in% names(data)) == FALSE){
+
+    stop('One or more of the required variables are missing. \nEnsure that you have run the process_data() function first.')
+
+  }
+
+
   ##############################################################
 
   # Compatibility Check for user-supplied stages if applicable
