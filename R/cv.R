@@ -69,7 +69,7 @@ cv <- function(data, inc_date = FALSE, bp_type = 0){
 
   if(length(grps) == 0){
 
-    warning('No columns specified for ID, VISIT, or WAKE. All SV values aggregated.')
+    warning('No columns specified for ID, VISIT, or WAKE. All CV values aggregated.')
 
   }
 
