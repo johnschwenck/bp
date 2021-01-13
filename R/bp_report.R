@@ -66,6 +66,8 @@
 #' @export
 #'
 #' @examples
+#' webshot::install_phantomjs()
+#'
 #' data("bp_jhs")
 #' data("hypnos_data")
 #' hyp_proc <- process_data(hypnos_data,
