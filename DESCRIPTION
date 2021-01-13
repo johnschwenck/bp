@@ -20,7 +20,8 @@ Imports:
     png,
     cowplot,
     paletteer,
-    scales
+    scales,
+    webshot
 Depends: 
     R (>= 3.1.0)
 Suggests: 
