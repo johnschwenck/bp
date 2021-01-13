@@ -13,7 +13,13 @@ RoxygenNote: 7.1.1
 Imports: 
     dplyr,
     magrittr,
-    lubridate
+    lubridate,
+    ggplot2,
+    gt,
+    gridExtra,
+    png,
+    cowplot,
+    paletteer
 Depends: 
     R (>= 3.1.0)
 Suggests: 
