@@ -330,24 +330,22 @@ dow_tod_plots <- function(data){
     )
 
 
-
-
-  # Convert table to PNG in temp directory then pull into gridextra functions for report
   tmploc <- tempdir()
 
   # Save to PNG
-  sbp_dow_table %>% gt::gtsave(filename = paste(tmploc,'\\sbp_dow.png', sep=""))
-  dbp_dow_table %>% gt::gtsave(filename = paste(tmploc,'\\dbp_dow.png', sep=""))
+  sbp_dow_table %>% gt::gtsave(filename = file.path(tmploc, "sbp_dow.png") )
+  dbp_dow_table %>% gt::gtsave(filename = file.path(tmploc, "dbp_dow.png") )
 
-  sbp_tod_table %>% gt::gtsave(filename = paste(tmploc,'\\sbp_tod.png', sep=""))
-  dbp_tod_table %>% gt::gtsave(filename = paste(tmploc,'\\dbp_tod.png', sep=""))
+  sbp_tod_table %>% gt::gtsave(filename = file.path(tmploc, "sbp_tod.png") )
+  dbp_tod_table %>% gt::gtsave(filename = file.path(tmploc, "dbp_tod.png") )
 
   # Retrieve PNGs
-  img1 <- grid::rasterGrob(png::readPNG( paste(tmploc,'\\sbp_dow.png', sep="") ))
-  img2 <- grid::rasterGrob(png::readPNG( paste(tmploc,'\\dbp_dow.png', sep="") ))
+  img1 <- grid::rasterGrob(png::readPNG( file.path(tmploc, "sbp_dow.png") ))
+  img2 <- grid::rasterGrob(png::readPNG( file.path(tmploc, "dbp_dow.png") ))
 
-  img3 <- grid::rasterGrob(png::readPNG( paste(tmploc,'\\sbp_tod.png', sep="") ))
-  img4 <- grid::rasterGrob(png::readPNG( paste(tmploc,'\\dbp_tod.png', sep="") ))
+  img3 <- grid::rasterGrob(png::readPNG( file.path(tmploc, "sbp_tod.png") ))
+  img4 <- grid::rasterGrob(png::readPNG( file.path(tmploc, "dbp_tod.png") ))
+
 
   #t1 <- grid.arrange(img1, img2, img3, img4, nrow = 2, ncol = 2)
 
