@@ -19,7 +19,8 @@ Imports:
     gridExtra,
     png,
     cowplot,
-    paletteer
+    paletteer,
+    scales
 Depends: 
     R (>= 3.1.0)
 Suggests: 
