@@ -82,7 +82,7 @@ The \code{bp_report} function serves to aggregate various data visuals and metri
 pertaining to the supplied data set into a clean formatted report.
 }
 \examples{
-webshot::install_phantomjs()
+#webshot::install_phantomjs()
 
 data("bp_jhs")
 data("hypnos_data")
@@ -110,8 +110,10 @@ rm(hypnos_data, bp_jhs)
 # Note: save_report set to 0 for illustrative purposes of the example, not to actually save
 bp_report(jhs_proc, filetype = 'png', save_report = 0)
 
+
 # Multi-subject Report
 # Note: save_report set to 0 for illustrative purposes of the example, not to actually save
 bp_report(hyp_proc, save_report = 0)
+
 
 }
