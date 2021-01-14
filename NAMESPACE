@@ -2,6 +2,7 @@
 
 export("%>%")
 export(arv)
+export(bp_hist)
 export(bp_mag)
 export(bp_range)
 export(bp_scatter)

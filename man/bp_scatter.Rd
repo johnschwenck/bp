@@ -16,18 +16,18 @@ systolic blood pressure (SBP) stage thresholds. This parameter must be a vector 
 7 integers that correspond to the lower and upper limits of each of the 6 stages. The
 limits must be adjacent to one another as to not overlap (i.e. the upper limit for one
 stage must be the lower limit for the next).
-\cr
-\cr For example, the alternative vector: \code{sbp_stages_alt = c(90, 110, 120, 130, 140, 160, 200)}
-corresponds to a Low stage from 90 - 110, a Normal stage from 110 - 120, and so forth
-for all 6 stages.}
+
+For example, the alternative vector:
+\code{sbp_stages_alt = c(90, 110, 120, 130, 140, 160, 200)} corresponds to a Low
+stage from 90 - 110, a Normal stage from 110 - 120, and so forth for all 6 stages.}
 
 \item{dbp_stages_alt}{Optional argument that allows the user to supply their own set of
 diastolic blood pressure (DBP) stage thresholds. This parameter must be a vector containing
 7 integers that correspond to the lower and upper limits of each of the 6 stages. The
 limits must be adjacent to one another as to not overlap (i.e. the upper limit for one
 stage must be the lower limit for the next).
-\cr
-\cr For example, the alternative vector:
+
+For example, the alternative vector:
 \code{dbp_stages_alt = c(30, 70, 90, 100, 110, 120, 140)} corresponds to a Low stage from
 30 - 70, a Normal stage from 70 - 90, and so forth for all 6 stages.}
 }
@@ -41,35 +41,35 @@ readings on a scatterplot based on which stage each recording lies, according to
 levels set by the American Heart Association (AHA) (although the lower / upper limits for
 these stages can be adjusted in using the \code{sbp_stages_alt} and \code{dbp_stages_alt}
 functions). There are six total stages which are the following:
-\cr
+
 \itemize{
 
-\item{Low} While low readings do not necessarily imply Hypotension, they are worth staying
+\item{Low} - While low readings do not necessarily imply Hypotension, they are worth staying
 alert for. According to the AHA, low blood pressure is any \code{SBP} reading below 100 or
 \code{DBP} reading below 60 and is depicted in light blue in the scatter plot.
 
-\item{Normal} Consistent \code{SBP} readings between 100 - 120 and \code{DBP} readings
+\item{Normal} - Consistent \code{SBP} readings between 100 - 120 and \code{DBP} readings
 between 60 - 80. This is the ideal stage where blood pressure is to be maintained at.
 Normal BP is depicted in green in the scatter plot.
 
-\item{Elevated} Consistent \code{SBP} readings between 120 - 130 and \code{DBP}
+\item{Elevated} - Consistent \code{SBP} readings between 120 - 130 and \code{DBP}
 readings less than 80. Without intervention to control the condition, individuals are
 likely to develop Hypertension. Elevated BP is depicted in yellow in the scatter plot.
 
-\item{Stage 1} Consistent \code{SBP} readings between 130 - 140 or \code{DBP} readings
+\item{Stage 1} - Consistent \code{SBP} readings between 130 - 140 or \code{DBP} readings
 between 80 - 90. Stage 1 Hypertension will typically result in doctors prescribing
 medication or lifestyle changes. Stage 1 BP is depicted in orange in the scatter plot.
 
-\item{Stage 2} Consistent \code{SBP} readings between 140 - 180 or \code{DBP} readings
+\item{Stage 2} - Consistent \code{SBP} readings between 140 - 180 or \code{DBP} readings
 between 90 - 120. Stage 2 Hypertension will typically result in doctors prescribing both
 medication and lifestyle changes. Stage 2 BP is depicted in dark red in the scatter plot.
 
-\item{Crisis} A Hypertensive crisis is defined as a \code{SBP} reading exceeding 180 or a
+\item{Crisis} - A Hypertensive crisis is defined as a \code{SBP} reading exceeding 180 or a
 \code{DBP} reading exceeding 120. This stage requires medical attention immediately.
 Crisis is depicted in red in the scatter plot.
 }
 
-\cr Note: Because of the visual disparity between \code{DBP} readings for Normal and Elevated
+Note: Because of the visual disparity between \code{DBP} readings for Normal and Elevated
 (both are defined as \code{DBP} below 80), the \code{bp_scatter} plot splits the difference
 and lists the \code{DBP} range for Normal to be from 60 - 80, Elevated from 80 - 85, and
 Stage 1 from 85 - 90.
