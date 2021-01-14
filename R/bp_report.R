@@ -89,15 +89,15 @@
 #'                          bp_datetime = "DateTime",
 #'                          hr = "pulse.bpm.")
 #' rm(hypnos_data, bp_jhs)
-#
-# # Single-subject Report
-# # Note: save_report set to 0 for illustrative purposes of the example, not to actually save
-# #bp_report(jhs_proc, filetype = 'png', save_report = 0)
-#
-#
-# # Multi-subject Report
-# # Note: save_report set to 0 for illustrative purposes of the example, not to actually save
-# #bp_report(hyp_proc, save_report = 0)
+#'
+#' # Single-subject Report
+#' # Note: save_report set to 0 for illustrative purposes of the example, not to actually save
+#' #bp_report(jhs_proc, filetype = 'png', save_report = 0)
+#'
+#'
+#' # Multi-subject Report
+#' # Note: save_report set to 0 for illustrative purposes of the example, not to actually save
+#' #bp_report(hyp_proc, save_report = 0)
 #'
 #'
 bp_report <- function(data, filename = "bp_report", width = 11, height = 8.5, filetype = 'pdf', units = "in", loc = NULL, save_report = 1){
