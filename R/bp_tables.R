@@ -1,3 +1,55 @@
+#' Blood Pressure Tables
+#'
+#' @description Generate a list of pertinent table outputs that detail various information
+#' specific to blood pressure.
+#'
+#' @param data A processed dataframe resulting from the \code{process_data} function that
+#' contains the \code{SBP}, \code{DBP}, \code{Weekday}, \code{Time_of_Day}, \code{SBP_Category},
+#' and \code{DBP_Category} columns.
+#'
+#' @param bp_type An indicator of the type of blood pressure data to output based on either
+#' 0 (both SBP and DBP), 1 (SBP only), or 2 (DBP only). Must be of type integer.
+#'
+#' @param bp_perc_margin An optional argument that determines which of the marginal totals
+#' to include in the raw count tables expressed as percentages. The argument can take on
+#' values either 0 (both SBP and DBP), 1 (SBP only), or 2 (DBP only).
+#'
+#' @param wake_perc_margin An optional argument that determines which of the marginal totals
+#' to include in the tables pertaining to the percentages of awake / asleep readings if
+#' applicable (i.e. if the WAKE column is present). The argument can take on values either
+#' 0 (both SBP and DBP), 1 (SBP only), or 2 (DBP only).
+#'
+#' @return A list of table outputs for various subsets of the data based on which bp_type is selected
+#' (default is bp_type = 0 i.e. both SBP and DBP tables)
+#'
+#' @export
+#'
+#' @examples
+#' data("bp_jhs")
+#' data("hypnos_data")
+#' hyp_proc <- process_data(hypnos_data,
+#'                          sbp = "syst",
+#'                          dbp = "DIAST",
+#'                          bp_datetime = "date.time",
+#'                          id = "id",
+#'                          wake = "wake",
+#'                          visit = "visit",
+#'                          hr = "hr",
+#'                          map = "map",
+#'                          rpp = "rpp",
+#'                          pp = "pp",
+#'                          ToD_int = c(5, 13, 18, 23))
+#'
+#' jhs_proc <- process_data(bp_jhs,
+#'                          sbp = "Sys.mmHg.",
+#'                          dbp = "Dias.mmHg.",
+#'                          bp_datetime = "DateTime",
+#'                          hr = "pulse.bpm.")
+#' rm(hypnos_data, bp_jhs)
+#'
+#' bp_tables(jhs_proc)
+#' bp_tables(hyp_proc)
+#'
 bp_tables <- function(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin = 2){
 
   SBP_Category = DBP_Category = NULL
