@@ -21,7 +21,8 @@ Imports:
     cowplot,
     paletteer,
     scales,
-    webshot
+    webshot,
+    withr
 Depends: 
     R (>= 3.1.0)
 Suggests: 
