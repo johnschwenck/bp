@@ -1,3 +1,42 @@
+#' Blood Pressure Histograms
+#'
+#' @description The \code{bp_hist} function serves to display the frequencies of the \code{SBP}
+#' and \code{DBP} readings. These histograms are formatted to complement the \code{bp_scatter}
+#' function.
+#'
+#' @param data A processed dataframe resulting from the \code{process_data} function that
+#' contains the \code{SBP}, \code{DBP}, \code{SBP_Category}, and \code{DBP_Category} columns.
+#'
+#' @return A list containing three histogram visual graphics corresponding to the SBP / DBP totals,
+#' SBP frequency, and DBP frequency.
+#'
+#' @export
+#'
+#' @examples
+#' data("bp_jhs")
+#' data("hypnos_data")
+#' hyp_proc <- process_data(hypnos_data,
+#'                          sbp = "syst",
+#'                          dbp = "DIAST",
+#'                          bp_datetime = "date.time",
+#'                          id = "id",
+#'                          wake = "wake",
+#'                          visit = "visit",
+#'                          hr = "hr",
+#'                          map = "map",
+#'                          rpp = "rpp",
+#'                          pp = "pp",
+#'                          ToD_int = c(5, 13, 18, 23))
+#'
+#' jhs_proc <- process_data(bp_jhs,
+#'                          sbp = "Sys.mmHg.",
+#'                          dbp = "Dias.mmHg.",
+#'                          bp_datetime = "DateTime",
+#'                          hr = "pulse.bpm.")
+#' rm(hypnos_data, bp_jhs)
+#'
+#' bp_hist(hyp_proc)
+#' bp_hist(jhs_proc)
 bp_hist <- function(data){
 
 
@@ -98,5 +137,3 @@ bp_hist <- function(data){
 
 }
 
-# Example
-#bp_hist(data)
