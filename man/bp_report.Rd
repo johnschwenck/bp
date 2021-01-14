@@ -106,5 +106,14 @@ jhs_proc <- process_data(bp_jhs,
                          hr = "pulse.bpm.")
 rm(hypnos_data, bp_jhs)
 
+# Single-subject Report
+# Note: save_report set to 0 for illustrative purposes of the example, not to actually save
+#bp_report(jhs_proc, filetype = 'png', save_report = 0)
+
+
+# Multi-subject Report
+# Note: save_report set to 0 for illustrative purposes of the example, not to actually save
+#bp_report(hyp_proc, save_report = 0)
+
 
 }
