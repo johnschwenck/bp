@@ -330,6 +330,14 @@ dow_tod_plots <- function(data){
     )
 
 
+#
+#   pdf('testpng.pdf')
+#   sbp_tod_table
+#   dev.off()
+#
+#   grid::grid.draw(grid::rasterGrob('testpng.png'))
+#   gridExtra::tableGrob(sbp_tod_table)
+
   tmploc <- tempdir()
 
   # Save to PNG
@@ -352,6 +360,8 @@ dow_tod_plots <- function(data){
   file.remove(file.path(tmploc, "dbp_tod.png"), recursive = TRUE)
 
   #t1 <- grid.arrange(img1, img2, img3, img4, nrow = 2, ncol = 2)
+
+  on.exit(unlink(tmploc), add = TRUE)
 
   out <- list(img1, img2, img3, img4)
   return(out)
