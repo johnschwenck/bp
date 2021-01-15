@@ -1,3 +1,39 @@
+#' Blood Pressure Tables in Graphical Format
+#'
+#' @param data A processed dataframe resulting from the \code{process_data} function that
+#' contains the \code{SBP}, \code{DBP}, \code{Weekday}, \code{Time_of_Day}, \code{SBP_Category},
+#' and \code{DBP_Category} columns.
+#'
+#' @return A list of four png images that correspond to the tables for Day of Week and
+#' Time of Day broken down by both \code{SBP} and \code{DBP}.
+#'
+#' @export
+#'
+#' @examples
+#'
+#' data("hypnos_data")
+#' hyp_proc <- process_data(hypnos_data,
+#'                          sbp = "syst",
+#'                          dbp = "DIAST",
+#'                          bp_datetime = "date.time",
+#'                          id = "id",
+#'                          wake = "wake",
+#'                          visit = "visit",
+#'                          hr = "hr",
+#'                          map = "map",
+#'                          rpp = "rpp",
+#'                          pp = "pp",
+#'                          ToD_int = c(5, 13, 18, 23))
+#'
+#' rm(hypnos_data)
+#'
+#' dow_tod_plots_tmp <- dow_tod_plots(hyp_proc)
+#' grid::grid.draw(
+#'    gridExtra::grid.arrange(dow_tod_plots_tmp[[1]], dow_tod_plots_tmp[[2]],
+#'                            dow_tod_plots_tmp[[3]],dow_tod_plots_tmp[[4]],
+#'                            nrow = 2, ncol = 2)
+#'                            )
+#'
 dow_tod_plots <- function(data){
 
 
@@ -367,13 +403,4 @@ dow_tod_plots <- function(data){
   return(out)
 
 }
-
-
-# Example:
-# dow_tod_plots_tmp <- dow_tod_plots(data)
-# grid.arrange(dow_tod_plots_tmp[[1]], dow_tod_plots_tmp[[2]],
-#              dow_tod_plots_tmp[[3]],dow_tod_plots_tmp[[4]],
-#              nrow = 2, ncol = 2)
-
-
 
