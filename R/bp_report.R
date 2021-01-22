@@ -66,7 +66,7 @@
 #' @export
 #'
 #' @examples
-#' webshot::install_phantomjs()
+#' #webshot::install_phantomjs()
 #'
 #' data("bp_jhs")
 #' data("hypnos_data")
