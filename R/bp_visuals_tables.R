@@ -27,13 +27,15 @@
 #'
 #' rm(hypnos_data)
 #'
+#' ## Not Run
+#' \dontrun{
 #' dow_tod_plots_tmp <- dow_tod_plots(hyp_proc)
 #' grid::grid.draw(
 #'    gridExtra::grid.arrange(dow_tod_plots_tmp[[1]], dow_tod_plots_tmp[[2]],
 #'                            dow_tod_plots_tmp[[3]],dow_tod_plots_tmp[[4]],
 #'                            nrow = 2, ncol = 2)
 #'                            )
-#'
+#' }
 dow_tod_plots <- function(data){
 
 
@@ -366,34 +368,86 @@ dow_tod_plots <- function(data){
     )
 
 
-#
-#   pdf('testpng.pdf')
-#   sbp_tod_table
-#   dev.off()
-#
-#   grid::grid.draw(grid::rasterGrob('testpng.png'))
-#   gridExtra::tableGrob(sbp_tod_table)
 
-  tmploc <- withr::local_tempdir()
 
-  # Save to PNG
-  sbp_dow_table %>% gt::gtsave(filename = file.path(tmploc, "sbp_dow.png") )
-  dbp_dow_table %>% gt::gtsave(filename = file.path(tmploc, "dbp_dow.png") )
 
-  sbp_tod_table %>% gt::gtsave(filename = file.path(tmploc, "sbp_tod.png") )
-  dbp_tod_table %>% gt::gtsave(filename = file.path(tmploc, "dbp_tod.png") )
+  # Alternate Method to try and close connection
 
-  # Retrieve PNGs
-  img1 <- grid::rasterGrob(png::readPNG( file.path(tmploc, "sbp_dow.png") ))
-  img2 <- grid::rasterGrob(png::readPNG( file.path(tmploc, "dbp_dow.png") ))
+  # Install phantomjs from webshot if not already installed
+  #if (is.null(suppressMessages(webshot:::find_phantom()))) { webshot::install_phantomjs() }
 
-  img3 <- grid::rasterGrob(png::readPNG( file.path(tmploc, "sbp_tod.png") ))
-  img4 <- grid::rasterGrob(png::readPNG( file.path(tmploc, "dbp_tod.png") ))
+  ################################################################################
 
-  file.remove(file.path(tmploc, "sbp_dow.png"), recursive = TRUE)
-  file.remove(file.path(tmploc, "dbp_dow.png"), recursive = TRUE)
-  file.remove(file.path(tmploc, "sbp_tod.png"), recursive = TRUE)
-  file.remove(file.path(tmploc, "dbp_tod.png"), recursive = TRUE)
+  p1 <- gt::gtsave(sbp_dow_table, filename = "sbp_dow.png", path = tempdir() )
+  list.files(tempdir())
+
+  img1 <- grid::rasterGrob(png::readPNG( p1 ) )
+
+  unlink(file.path(tempdir(), "sbp_dow.png"))
+  list.files(tempdir())
+
+  ################################################################################
+
+  p2 <- gt::gtsave(sbp_tod_table, filename = "sbp_tod.png", path = tempdir() )
+  list.files(tempdir())
+
+  img2 <- grid::rasterGrob(png::readPNG( p2 ) )
+
+  unlink(file.path(tempdir(), "sbp_tod.png"))
+  list.files(tempdir())
+
+  ################################################################################
+
+  p3 <- gt::gtsave(dbp_dow_table, filename = "dbp_dow.png", path = tempdir() )
+  list.files(tempdir())
+
+  img3 <- grid::rasterGrob(png::readPNG( p3 ) )
+
+  unlink(file.path(tempdir(), "dbp_dow.png"))
+  list.files(tempdir())
+
+  ################################################################################
+
+  p4 <- gt::gtsave(dbp_tod_table, filename = "dbp_tod.png", path = tempdir() )
+  list.files(tempdir())
+
+  img4 <- grid::rasterGrob(png::readPNG( p4 ) )
+
+  unlink(file.path(tempdir(), "dbp_tod.png"))
+  list.files(tempdir())
+
+
+
+
+
+
+
+
+
+  # # Old Method
+  #
+  # tmploc <- withr::local_tempdir()
+  #
+  # # Save to PNG
+  # sbp_dow_table %>% gt::gtsave(filename = file.path(tmploc, "sbp_dow.png") )
+  # dbp_dow_table %>% gt::gtsave(filename = file.path(tmploc, "dbp_dow.png") )
+  #
+  # sbp_tod_table %>% gt::gtsave(filename = file.path(tmploc, "sbp_tod.png") )
+  # dbp_tod_table %>% gt::gtsave(filename = file.path(tmploc, "dbp_tod.png") )
+  #
+  # # Retrieve PNGs
+  #
+  # img1 <- grid::rasterGrob(png::readPNG( file.path(tmploc, "sbp_dow.png") ))
+  # img2 <- grid::rasterGrob(png::readPNG( file.path(tmploc, "dbp_dow.png") ))
+  #
+  # img3 <- grid::rasterGrob(png::readPNG( file.path(tmploc, "sbp_tod.png") ))
+  # img4 <- grid::rasterGrob(png::readPNG( file.path(tmploc, "dbp_tod.png") ))
+  #
+  # file.remove(file.path(tmploc, "sbp_dow.png"), recursive = TRUE)
+  # file.remove(file.path(tmploc, "dbp_dow.png"), recursive = TRUE)
+  # file.remove(file.path(tmploc, "sbp_tod.png"), recursive = TRUE)
+  # file.remove(file.path(tmploc, "dbp_tod.png"), recursive = TRUE)
+
 
   #t1 <- grid.arrange(img1, img2, img3, img4, nrow = 2, ncol = 2)
 
