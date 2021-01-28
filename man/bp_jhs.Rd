@@ -9,7 +9,6 @@ A data frame with the following columns:
 \describe{
 
 \item{DateTime}{A POSIXct-formatted column corresponding to the date and time of the corresponding reading in local time.}
-\item{Date}{A Date-formatted column indicating the date of the corresponding reading up until 4AM the following day.}
 \item{Month}{Integer. The month corresponding to the Date column.}
 \item{Day}{Integer. The day of the month corresponding to the Date column.}
 \item{Year}{Integer. The year corresponding to the Date column.}
@@ -18,9 +17,7 @@ A data frame with the following columns:
 \item{Hour}{Integer. The hour corresponding to the DateTime column.}
 \item{Meal_Time}{Character. The estimated meal time corresponding to the DateTime column.}
 \item{Sys.mmHg.}{Integer. The systolic blood pressure reading.}
-\item{SysExcess}{Integer. The difference between the Sys.mmHg. column and the pre-determined 135 systolic blood pressure threshold.}
 \item{Dias.mmHg.}{Integer. The diastolic blood pressure reading.}
-\item{DiaExcess}{Integer. The difference between the Dias.mmHg. column and the pre-determined 85 diastolic blood pressure threshold.}
 \item{bpDelta}{Integer. The difference between the Sys.mmHg. and Dias.mmHg. column. This is also known as the Pulse Pressure.}
 \item{Pulse.bpm.}{Integer. The heart rate value (measured in beats per minute -- bpm).}
 
