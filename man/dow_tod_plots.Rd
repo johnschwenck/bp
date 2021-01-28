@@ -8,7 +8,7 @@ dow_tod_plots(data)
 }
 \arguments{
 \item{data}{A processed dataframe resulting from the \code{process_data} function that
-contains the \code{SBP}, \code{DBP}, \code{Weekday}, \code{Time_of_Day}, \code{SBP_Category},
+contains the \code{SBP}, \code{DBP}, \code{DAY_OF_WEEK}, \code{Time_of_Day}, \code{SBP_Category},
 and \code{DBP_Category} columns.}
 }
 \value{

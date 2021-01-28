@@ -1,7 +1,7 @@
 #' Blood Pressure Tables in Graphical Format
 #'
 #' @param data A processed dataframe resulting from the \code{process_data} function that
-#' contains the \code{SBP}, \code{DBP}, \code{Weekday}, \code{Time_of_Day}, \code{SBP_Category},
+#' contains the \code{SBP}, \code{DBP}, \code{DAY_OF_WEEK}, \code{Time_of_Day}, \code{SBP_Category},
 #' and \code{DBP_Category} columns.
 #'
 #' @return A list of four png images that correspond to the tables for Day of Week and
@@ -39,11 +39,11 @@
 dow_tod_plots <- function(data){
 
 
-  # Primary variables needed:    SBP, DBP, Weekday, Time_of_Day
+  # Primary variables needed:    SBP, DBP, DAY_OF_WEEK, Time_of_Day
   # Secondary variables needed:  SBP_Category (bp_tables), DBP_Category (bp_tables)
 
-  SBP = DBP = Weekday = Time_of_Day = Sun = Mon = Tue = Wed = Thu = Fri = Sat = Total = Morning = Afternoon = Evening = Night = NULL
-  rm(list = c("SBP", "DBP", "Weekday", "Time_of_Day",
+  SBP = DBP = DAY_OF_WEEK = Time_of_Day = Sun = Mon = Tue = Wed = Thu = Fri = Sat = Total = Morning = Afternoon = Evening = Night = NULL
+  rm(list = c("SBP", "DBP", "DAY_OF_WEEK", "Time_of_Day",
               "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Total",
               "Morning", "Afternoon", "Evening", "Night"))
 

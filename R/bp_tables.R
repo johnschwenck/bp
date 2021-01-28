@@ -4,7 +4,7 @@
 #' specific to blood pressure.
 #'
 #' @param data A processed dataframe resulting from the \code{process_data} function that
-#' contains the \code{SBP}, \code{DBP}, \code{Weekday}, \code{Time_of_Day}, \code{SBP_Category},
+#' contains the \code{SBP}, \code{DBP}, \code{DAY_OF_WEEK}, \code{Time_of_Day}, \code{SBP_Category},
 #' and \code{DBP_Category} columns.
 #'
 #' @param bp_type An indicator of the type of blood pressure data to output based on either
@@ -102,10 +102,12 @@ bp_tables <- function(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin
 
 
   # Day of Week
-  SBP_DoW <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ SBP_Category + Weekday, data = data), margin = 2 ) )
+  #SBP_DoW <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ SBP_Category + Weekday, data = data), margin = 2 ) )
+  SBP_DoW <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ SBP_Category + DAY_OF_WEEK, data = data), margin = 2 ) )
   names(SBP_DoW)[ length(names(SBP_DoW)) ] <- "Total"
 
-  DBP_DoW <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ DBP_Category + Weekday, data = data), margin = 2 ) )
+  #DBP_DoW <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ DBP_Category + Weekday, data = data), margin = 2 ) )
+  DBP_DoW <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ DBP_Category + DAY_OF_WEEK, data = data), margin = 2 ) )
   names(DBP_DoW)[ length(names(DBP_DoW)) ] <- "Total"
 
   # Time of Day
@@ -134,8 +136,8 @@ bp_tables <- function(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin
     # xtabs(~ SBP_Category + WAKE + Time_of_Day, data = data)
     # xtabs(~ DBP_Category + WAKE + Time_of_Day, data = data)
     #
-    # xtabs(~ SBP_Category + WAKE + Weekday, data = data)
-    # xtabs(~ DBP_Category + WAKE + Weekday, data = data)
+    # xtabs(~ SBP_Category + WAKE + DAY_OF_WEEK, data = data)
+    # xtabs(~ DBP_Category + WAKE + DAY_OF_WEEK, data = data)
 
   }else{
 

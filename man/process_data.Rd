@@ -16,6 +16,7 @@ process_data(
   pp = NULL,
   map = NULL,
   rpp = NULL,
+  DoW = NULL,
   ToD_int = NULL,
   sbp_stages_alt = NULL,
   dbp_stages_alt = NULL
@@ -54,6 +55,10 @@ Pressure}
 \item{rpp}{Optional column name (character string) corresponding to Rate Pulse
 Pressure (SBP * HR). If not supplied, but HR column available, then
 RPP will be calculated automatically.}
+
+\item{DoW}{Optional column name (character string) corresponding to the Day of the Week.
+If not supplied, but DATE or DATE_TIME columns available, then DoW will be created
+automatically. DoW values must be abbreviated as such \code{c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")}}
 
 \item{ToD_int}{Optional vector that overrides the default interval for the Time-of-Day periods.
 By default, the Morning, Afternoon, Evening, and Night periods are set at 6, 12, 18, 0 respectively,

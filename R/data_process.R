@@ -40,6 +40,10 @@
 #' Pressure (SBP * HR). If not supplied, but HR column available, then
 #' RPP will be calculated automatically.
 #'
+#' @param DoW Optional column name (character string) corresponding to the Day of the Week.
+#' If not supplied, but DATE or DATE_TIME columns available, then DoW will be created
+#' automatically. DoW values must be abbreviated as such \code{c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")}
+#'
 #' @param ToD_int Optional vector that overrides the default interval for the Time-of-Day periods.
 #' By default, the Morning, Afternoon, Evening, and Night periods are set at 6, 12, 18, 0 respectively,
 #' where 0 corresponds to the 24th hour of the day (i.e. Midnight). By inputting a vector for the
@@ -112,6 +116,7 @@ process_data <- function(data,
                          pp = NULL,
                          map = NULL,
                          rpp = NULL,
+                         DoW = NULL,
                          ToD_int = NULL,
                          sbp_stages_alt = NULL,
                          dbp_stages_alt = NULL){
@@ -421,7 +426,7 @@ process_data <- function(data,
 
     if(toupper(bp_datetime) %in% colnames(data) == FALSE){
 
-      stop('User-defined bp_datetime name does not match column name of supplied dataset\n')
+      stop('User-defined bp_datetime name does not match column name within supplied dataset\n')
 
     } else {
 
@@ -429,10 +434,8 @@ process_data <- function(data,
       colnames(data)[col_idx] <- "DATE_TIME"
       data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
 
-      data$DATE_TIME <- as.POSIXct(data$DATE_TIME) # coerce to proper time format
+      data$DATE_TIME <- as.POSIXct(data$DATE_TIME, tz = "UTC") # coerce to proper time format
 
-      data$Weekday = ordered(weekdays(as.Date(data$DATE_TIME), abbreviate = TRUE),
-                             levels = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"))
 
       # Time of Day
       if(is.null(ToD_int)){
@@ -475,16 +478,6 @@ process_data <- function(data,
       }else if( utils::head(ToD_int, 1) == utils::tail(ToD_int, 1) ){
 
           stop('Same starting and ending Time of Day interval values. Coerced ending value to next hour.')
-
-          # if(head(ToD_int, 1) == 23){
-          #
-          #   ToD_int[ 1 ] <- 0
-          #   ToD_int[ length(ToD_int) ] <- 23
-          #
-          # }else{
-          #
-          #   ToD_int[ 1 ] <- ToD_int[ 1 ] + 1
-          # }
 
       }else if( all(ToD_int[2:3] == cummax(ToD_int[2:3])) == FALSE ){
 
@@ -535,33 +528,131 @@ process_data <- function(data,
 
 
 
+
+
   # Date-Only
+
+  # DATE column identified in dataset
   if(length(grep("^DATE$", names(data))) == 1){
 
-    # If DATE column found
+        # If DATE column found
 
-    message('NOTE: DATE column found in data and coerced to as.Date() format.\n')
+        # Coerce to Date type
+        if( inherits(data[,grep("^DATE$", names(data))], "Date") == FALSE ){
 
-    data[,grep("^DATE$", names(data))] <- as.Date(data[,grep("^DATE$", names(data))])
+          message('NOTE: DATE column found in data and coerced to as.Date() format.\n')
+          data[,grep("^DATE$", names(data))] <- as.Date(data[,grep("^DATE$", names(data))])
 
-    col_idx <- grep("^DATE$", names(data))
-    colnames(data)[col_idx] <- "DATE"
-    data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
+        }
 
+        # DATE_TIME column AND identified DATE column present
+        if(length(grep("^DATE_TIME$", names(data))) == 1){
+
+          # If applicable, Check that all date values of the identified date column match the date_time values in as.Date format
+          if( !all(data[,grep("^DATE$", names(data))] == as.Date(data[,grep("^DATE_TIME$", names(data))])) ){
+            warning('User-supplied DATE column does not align with DATE_TIME values.\nCreated additional column DATE_OLD in place of DATE.')
+            data$DATE_OLD <- data$DATE
+            data$DATE <- as.Date(data$DATE_TIME)
+          }
+
+        } # No DATE_TIME column but identified DATE column present --> continue
+
+        col_idx <- grep("^DATE$", names(data))
+        colnames(data)[col_idx] <- "DATE"
+        data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
+
+
+  # DATE column NOT identified in dataset
   } else if(length(grep("^DATE_TIME$", names(data))) == 1){
 
-    # If no DATE column found
+        # DATE_TIME column is present AND no DATE column found:
 
-    message('NOTE: Created DATE column from DATE_TIME column\n')
+        message('NOTE: Created DATE column from DATE_TIME column\n')
 
-    # Create DATE column using as.Date of DATE_TIME
-    data$DATE <- as.Date(data$DATE_TIME)
+        # Create DATE column using as.Date of DATE_TIME
+        data$DATE <- as.Date(data$DATE_TIME)
 
-    col_idx <- grep("^DATE$", names(data))
-    colnames(data)[col_idx] <- "DATE"
-    data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
+        col_idx <- grep("^DATE$", names(data))
+        colnames(data)[col_idx] <- "DATE"
+        data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
 
   }
+
+
+
+
+
+
+  # Day of Week
+
+  # DoW argument supplied by user
+  if(!is.null(DoW)){
+
+        # Ensure that DoW argument matches corresponding column in dataset
+        if(toupper(DoW) %in% colnames(data) == FALSE){
+
+          stop('User-defined day of week column name, DoW, does not match column name within supplied dataset\n')
+
+        }
+
+        # Find the index of the supplied DoW column
+        col_idx <- grep(paste("\\b",toupper(DoW),"\\b", sep = ""), names(data))
+        colnames(data)[col_idx] <- "DAY_OF_WEEK"
+
+        # If all of the unique elements of the User-Supplied Day of Week do not match, run the Day of Week line to create column
+        if( !all( toupper(unique(data$DAY_OF_WEEK)) %in% toupper(c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"))) ){
+
+          if( !("DATE_TIME" %in% colnames(data)) & !("DATE" %in% colnames(data)) ){
+
+              stop('Not all unique values from DoW column are valid. (i.e. "Tues" instead of "Tue").
+                   \nNo DATE_TIME or DATE column found. Remove DoW argument and re-process dataset.')
+
+          }else{
+
+            # Not all unique DoW values are valid, create another column and warn user that old DoW column was renamed
+            warning('Not all unique values from DoW column are valid.
+                    \nRenamed user-supplied DoW column to "DAY_OF_WEEK_OLD" and created new column from DATE/DATE_TIME column if available')
+            if( !("DATE_TIME" %in% colnames(data)) ){
+
+              data$DAY_OF_WEEK_OLD <- data$DAY_OF_WEEK
+              data$DAY_OF_WEEK <- ordered(weekdays(as.Date(data$DATE), abbreviate = TRUE),
+                                         levels = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"))
+
+            }else{
+
+              data$DAY_OF_WEEK_OLD <- data$DAY_OF_WEEK
+              data$DAY_OF_WEEK = ordered(weekdays(as.Date(data$DATE_TIME), abbreviate = TRUE),
+                                         levels = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"))
+
+            }
+          }
+        }
+
+        # Supplied days of week are correct (i.e. no mis-spellings) and need to be ordered
+        data$DAY_OF_WEEK = ordered(data$DAY_OF_WEEK,
+                                   levels = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"))
+
+
+  # DoW argument NOT supplied by user
+  }else{
+
+        # First check if datetime supplied then check for date otherwise nothing
+        if( "DATE_TIME" %in% colnames(data) ){
+
+          # Day of Week from DATE_TIME column
+          data$DAY_OF_WEEK <- ordered(weekdays(as.Date(data$DATE_TIME), abbreviate = TRUE),
+                                     levels = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"))
+
+        }else if( "DATE" %in% colnames(data) ){
+
+          # Day of Week from DATE column
+          data$DAY_OF_WEEK <- ordered(weekdays(as.Date(data$DATE), abbreviate = TRUE),
+                                      levels = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"))
+
+        }
+
+  }
+
 
 
 
