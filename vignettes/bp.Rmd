@@ -1,15 +1,15 @@
 ---
-title: "Blood Pressure Analysis in R: A Vignette"
+title: "bp: Blood Pressure Analysis in R"
 author:
   - name: John Schwenck
     affiliation: Texas A\&M University
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Blood Pressure Analysis in R: A Vignette}
+  %\VignetteIndexEntry{bp: Blood Pressure Analysis in R}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-abstract: "In an effort to better understand the factors that influence hypertension and cardiovascular disease, recent technology such as ambulatory blood pressure monitors (ABPM) have been employed in clinical practice to assess trends over an entire 24-hour period. However, despite these advancements, and until now, there has yet to be a comprehensive open-source R package that provides the necessary tools for analyzing such data. The `bp` package provides an extensive framework for researchers to analyze both ABPM and non-ABPM blood pressure data in R through a variety of statistical methods and metrics from the literature."
-keywords: "blood pressure analysis, hypertension, cardiovascular disease"
+abstract: "In an effort to better understand the factors that influence hypertension and cardiovascular disease, visualization tools and metrics are often employed. However, these tools typically exist in silos through proprietary software. Until now, there has yet to be a comprehensive open-source R package that provides the necessary tools for analyzing such data in one place. The **`bp`** package provides an extensive framework for researchers to analyze both ABPM and non-ABPM blood pressure data in R through a variety of statistical methods and metrics from the literature as well as various data visualizations, with minimal code necessary to do so. This paper illustrates the main features of the **`bp`** package by analyzing both a single-subject and multi-subject dataset."
+keywords: "blood pressure analysis, hypertension, cardiovascular disease, visualization, exploratory data analysis"
 ---
 
 ```{r, include = FALSE}
@@ -25,24 +25,44 @@ library(bp)
 -------------
 
 ## Introduction
-Despite the tremendous progress in the medical field, cardiovascular disease (CVD) remains the leading cause of death worldwide. Hypertension, specifically, affects over 1.1 billion people annually according to the American Heart Association. This package serves to visualize and quantify various aspects of hypertension in a more digestible format using various metrics proposed in the literature. 
+Despite the tremendous progress in the medical field, cardiovascular disease (CVD) remains the leading cause of death worldwide. Hypertension, specifically, affects over 1.1 billion people annually according to the American Heart Association $\color{red}{\text{[source]}}$. This package serves to visualize and quantify various aspects of hypertension in a more digestible format using various metrics proposed in the literature. 
 
-Blood pressure data can be analyzed at varying degrees of granularity depending on the reading frequency, presence of a sleep indicator, and whether or not the temporal structure is accounted for. These factors almost always depend on the type of device used, where ABPM monitors are predominantly used for the short term (within 24 hours) and home monitoring devices or office readings are used for measuring variability over the medium and long term (day-to-day, visit-to-visit, etc). Unlike continuous heart rate monitors or continuous glucose monitors, there are currently no large-scale continuous blood pressure monitors available for the middle to long term, posing a unique challenge for research.
+Blood pressure data can be analyzed at varying degrees of granularity depending on the reading frequency, presence of a sleep indicator, and whether or not the temporal structure is accounted for. These factors almost always depend on the type of device used, where ABPM monitors are predominantly used for the short term (within 24 hours) and home monitoring devices or office readings are used for measuring variability over the medium and long term (day-to-day, visit-to-visit, etc)$\color{red}{\text{[source]}}$. Unlike continuous heart rate monitors or continuous glucose monitors, there are currently no commercially-available continuous blood pressure monitors available for the middle to long term, posing a unique challenge for research.
 
-Of primary concern to researchers is the ability to accurately quantify blood pressure variability (BPV). BPV has been shown to be an important factor in predicting cardiovascular events and sudden death, especially during susceptible periods such as the first two hours of waking up. There have been many proposed methods for characterizing this variability; this package seeks to incorporate as many of these metrics as possible.
+Of primary concern to researchers is the ability to accurately quantify blood pressure variability (BPV). BPV has been shown to be an important factor in predicting cardiovascular events and sudden death, especially during susceptible periods such as the first two hours of waking up $\color{red}{\text{[source]}}$. There have been many proposed methods for characterizing this variability; this package seeks to incorporate as many of these metrics as possible.
 
-###### Blood Pressure Monitors
+We introduce the first comprehensive open-source R package, **`bp`**, that both analyzes and visualizes blood pressure data. In an effort to help clinicians make sense of their patients' data without requiring multiple software platforms for data processing, `bp` uses only a minimal amount of code to do so and offers additional capabilities beyond the traditional proprietary counterparts. At the time of writing, to the best of the authors' knowledge, there are currently no other available software packages through the Comprehensive R Archive Network (CRAN) dedicated to blood pressure analysis.
+
+In this paper, we demonstrate the main functionality of the **`bp`** package by exploring and analyzing both a single-subject pilot study of $\color{red}{\text{[Schwenck]}}$ and a multi-subject study, HYPNOS $\color{red}{\text{[source]}}$, to illustrate the differences between dataset structures and elaborate how to adjust the settings within the R package to accommodate either. 
+
+###### Blood Pressure Monitoring Overview
 Blood pressure monitoring devices work by measuring the pressure of the artery’s restricted blood flow; for digital devices, the vibrations are translated into electrical signals. Unlike home monitors that only take readings upon the subject's initiation, ambulatory blood pressure monitoring (ABPM) devices take automatic readings at pre-specified intervals over a 24-hour period or longer.
 
-ABPM allows medical professionals to analyze blood pressure during sleep which has been shown to be a more accurate predictor of cardiovascular events than daytime blood pressure. ABPM also allows researchers to discern true hypertension from "whitecoat" hypertension in an office or laboratory setting. 
+ABPM allows medical professionals to analyze blood pressure during sleep which has been shown to be a more accurate predictor of cardiovascular events than daytime blood pressure. ABPM also allows researchers to discern true hypertension from "whitecoat" hypertension in an office or laboratory setting. Because of the burden of assembling the device (and because of the lack of a commercial-grade alternative), ABPM measurements are intended for the short-term of 24-hours to a few days. 
+
+Home monitoring on the other hand, offers individuals the ability to record their blood pressure at will and can be tracked easily using mobile apps over the long-term of weeks, months, or years. However, because the user has to initiate the recording, readings cannot be taken during sleep.
+
+As the nature of the two devices inhibits certain functionality depending on which device is used, we outline how to effectively analyze data for both types of devices.
+
+According to the American Heart Association, there are currently 6 blood pressure stages that correspond to the readings from the monitoring devices: Low (Hypotension), Normal, Elevated, Stage 1 Hypertension, Stage 2 Hypertension, Hypertensive Crisis. Below is a table outlining the categories according to their definitions. Note that because of the ambiguity between Normal, Elevated, and Stage 1 diastolic blood pressure readings (because of the similar thresholds), this package splits the difference and sets a default threshold for Elevated DBP from 80 - 85 and Stage 1 Hypertension from 85 - 90. These thresholds can be adjusted by the user where applicable.
+
+Blood Pressure Category | Systolic (mmHg) |        | Diastolic (mmHg)
+------------------------|-----------------|--------|------------------
+Low (Hypotension)       | Less than 100   | and    | Less than 60
+Normal                  | 100 - 120       | and    | 60 - 80
+Elevated                | 120 - 129       | and    | 60 - 80
+Stage 1 Hypertension    | 130 - 139       | or     | 80 - 89
+Stage 2 Hypertension    | 140 - 180       | or     | 90 - 120
+Hypertensive Crisis     | Higher than 180 | and/or | Higher than 120
+
 
 ## The `bp` Package
-The general workflow of the `bp` package consists of a data processing stage and an analysis stage. The processing stage formats the input data so that it adheres to the rest of the `bp` functions. The analysis stage uses the processed data to quantify various attributes of the relationships within the blood pressure data.
+The general workflow of the `bp` package consists of 1) a data processing stage and 2) an analysis stage, in ideally as little as two lines of code. The processing stage formats the user's supplied input data in such a way that it adheres to the rest of the `bp` functions. The analysis stage uses the processed data to quantify various attributes of the blood pressure relationships or to provide various visualizations. One of the key abilities of the `bp` package is `bp_report` function which generates a report that combines such visualization plots into one easily digestible summary for clinicians or researchers to interpret an individual's (or multiple individuals') blood pressure results. We will walk through each of these stages in the subsequent sections.
 
 ##### Data Processing with the `process_data` function
-Before any analysis can be done, the user-supplied data set must be first processed into the proper format using `process_data` to adhere to package data structure requirements and naming conventions. This function ensures that user-supplied data columns aren't double counted or missed, since blood pressure data are often inconsistent and come from a wide variety of formats. While a tedious initial step, it will save time in the long-run as the resulting processed data will not require any future specification, which can then be directly plugged into the metric functions. It is worth noting that if the user-supplied data set already adheres to the column naming conventions and data types, then the `process_data` function will be unnecessary. However, it is good practice to still make use of this function as a sanity check to verify all available variables.
+Before any analysis can be done, the user-supplied data set must be first processed into the proper format using `process_data` to adhere to package data structure requirements and naming conventions. This function ensures that user-supplied data columns aren't double counted or missed, since blood pressure data are often inconsistent and come from a wide variety of formats. While a tedious initial step, it will save time in the long-run as the resulting processed data will not require any future specification, which can then be directly plugged into the analysis functions. It is worth noting that if the user-supplied data set already adheres to the column naming conventions and data types, then the `process_data` function will be unnecessary. However, it is good practice to still make use of this function as a sanity check to verify all available variables.
 
-The basic workflow is to load in the user-supplied and un-processed raw data, process it with the `process_data` function and save to a new dataframe. Note that the capitalization does not matter when specifying the columns.
+The basic workflow is to load in the user-supplied unprocessed raw data, process it with the `process_data` function and save to a new dataframe. Note that the capitalization does not matter when specifying the columns.
 ```{r}
 ## Load the sample hypnos_data
 ## In this scenario, the hypnos_data acts as the "user-supplied" data that is to be processed
@@ -61,13 +81,13 @@ data1 <- process_data(hypnos_data,
                      map = 'map',
                      rpp = 'rpp')
 ```
-Notice how the column names of the original `hypnos_data` changed in the processed `data`. Notably, `SYST` became `SBP`, `DIAST` became `DBP`, and`DATE.TIME` became `DATE_TIME`.
+Notice how the column names of the original `hypnos_data` changed in the processed `data`. Notably, `SYST` became `SBP`, `DIAST` became `DBP`, and `DATE.TIME` became `DATE_TIME`.
 ```{r}
 names(hypnos_data)
 names(data1)
 ```
 
-While the results seem to be trivial at first glance, let's see what happens when we use a much different data set with a completely different naming convention - the `bp_jhs` data set. Unlike `hypnos_data` which has all of the available columns needed in the `process_data` function with multiple subjects, `bp_jhs` is a single-subject data set without many of the multi-subject identifiers such as `ID`, `VISIT`, or `WAKE` (as it is non-ABPM data). Further, there is no `MAP` or `PP` column, but these (as we will see) can be automatically created. 
+While the results seem to be trivial at first glance, let's see what happens when we use a much different data set with a completely different naming convention: the `bp_jhs` data set. Unlike `hypnos_data` which has all of the available columns needed in the `process_data` function with multiple subjects, `bp_jhs` is a single-subject data set without many of the multi-subject identifiers such as `ID`, `VISIT`, or `WAKE` (as it is non-ABPM data). Further, there is no `MAP` or `PP` column, but these (as we will see) can be automatically created. 
 ```{r warning=FALSE, message=TRUE}
 ## Load the sample bp_jhs data set
 ## As before, this is what will be referred to as the "user-supplied" data set
@@ -81,7 +101,7 @@ data2 <- process_data(bp_jhs,
                      hr = 'PULSE.BPM.')
 head(data2, 5)
 ```
-After a quick inspection of the original `bp_jhs` data set and the newly processed `data` data set, it should be evident that there was a lot going on "under the hood" of the `process_data` function. As we can see from the column names, the awkward nuisance of typing `sys.mmhg.`, `dias.mmhg.`, `pulse.bpm.`, and `datetime` have now been replaced with the more concise `SBP`, `DBP`, `HR`, and `DATE_TIME` names, respectively. Additionally, `MAP`, `PP`, and `RPP` were all calculated as additional columns which previously did not exist in the data.
+After a quick inspection of the original `bp_jhs` data set and the newly processed `data` data set, it should be evident that there was a lot going on "under the hood" of the `process_data` function. As we can see from the column names, the awkward nuisance of typing `sys.mmhg.`, `dias.mmhg.`, `pulse.bpm.`, and `datetime` have now been replaced with the more concise `SBP`, `DBP`, `HR`, and `DATE_TIME` names, respectively. Additionally, `MAP`, `PP`, `RPP`, `SBP_Category`, and `DBP_Category` were all calculated as additional columns which previously did not exist in the data. Additionally, if the supplied data has a column corresponding to a "date/time" format, the columns `Time_of_Day` and `DAY_OF_WEEK` will also be created for ease.
 ```{r}
 names(bp_jhs)
 names(data2)
@@ -145,20 +165,56 @@ tail(bp_mag(data2, inc_date = TRUE))
 ***Interpretation:*** While it may not seem obvious at first glance, the blood pressure magnitude (whether a peak or a trough) is calculated as $peak = max(BP) - mean(BP)$ and $trough = mean(BP) - min(BP)$ where BP could correspond to either SBP or DBP. If we manually inspect the data from `2019-07-31` we see that N = 2 measurements and within the `bp_jhs` data set we see the two measurements are 126 and 128 for SBP and 77, and 76 for DBP. $\bar{x}_{SBP} = \frac{(126+128)}{2} = 127$ and $\bar{x}_{DBP} = \frac{(78+76)}{2} = 76.5$ so the respective peak and trough values from our output make sense.
   
 ##### Visualization
-So far, we have processed the original data, we have run a couple metrics to get a clearer picture of the variability, now let's visualize it.
+So far, we have processed the original data and ran a couple metrics to get a clearer picture of the variability, now let's visualize it. Though the processed data can easily be incorporated into other visualization packages or code (such as ggplot which we will demonstrate in the first example below with `bp_mag`), the following visuals are currently included with the `bp` package:
 
-Continuing with our previous example using the `bp_jhs` data set, let's suppose we wanted to explore how to peaks and troughs of systolic blood pressure changed over time
-```{r fig1, fig.height = 4.5, fig.width = 7.5, fig.align = "center"}
+Function         | Visual                             
+---------------- | ---------------------------------- 
+bp_hist          | Blood Pressure Stage Histograms
+bp_scatter       | Blood Pressure Stage Scatter Plot ([American Heart Association](https://www.heart.org/en/health-topics/high-blood-pressure/understanding-blood-pressure-readings))
+dow_tod_plots    | Day of Week / Time of Day chart
+bp_report        | Exportable Blood Pressure Report
+
+
+Continuing with our previous example using the `bp_jhs` data set, let's suppose we wanted to explore how to peaks and troughs of systolic blood pressure changed over time. Note that there is a subtle assumption here in that we have multiple measurements for a given day, otherwise a single value will be both the peak and trough; however, the plot still works regardless.
+```{r fig1, fig.height = 4, fig.width = 7.5, fig.align = "center"}
 viz_data <- bp_mag(data2, inc_date = TRUE)
 plot(viz_data[which(viz_data$Peak_SBP > 0 & viz_data$N > 1),]$DATE, viz_data[which(viz_data$Peak_SBP > 0 & viz_data$N > 1),]$Peak_SBP, type = 'l', col = "red", xlab ="DATE", ylab = "Magnitude")
 lines(viz_data[which(viz_data$Peak_SBP > 0 & viz_data$N > 1),]$DATE, viz_data[which(viz_data$Trough_SBP > 0 & viz_data$N > 1),]$Trough_SBP, col = "darkgreen")
 legend("topright", legend = c("Peak", "Trough"), col = c("red","darkgreen"), lty =1)
 ```
+
 From the above time series chart, notice that the values are absolute magnitudes for both peak and trough. So, when peak exceeds trough, as was evident during late-May and early-June, the interpretation is that blood pressure rose more on average than it fell. In other words, the **variability** of the blood pressure data is right-skewed more toward the high end. In contrast, in the very beginning the variability was more left-skewed favoring the low end of the spectrum since there were more troughs than peaks. We can verify this by looking at the very first day of measurements on `2020-04-16` as shown below:
 ```{r}
 head(viz_data[which(viz_data$Peak_SBP > 0 & viz_data$N > 1),])
 ```
 
+Recall that in the processing stage, there were additional columns that were automatically created. We will now visualize two of these, `SBP_Category` and `DBP_Category`, through the `bp_hist` and `bp_scatter` functions, and the `Time_of_Day` column through the `dow_tod_plots` function.
+
+The `bp_hist` returns three histograms of all readings corresponding to total number within each stage, frequency of SBP readings, and frequency of DBP readings. Furthermore, it breaks the data down by color according to which blood pressure stage it falls under:
+```{r fig1a, fig.height = 2.5, fig.width = 5.5, fig.align = "center", results = FALSE, message = FALSE}
+bp_hist(data2)
+```
+
+The above plots show a cautiously high frequency of Elevated and Stage 1 readings for `SBP`, but the frequency of `DBP` readings seems to fare better in the Normal and Elevated stages. 
+
+Let's now suppose that we wish to break down our readings by Time of Day and Day of Week. For this, we can implement the `dow_tod_plots` function. Because this function is mainly used as a helper function for the `bp_report` function, we need to add a couple steps using the `gridExtra` package
+```{r fig1b, fig.height = 6, fig.width = 6, fig.align = "center", results = FALSE, message = FALSE}
+bptable_ex <- dow_tod_plots(data2)
+gridExtra::grid.arrange(bptable_ex[[1]], bptable_ex[[2]], bptable_ex[[3]], bptable_ex[[4]], nrow = 2)
+```
+
+As a final step before returning to our other example, let's compile everything that we have done so far into a more compact and digestible report that visualizes everything simultaneously. To do so, we will rely on the `bp_report` function, which will generate a report in PDF (although other formats such as PNG are available):
+```{r, eval = FALSE}
+bp_report(data2)
+```
+
+```{r fig.width=8, fig.height=7, echo=FALSE}
+img <- png::readPNG("vignette_report_1_subj.png")
+grid::grid.raster(img)
+```
+
+
+---------------------
 
 Suppose now that we turn our attention back to the `hypnos_data` example where we joined the `ARV` and `CV` metrics together. We would now like to visualize these for all of the subjects to see if we can discern any patterns. From the first scatterplot matrix we see that the between-subject values differ and from the second scatterplot matrix we see that there is a very stark contrast between `ARV` and `CV` during sleep vs awake.  
 ```{r fig2, fig.height = 4.5, fig.width = 6.5, fig.align = "center"}
@@ -170,10 +226,12 @@ pairs(data1[,6:11], upper.panel = NULL, col = factor(data1$WAKE))
 
 ## Future Directions
 
-As our understanding of cardiovascular disease continues to grow, this package will remain ongoing project. As such, collaboration is highly encouraged. Corrections to existing metrics, extensions or new method proposals, and code optimization are all welcome. 
+As our understanding of cardiovascular disease continues to grow, this package will remain ongoing project. As such, collaboration is highly encouraged. Corrections to existing metrics, extensions or new method proposals and visualizations, and code optimization are all welcome. 
 
 In the short term, the following new features are to be incorporated with the next release of the package: 
 
+* Added visuals that incorporate heart rate, time, sleep status (`WAKE`), and existing metrics (dip_calc, etc)
+* Extensions to the `bp_report` function to include more visuals on another page, and include the ability to break down visuals by individuals (if data includes multiple subjects)
 * Shiny App for visualization and PDF export
 * Package website
 * Additional metrics: morning BP surge, morning bp surge power, SDIM
