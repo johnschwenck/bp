@@ -57,6 +57,10 @@ dow_tod_plots <- function(data){
   sbp_dow_data <- tibble::rownames_to_column(sbp_dow_data, var = "BP Stage")
 
   # Add column totals --> dplyr for bind_rows
+  # See https://github.com/r-lib/tidyselect/issues/201 for issue with "where" in dplyr's across function
+  # https://dplyr.tidyverse.org/reference/across.html - dplyr documentation of how where is used within across
+  # https://stackoverflow.com/questions/40251801/how-to-use-utilsglobalvariables - alternative temporary fix using
+  #                                                                                               global variables
   sbp_dow_data <- sbp_dow_data %>%
     dplyr::bind_rows(dplyr::summarise(.,
                                dplyr::across(tidyselect::vars_select_helpers$where(is.numeric), sum),
@@ -152,6 +156,10 @@ dow_tod_plots <- function(data){
   dbp_dow_data <- tibble::rownames_to_column(dbp_dow_data, var = "BP Stage")
 
   # Add column totals --> dplyr for bind_rows
+  # See https://github.com/r-lib/tidyselect/issues/201 for issue with "where" in dplyr's across function
+  # https://dplyr.tidyverse.org/reference/across.html - dplyr documentation of how where is used within across
+  # https://stackoverflow.com/questions/40251801/how-to-use-utilsglobalvariables - alternative temporary fix using
+  #                                                                                               global variables
   dbp_dow_data <- dbp_dow_data %>%
     dplyr::bind_rows(dplyr::summarise(.,
                                dplyr::across(tidyselect::vars_select_helpers$where(is.numeric), sum),
@@ -246,6 +254,10 @@ dow_tod_plots <- function(data){
   sbp_tod_data <- tibble::rownames_to_column(sbp_tod_data, var = "BP Stage")
 
   # Add column totals --> dplyr for bind_rows
+  # See https://github.com/r-lib/tidyselect/issues/201 for issue with "where" in dplyr's across function
+  # https://dplyr.tidyverse.org/reference/across.html - dplyr documentation of how where is used within across
+  # https://stackoverflow.com/questions/40251801/how-to-use-utilsglobalvariables - alternative temporary fix using
+  #                                                                                               global variables
   sbp_tod_data <- sbp_tod_data %>%
     dplyr::bind_rows(dplyr::summarise(.,
                                dplyr::across(tidyselect::vars_select_helpers$where(is.numeric), sum),
@@ -343,6 +355,10 @@ dow_tod_plots <- function(data){
   dbp_tod_data <- tibble::rownames_to_column(dbp_tod_data, var = "BP Stage")
 
   # Add column totals --> dplyr for bind_rows
+  # See https://github.com/r-lib/tidyselect/issues/201 for issue with "where" in dplyr's across function
+  # https://dplyr.tidyverse.org/reference/across.html - dplyr documentation of how where is used within across
+  # https://stackoverflow.com/questions/40251801/how-to-use-utilsglobalvariables - alternative temporary fix using
+  #                                                                                               global variables
   dbp_tod_data <- dbp_tod_data %>%
     dplyr::bind_rows(dplyr::summarise(.,
                                dplyr::across(tidyselect::vars_select_helpers$where(is.numeric), sum),
