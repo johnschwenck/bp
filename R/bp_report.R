@@ -66,7 +66,6 @@
 #' @export
 #'
 #' @examples
-#' #webshot::install_phantomjs()
 #'
 #' data("bp_jhs")
 #' data("hypnos_data")
@@ -134,12 +133,12 @@ bp_report <- function(data, filename = "bp_report", width = 11, height = 8.5, fi
   p1 <- gridExtra::grid.arrange( gridExtra::arrangeGrob(hist_tmp[[1]], nrow = 1), # side by side histogram of SBP / DBP totals
                                  grid::linesGrob(y = unit(1.5, "lines"),
                                                  gp = grid::gpar(col = "black")),
-                                 gridExtra::arrangeGrob(dow_tod_plots_tmp[[3]], dow_tod_plots_tmp[[4]], nrow = 1), # hist of SBP and DBP freqs
+                                 gridExtra::arrangeGrob(dow_tod_plots_tmp[[1]], dow_tod_plots_tmp[[2]], nrow = 1), # hist of SBP and DBP freqs
                                  nrow = 3, heights = c(1.5, 0.25, 1.5))
 
   p2 <- gridExtra::grid.arrange(hist_tmp[[2]], hist_tmp[[3]], hist_tmp[[4]], ncol = 2, nrow = 2, layout_matrix = rbind( c(3,3), c(1,2) ), heights = c(.1, .8))
 
-  p3 <- gridExtra::grid.arrange(dow_tod_plots_tmp[[1]], dow_tod_plots_tmp[[2]], nrow = 1)
+  p3 <- gridExtra::grid.arrange(dow_tod_plots_tmp[[3]], dow_tod_plots_tmp[[4]], nrow = 1)
 
   final_1 <- gridExtra::grid.arrange(bptitle, grid::nullGrob(),
                                      scat1, p1,
@@ -218,6 +217,9 @@ bp_report <- function(data, filename = "bp_report", width = 11, height = 8.5, fi
     message('Report not saved. To save, specify save_report = 1 in function argument.')
 
   }else if(save_report == 1){
+
+    # Verify that location (loc) is valid
+
 
     # Save final report
     ggplot2::ggsave(grid::grid.draw(final_1), filename = paste(filename,".",filetype, sep = ""), device = filetype, width = width, height = height, units = units)

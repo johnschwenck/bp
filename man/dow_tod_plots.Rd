@@ -12,7 +12,7 @@ contains the \code{SBP}, \code{DBP}, \code{DAY_OF_WEEK}, \code{Time_of_Day}, \co
 and \code{DBP_Category} columns.}
 }
 \value{
-A list of four png images that correspond to the tables for Day of Week and
+A list of four `gtables` that correspond to the tables for Day of Week and
 Time of Day broken down by both \code{SBP} and \code{DBP}.
 }
 \description{
@@ -36,13 +36,10 @@ hyp_proc <- process_data(hypnos_data,
 
 rm(hypnos_data)
 
-## Not Run
-\dontrun{
 dow_tod_plots_tmp <- dow_tod_plots(hyp_proc)
 grid::grid.draw(
    gridExtra::grid.arrange(dow_tod_plots_tmp[[1]], dow_tod_plots_tmp[[2]],
                            dow_tod_plots_tmp[[3]],dow_tod_plots_tmp[[4]],
                            nrow = 2, ncol = 2)
                            )
-}
 }

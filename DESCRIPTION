@@ -15,14 +15,14 @@ Imports:
     magrittr,
     lubridate,
     ggplot2,
-    gt,
     gridExtra,
-    png,
     cowplot,
     paletteer,
     scales,
-    webshot,
-    withr
+    tibble,
+    png,
+    tidyselect,
+    gtable
 Depends: 
     R (>= 3.1.0)
 Suggests: 

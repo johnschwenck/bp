@@ -4,7 +4,7 @@
 #' contains the \code{SBP}, \code{DBP}, \code{DAY_OF_WEEK}, \code{Time_of_Day}, \code{SBP_Category},
 #' and \code{DBP_Category} columns.
 #'
-#' @return A list of four png images that correspond to the tables for Day of Week and
+#' @return A list of four `gtables` that correspond to the tables for Day of Week and
 #' Time of Day broken down by both \code{SBP} and \code{DBP}.
 #'
 #' @export
@@ -27,433 +27,409 @@
 #'
 #' rm(hypnos_data)
 #'
-#' ## Not Run
-#' \dontrun{
 #' dow_tod_plots_tmp <- dow_tod_plots(hyp_proc)
 #' grid::grid.draw(
 #'    gridExtra::grid.arrange(dow_tod_plots_tmp[[1]], dow_tod_plots_tmp[[2]],
 #'                            dow_tod_plots_tmp[[3]],dow_tod_plots_tmp[[4]],
 #'                            nrow = 2, ncol = 2)
 #'                            )
-#' }
 dow_tod_plots <- function(data){
 
 
   # Primary variables needed:    SBP, DBP, DAY_OF_WEEK, Time_of_Day
   # Secondary variables needed:  SBP_Category (bp_tables), DBP_Category (bp_tables)
 
-  SBP = DBP = DAY_OF_WEEK = Time_of_Day = Sun = Mon = Tue = Wed = Thu = Fri = Sat = Total = Morning = Afternoon = Evening = Night = NULL
+  SBP = DBP = DAY_OF_WEEK = Time_of_Day = Sun = Mon = Tue = Wed = Thu = Fri = Sat = Total = Morning = Afternoon = Evening = Night = . = NULL
   rm(list = c("SBP", "DBP", "DAY_OF_WEEK", "Time_of_Day",
               "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Total",
-              "Morning", "Afternoon", "Evening", "Night"))
-
-  # 1) Create tables using gt
-  # 2) Save finished tables as png images in temp directory
-  # 3) Use temp directory to pull and combine using grid.arrange
-
-
-  # SBP Day of Week
-  sbp_dow_table <- gt::gt(data = bp_tables(data)['SBP_by_Day_of_Week'][[1]], rownames_to_stub = TRUE) %>%
-
-    gt::summary_rows(fns = list(Total = ~sum(., na.rm = TRUE)), decimals = 0) %>%
-
-    gt::tab_header(
-      title = gt::md("**SBP by Day of the Week**")#,
-      #subtitle = gt::md("*test subtitle*")
-    ) %>%
-
-    gt::data_color(
-      columns = gt::vars(Sun, Mon, Tue, Wed, Thu, Fri, Sat),
-      colors = scales::col_numeric(
-        palette = paletteer::paletteer_d(
-          palette = "ggsci::yellow_material"
-        ) %>% as.character(),
-        domain = NULL
-      )
-    ) %>%
-
-    gt::tab_options(
-      # hide the top-most border
-      table.border.top.color = "white",
-
-      # make the title size match the body text
-      #heading.title.font.size = px(16),
-
-      # change the column labels section
-      column_labels.border.top.width = 3,
-      column_labels.border.top.color = "gray",
-      column_labels.border.bottom.width = 3,
-      column_labels.border.bottom.color = "black",
-
-      # hide the bottom-most line or footnotes
-      # will have a border
-      table.border.bottom.color = "white",
-
-      table.background.color = "white",
-
-      grand_summary_row.border.color = "black"
-    ) %>%
-
-    # Alight table values to the center
-    gt::cols_align(align="center") %>%
-
-    # Add Gray line between body and Total column
-    gt::tab_style(
-      style = list(
-        gt::cell_borders(
-          sides = "left",
-          color = "gray57",
-          weight = gt::px(2)
-        )
-      ),
-      locations = list(
-        gt::cells_body(
-          columns = gt::vars(Total)
-        )
-      )
-    ) %>%
-
-    # Bold the Total Column values
-    gt::tab_style(
-      style = list(
-        gt::cell_text(
-          color = "gray",
-          weight = "bold"
-        )
-      ),
-      locations = list(
-        gt::cells_body(
-          columns = gt::vars(Total)
-        )
-      )
-    )
-
-
-
-  # SBP Time of Day
-  sbp_tod_table <- gt::gt(data = bp_tables(data)['SBP_by_Time_of_Day'][[1]], rownames_to_stub = TRUE) %>%
-
-    gt::summary_rows(fns = list(Total = ~sum(., na.rm = TRUE)), decimals = 0) %>%
-
-    gt::tab_header(
-      title = gt::md("**SBP by Time of Day**")#,
-      #subtitle = "Subtitle"
-    ) %>%
-
-    gt::data_color(
-      columns = gt::vars(Morning, Afternoon, Evening, Night),
-      colors = scales::col_numeric(
-        palette = paletteer::paletteer_d(
-          #palette = "ggsci::purple_material"
-          palette = "ggsci::yellow_material"
-        ) %>% as.character(),
-        domain = NULL
-      )
-    ) %>%
-
-    gt::tab_options(
-      # hide the top-most border
-      table.border.top.color = "white",
-
-      # make the title size match the body text
-      #heading.title.font.size = px(16),
-
-      # change the column labels section
-      column_labels.border.top.width = 3,
-      column_labels.border.top.color = "gray",
-      column_labels.border.bottom.width = 3,
-      column_labels.border.bottom.color = "black",
-
-      # hide the bottom-most line or footnotes
-      # will have a border
-      table.border.bottom.color = "white",
-
-      table.background.color = "white",
-
-      grand_summary_row.border.color = "black"
-    ) %>%
-
-    # Alight table values to the center
-    gt::cols_align(align="center") %>%
-
-    # Add Gray line between body and Total column
-    gt::tab_style(
-      style = list(
-        gt::cell_borders(
-          sides = "left",
-          color = "gray57",
-          weight = gt::px(2)
-        )
-      ),
-      locations = list(
-        gt::cells_body(
-          columns = gt::vars(Total)
-        )
-      )
-    ) %>%
-
-    # Bold the Total Column values
-    gt::tab_style(
-      style = list(
-        gt::cell_text(
-          color = "gray",
-          weight = "bold"
-        )
-      ),
-      locations = list(
-        gt::cells_body(
-          columns = gt::vars(Total)
-        )
-      )
-    )
-
-
-
-
-  # DBP Day of Week
-  dbp_dow_table <- gt::gt(data = bp_tables(data)['DBP_by_Day_of_Week'][[1]], rownames_to_stub = TRUE) %>%
-
-    gt::summary_rows(fns = list(Total = ~sum(., na.rm = TRUE)), decimals = 0) %>%
-
-    gt::tab_header(
-      title = gt::md("**DBP by Day of the Week**")#,
-      #subtitle = "Subtitle"
-    ) %>%
-
-    gt::data_color(
-      columns = gt::vars(Sun, Mon, Tue, Wed, Thu, Fri, Sat),
-      colors = scales::col_numeric(
-        palette = paletteer::paletteer_d(
-          palette = "ggsci::yellow_material"
-        ) %>% as.character(),
-        domain = NULL
-      )
-    ) %>%
-
-    gt::tab_options(
-      # hide the top-most border
-      table.border.top.color = "white",
-
-      # make the title size match the body text
-      #heading.title.font.size = px(16),
-
-      # change the column labels section
-      column_labels.border.top.width = 3,
-      column_labels.border.top.color = "gray",
-      column_labels.border.bottom.width = 3,
-      column_labels.border.bottom.color = "black",
-
-      # hide the bottom-most line or footnotes
-      # will have a border
-      table.border.bottom.color = "white",
-
-      table.background.color = "white",
-
-      grand_summary_row.border.color = "black"
-    ) %>%
-
-    # Alight table values to the center
-    gt::cols_align(align="center") %>%
-
-    # Add Gray line between body and Total column
-    gt::tab_style(
-      style = list(
-        gt::cell_borders(
-          sides = "left",
-          color = "gray57",
-          weight = gt::px(2)
-        )
-      ),
-      locations = list(
-        gt::cells_body(
-          columns = gt::vars(Total)
-        )
-      )
-    ) %>%
-
-    # Bold the Total Column values
-    gt::tab_style(
-      style = list(
-        gt::cell_text(
-          color = "gray",
-          weight = "bold"
-        )
-      ),
-      locations = list(
-        gt::cells_body(
-          columns = gt::vars(Total)
-        )
-      )
-    )
-
-
-
-
-
-  # DBP Time of Day
-  dbp_tod_table <- gt::gt(data = bp_tables(data)['DBP_by_Time_of_Day'][[1]], rownames_to_stub = TRUE) %>%
-
-    gt::summary_rows(fns = list(Total = ~sum(., na.rm = TRUE)), decimals = 0) %>%
-
-    gt::tab_header(
-      title = gt::md("**DBP by Time of Day**")#,
-      #subtitle = "Subtitle"
-    ) %>%
-
-    gt::data_color(
-      columns = gt::vars(Morning, Afternoon, Evening, Night),
-      colors = scales::col_numeric(
-        palette = paletteer::paletteer_d(
-          #palette = "ggsci::purple_material"
-          palette = "ggsci::yellow_material"
-        ) %>% as.character(),
-        domain = NULL
-      )
-    ) %>%
-
-    gt::tab_options(
-      # hide the top-most border
-      table.border.top.color = "white",
-
-      # make the title size match the body text
-      #heading.title.font.size = px(16),
-
-      # change the column labels section
-      column_labels.border.top.width = 3,
-      column_labels.border.top.color = "gray",
-      column_labels.border.bottom.width = 3,
-      column_labels.border.bottom.color = "black",
+              "Morning", "Afternoon", "Evening", "Night", "."))
 
-      # hide the bottom-most line or footnotes
-      # will have a border
-      table.border.bottom.color = "white",
 
-      table.background.color = "white",
 
-      grand_summary_row.border.color = "black"
-    ) %>%
+  ###################
+  # SBP Day of Week #
+  ###################
 
-    # Alight table values to the center
-    gt::cols_align(align="center") %>%
+  # Extract necessary data
+  sbp_dow_data <- bp_tables(data)['SBP_by_Day_of_Week'][[1]]
 
-    # Add Gray line between body and Total column
-    gt::tab_style(
-      style = list(
-        gt::cell_borders(
-          sides = "left",
-          color = "gray57",
-          weight = gt::px(2)
-        )
-      ),
-      locations = list(
-        gt::cells_body(
-          columns = gt::vars(Total)
-        )
-      )
-    ) %>%
-
-    # Bold the Total Column values
-    gt::tab_style(
-      style = list(
-        gt::cell_text(
-          color = "gray",
-          weight = "bold"
-        )
-      ),
-      locations = list(
-        gt::cells_body(
-          columns = gt::vars(Total)
-        )
-      )
-    )
-
-
-
-
-
-  # Alternate Method to try and close connection
-
-  # Install phantomjs from webshot if not already installed
-  #if (is.null(suppressMessages(webshot:::find_phantom()))) { webshot::install_phantomjs() }
-
-  ################################################################################
-
-  p1 <- gt::gtsave(sbp_dow_table, filename = "sbp_dow.png", path = tempdir() )
-  list.files(tempdir())
-
-  img1 <- grid::rasterGrob(png::readPNG( p1 ) )
-
-  unlink(file.path(tempdir(), "sbp_dow.png"))
-  list.files(tempdir())
-
-  ################################################################################
-
-  p2 <- gt::gtsave(sbp_tod_table, filename = "sbp_tod.png", path = tempdir() )
-  list.files(tempdir())
-
-  img2 <- grid::rasterGrob(png::readPNG( p2 ) )
-
-  unlink(file.path(tempdir(), "sbp_tod.png"))
-  list.files(tempdir())
-
-  ################################################################################
-
-  p3 <- gt::gtsave(dbp_dow_table, filename = "dbp_dow.png", path = tempdir() )
-  list.files(tempdir())
-
-  img3 <- grid::rasterGrob(png::readPNG( p3 ) )
-
-  unlink(file.path(tempdir(), "dbp_dow.png"))
-  list.files(tempdir())
-
-  ################################################################################
-
-  p4 <- gt::gtsave(dbp_tod_table, filename = "dbp_tod.png", path = tempdir() )
-  list.files(tempdir())
-
-  img4 <- grid::rasterGrob(png::readPNG( p4 ) )
-
-  unlink(file.path(tempdir(), "dbp_tod.png"))
-  list.files(tempdir())
-
-
-
-
-
-
-
-
-
-  # # Old Method
-  #
-  # tmploc <- withr::local_tempdir()
-  #
-  # # Save to PNG
-  # sbp_dow_table %>% gt::gtsave(filename = file.path(tmploc, "sbp_dow.png") )
-  # dbp_dow_table %>% gt::gtsave(filename = file.path(tmploc, "dbp_dow.png") )
-  #
-  # sbp_tod_table %>% gt::gtsave(filename = file.path(tmploc, "sbp_tod.png") )
-  # dbp_tod_table %>% gt::gtsave(filename = file.path(tmploc, "dbp_tod.png") )
-  #
-  # # Retrieve PNGs
-  #
-  # img1 <- grid::rasterGrob(png::readPNG( file.path(tmploc, "sbp_dow.png") ))
-  # img2 <- grid::rasterGrob(png::readPNG( file.path(tmploc, "dbp_dow.png") ))
-  #
-  # img3 <- grid::rasterGrob(png::readPNG( file.path(tmploc, "sbp_tod.png") ))
-  # img4 <- grid::rasterGrob(png::readPNG( file.path(tmploc, "dbp_tod.png") ))
-  #
-  # file.remove(file.path(tmploc, "sbp_dow.png"), recursive = TRUE)
-  # file.remove(file.path(tmploc, "dbp_dow.png"), recursive = TRUE)
-  # file.remove(file.path(tmploc, "sbp_tod.png"), recursive = TRUE)
-  # file.remove(file.path(tmploc, "dbp_tod.png"), recursive = TRUE)
-
-
-  #t1 <- grid.arrange(img1, img2, img3, img4, nrow = 2, ncol = 2)
-
-  #on.exit(unlink(tmploc), add = TRUE)
-
-  out <- list(img1, img2, img3, img4)
+  # Convert row names to column --> tibble package
+  sbp_dow_data <- tibble::rownames_to_column(sbp_dow_data, var = "BP Stage")
+
+  # Add column totals --> dplyr for bind_rows
+  sbp_dow_data <- sbp_dow_data %>%
+    dplyr::bind_rows(dplyr::summarise(.,
+                               dplyr::across(tidyselect::vars_select_helpers$where(is.numeric), sum),
+                               dplyr::across(tidyselect::vars_select_helpers$where(is.character), ~"Total")))
+
+
+  # Stages
+  sbp_stage <- gridExtra::tableGrob(sbp_dow_data["BP Stage"],
+                        theme = gridExtra::ttheme_default(
+                          colhead = list(bg_params=list(fill="white", col="grey90")),
+                          base_size = 7, padding = unit(c(4,3),"mm")),
+                        rows = NULL)
+
+  sbp_dow_table <- gridExtra::gtable_cbind(sbp_stage)
+
+  # Loop over all days of the week
+  for(dfcol in names(sbp_dow_data)[2:(length(names(sbp_dow_data)) - 1)]){
+
+    cols_day <- grDevices::colorRampPalette(c("#FFE0B2", "#FFA000", "#E65100"))(nrow(sbp_dow_data))[rank(sbp_dow_data[[dfcol]][1:6])]
+    day_dat <- as.data.frame(sbp_dow_data[dfcol][1:6,])
+    colnames(day_dat) <- dfcol
+    day <- gridExtra::tableGrob(day_dat,
+                     theme = gridExtra::ttheme_default(
+                     core=list(bg_params = list(fill=cols_day)),
+                     colhead = list(bg_params=list(fill="white", col="grey90")),
+                     base_size = 7, padding = unit(c(4,3),"mm")),
+                     rows = NULL)
+    day_tot <- as.data.frame(sbp_dow_data[dfcol][7,])
+    colnames(day_tot) <- dfcol
+
+    day_tot_grob <- gridExtra::tableGrob(day_tot, rows = NULL, cols = NULL,
+                              theme = gridExtra::ttheme_default(base_size = 7, padding = unit(c(4,3),"mm")))
+
+    day <- gridExtra::gtable_rbind(day, day_tot_grob)
+
+    sbp_dow_table <- gridExtra::gtable_cbind(sbp_dow_table, day)
+  }
+
+
+  # Totals
+  sbptotals <- gridExtra::tableGrob(sbp_dow_data["Total"],
+                      theme = gridExtra::ttheme_default(
+                        colhead = list(bg_params=list(fill="white", col="grey90")),
+                        base_size = 7, padding = unit(c(4,3),"mm")),
+                      rows = NULL)
+
+  sbp_dow_table <- gridExtra::gtable_cbind(sbp_dow_table, sbptotals)
+
+
+  sbp_dow_table <- gtable::gtable_add_grob(sbp_dow_table,
+                                    grobs = grid::rectGrob(gp = grid::gpar(fill = NA, lwd = 2)),
+                                    t = 2,
+                                    b = nrow(sbp_dow_table)-1,
+                                    l = 2,
+                                    r = ncol(sbp_dow_table)-1
+                                  )
+
+  sbp_dow_table <- gtable::gtable_add_grob(sbp_dow_table,
+                                      grobs = grid::rectGrob(gp = grid::gpar(fill = NA, lwd = 1)),
+                                      t = 1,
+                                      b = nrow(sbp_dow_table),
+                                      l = 1,
+                                      r = ncol(sbp_dow_table)
+                                  )
+
+
+  sbptitle <- grid::textGrob("SBP by Day of the Week", gp = grid::gpar(fontsize = 15))
+  padding <-ggplot2::unit(7, "mm")
+
+  sbp_dow_table <- gtable::gtable_add_rows(
+    sbp_dow_table,
+    heights = grid::grobHeight(sbptitle) + padding,
+    pos = 0)
+
+  sbp_dow_table <- gtable::gtable_add_grob(
+    sbp_dow_table,
+    sbptitle,
+    1, 1, 1, ncol(sbp_dow_table))
+
+
+
+
+
+  ###################
+  # DBP Day of Week #
+  ###################
+
+
+  # Extract necessary data
+  dbp_dow_data <- bp_tables(data)['DBP_by_Day_of_Week'][[1]]
+
+  # Convert row names to column --> tibble package
+  dbp_dow_data <- tibble::rownames_to_column(dbp_dow_data, var = "BP Stage")
+
+  # Add column totals --> dplyr for bind_rows
+  dbp_dow_data <- dbp_dow_data %>%
+    dplyr::bind_rows(dplyr::summarise(.,
+                               dplyr::across(tidyselect::vars_select_helpers$where(is.numeric), sum),
+                               dplyr::across(tidyselect::vars_select_helpers$where(is.character), ~"Total")))
+
+
+  # Stages
+  dbp_stage <- gridExtra::tableGrob(dbp_dow_data["BP Stage"],
+                        theme = gridExtra::ttheme_default(
+                          colhead = list(bg_params=list(fill="white", col="grey90")),
+                          base_size = 7, padding = unit(c(4,3),"mm")),
+                        rows = NULL)
+
+  dbp_dow_table <- gridExtra::gtable_cbind(dbp_stage)
+
+  # Loop over all days of the week
+  for(dfcol in names(dbp_dow_data)[2:(length(names(dbp_dow_data)) - 1)]){
+
+    cols_day <- grDevices::colorRampPalette(c("#FFE0B2", "#FFA000", "#E65100"))(nrow(dbp_dow_data))[rank(dbp_dow_data[[dfcol]][1:6])]
+    day_dat <- as.data.frame(dbp_dow_data[dfcol][1:6,])
+    colnames(day_dat) <- dfcol
+    day <- gridExtra::tableGrob(day_dat,
+                     theme = gridExtra::ttheme_default(
+                       core=list(bg_params = list(fill=cols_day)),
+                       colhead = list(bg_params=list(fill="white", col="grey90")),
+                       base_size = 7, padding = unit(c(4,3),"mm")),
+                     rows = NULL)
+    day_tot <- as.data.frame(dbp_dow_data[dfcol][7,])
+    colnames(day_tot) <- dfcol
+
+    day_tot_grob <- gridExtra::tableGrob(day_tot, rows = NULL, cols = NULL,
+                              theme = gridExtra::ttheme_default(base_size = 7, padding = unit(c(4,3),"mm")))
+
+    day <- gridExtra::gtable_rbind(day, day_tot_grob)
+
+    dbp_dow_table <- gridExtra::gtable_cbind(dbp_dow_table, day)
+  }
+
+
+  # Totals
+  dbptotals <- gridExtra::tableGrob(dbp_dow_data["Total"],
+                      theme = gridExtra::ttheme_default(
+                        colhead = list(bg_params=list(fill="white", col="grey90")),
+                        base_size = 7, padding = unit(c(4,3),"mm")),
+                      rows = NULL)
+
+  dbp_dow_table <- gridExtra::gtable_cbind(dbp_dow_table, dbptotals)
+
+
+  dbp_dow_table <- gtable::gtable_add_grob(dbp_dow_table,
+                                   grobs = grid::rectGrob(gp = grid::gpar(fill = NA, lwd = 2)),
+                                   t = 2,
+                                   b = nrow(dbp_dow_table)-1,
+                                   l = 2,
+                                   r = ncol(dbp_dow_table)-1
+  )
+
+  dbp_dow_table <- gtable::gtable_add_grob(dbp_dow_table,
+                                   grobs = grid::rectGrob(gp = grid::gpar(fill = NA, lwd = 1)),
+                                   t = 1,
+                                   b = nrow(dbp_dow_table),
+                                   l = 1,
+                                   r = ncol(dbp_dow_table)
+  )
+
+
+  dbptitle <- grid::textGrob("DBP by Day of the Week", gp = grid::gpar(fontsize = 15))
+  padding <- ggplot2::unit(7, "mm")
+
+  dbp_dow_table <- gtable::gtable_add_rows(
+    dbp_dow_table,
+    heights = grid::grobHeight(dbptitle) + padding,
+    pos = 0)
+
+  dbp_dow_table <- gtable::gtable_add_grob(
+    dbp_dow_table,
+    dbptitle,
+    1, 1, 1, ncol(dbp_dow_table))
+
+
+
+
+
+  ###################
+  # SBP Time of Day #
+  ###################
+
+  # Extract necessary data
+  sbp_tod_data <- bp_tables(data)['SBP_by_Time_of_Day'][[1]]
+
+  # Convert row names to column --> tibble package
+  sbp_tod_data <- tibble::rownames_to_column(sbp_tod_data, var = "BP Stage")
+
+  # Add column totals --> dplyr for bind_rows
+  sbp_tod_data <- sbp_tod_data %>%
+    dplyr::bind_rows(dplyr::summarise(.,
+                               dplyr::across(tidyselect::vars_select_helpers$where(is.numeric), sum),
+                               dplyr::across(tidyselect::vars_select_helpers$where(is.character), ~"Total")))
+
+
+  # Stages
+  sbp_stage <- gridExtra::tableGrob(sbp_tod_data["BP Stage"],
+                         theme = gridExtra::ttheme_default(
+                           colhead = list(bg_params=list(fill="white", col="grey90")),
+                           base_size = 7, padding = unit(c(4,3),"mm")),
+                         rows = NULL)
+
+  sbp_tod_table <- gridExtra::gtable_cbind(sbp_stage)
+
+  # Loop over all times of the day
+  for(dfcol in names(sbp_tod_data)[2:(length(names(sbp_tod_data)) - 1)]){
+
+    #cols_tm <- colorRampPalette(c("#FFE0B2", "#FFA000", "#E65100"))(nrow(sbp_tod_data))[rank(sbp_tod_data[[dfcol]][1:6])]
+    cols_tm <- grDevices::colorRampPalette(c("#DDDDFF", "#AABBFF", "#3366EE"))(nrow(sbp_tod_data))[rank(sbp_tod_data[[dfcol]][1:6])]
+
+    tm_dat <- as.data.frame(sbp_tod_data[dfcol][1:6,])
+    colnames(tm_dat) <- dfcol
+    tm <- gridExtra::tableGrob(tm_dat,
+                     theme = gridExtra::ttheme_default(
+                       core=list(bg_params = list(fill=cols_tm)),
+                       colhead = list(bg_params=list(fill="white", col="grey90")),
+                       base_size = 7, padding = unit(c(4,3),"mm")),
+                     rows = NULL)
+    tm_tot <- as.data.frame(sbp_tod_data[dfcol][7,])
+    colnames(tm_tot) <- dfcol
+
+    tm_tot_grob <- gridExtra::tableGrob(tm_tot, rows = NULL, cols = NULL,
+                             theme = gridExtra::ttheme_default(base_size = 7, padding = unit(c(4,3),"mm")))
+
+    tm <- gridExtra::gtable_rbind(tm, tm_tot_grob)
+
+    sbp_tod_table <- gridExtra::gtable_cbind(sbp_tod_table, tm)
+  }
+
+
+  # Totals
+  sbptotals <- gridExtra::tableGrob(sbp_tod_data["Total"],
+                         theme = gridExtra::ttheme_default(
+                           colhead = list(bg_params=list(fill="white", col="grey90")),
+                           base_size = 7, padding = unit(c(4,3),"mm")),
+                         rows = NULL)
+
+  sbp_tod_table <- gridExtra::gtable_cbind(sbp_tod_table, sbptotals)
+
+
+  sbp_tod_table <- gtable::gtable_add_grob(sbp_tod_table,
+                                   grobs = grid::rectGrob(gp = grid::gpar(fill = NA, lwd = 2)),
+                                   t = 2,
+                                   b = nrow(sbp_tod_table)-1,
+                                   l = 2,
+                                   r = ncol(sbp_tod_table)-1
+  )
+
+  sbp_tod_table <- gtable::gtable_add_grob(sbp_tod_table,
+                                   grobs = grid::rectGrob(gp = grid::gpar(fill = NA, lwd = 1)),
+                                   t = 1,
+                                   b = nrow(sbp_tod_table),
+                                   l = 1,
+                                   r = ncol(sbp_tod_table)
+  )
+
+
+  sbptitle <- grid::textGrob("SBP by Time of Day", gp = grid::gpar(fontsize = 15))
+  padding <- ggplot2::unit(7, "mm")
+
+  sbp_tod_table <- gtable::gtable_add_rows(
+    sbp_tod_table,
+    heights = grid::grobHeight(sbptitle) + padding,
+    pos = 0)
+
+  sbp_tod_table <- gtable::gtable_add_grob(
+    sbp_tod_table,
+    sbptitle,
+    1, 1, 1, ncol(sbp_tod_table))
+
+
+
+
+
+
+  ###################
+  # DBP Time of Day #
+  ###################
+
+  # Extract necessary data
+  dbp_tod_data <- bp_tables(data)['DBP_by_Time_of_Day'][[1]]
+
+  # Convert row names to column --> tibble package
+  dbp_tod_data <- tibble::rownames_to_column(dbp_tod_data, var = "BP Stage")
+
+  # Add column totals --> dplyr for bind_rows
+  dbp_tod_data <- dbp_tod_data %>%
+    dplyr::bind_rows(dplyr::summarise(.,
+                               dplyr::across(tidyselect::vars_select_helpers$where(is.numeric), sum),
+                               dplyr::across(tidyselect::vars_select_helpers$where(is.character), ~"Total")))
+
+
+  # Stages
+  dbp_stage <- gridExtra::tableGrob(dbp_tod_data["BP Stage"],
+                         theme = gridExtra::ttheme_default(
+                           colhead = list(bg_params=list(fill="white", col="grey90")),
+                           base_size = 7, padding = unit(c(4,3),"mm")),
+                         rows = NULL)
+
+  dbp_tod_table <- gridExtra::gtable_cbind(dbp_stage)
+
+  # Loop over all times of the day
+  for(dfcol in names(dbp_tod_data)[2:(length(names(dbp_tod_data)) - 1)]){
+
+    #cols_tm <- colorRampPalette(c("#FFE0B2", "#FFA000", "#E65100"))(nrow(sbp_tod_data))[rank(sbp_tod_data[[dfcol]][1:6])]
+    cols_tm <- grDevices::colorRampPalette(c("#DDDDFF", "#AABBFF", "#3366EE"))(nrow(dbp_tod_data))[rank(dbp_tod_data[[dfcol]][1:6])]
+
+    tm_dat <- as.data.frame(dbp_tod_data[dfcol][1:6,])
+    colnames(tm_dat) <- dfcol
+    tm <- gridExtra::tableGrob(tm_dat,
+                    theme = gridExtra::ttheme_default(
+                      core=list(bg_params = list(fill=cols_tm)),
+                      colhead = list(bg_params=list(fill="white", col="grey90")),
+                      base_size = 7, padding = unit(c(4,3),"mm")),
+                    rows = NULL)
+    tm_tot <- as.data.frame(dbp_tod_data[dfcol][7,])
+    colnames(tm_tot) <- dfcol
+
+    tm_tot_grob <- gridExtra::tableGrob(tm_tot, rows = NULL, cols = NULL,
+                             theme = gridExtra::ttheme_default(base_size = 7, padding = unit(c(4,3),"mm")))
+
+    tm <- gridExtra::gtable_rbind(tm, tm_tot_grob)
+
+    dbp_tod_table <- gridExtra::gtable_cbind(dbp_tod_table, tm)
+  }
+
+
+  # Totals
+  dbptotals <- gridExtra::tableGrob(dbp_tod_data["Total"],
+                         theme = gridExtra::ttheme_default(
+                           colhead = list(bg_params=list(fill="white", col="grey90")),
+                           base_size = 7, padding = unit(c(4,3),"mm")),
+                         rows = NULL)
+
+  dbp_tod_table <- gridExtra::gtable_cbind(dbp_tod_table, dbptotals)
+
+
+  dbp_tod_table <- gtable::gtable_add_grob(dbp_tod_table,
+                                   grobs = grid::rectGrob(gp = grid::gpar(fill = NA, lwd = 2)),
+                                   t = 2,
+                                   b = nrow(dbp_tod_table)-1,
+                                   l = 2,
+                                   r = ncol(dbp_tod_table)-1
+  )
+
+  dbp_tod_table <- gtable::gtable_add_grob(dbp_tod_table,
+                                   grobs = grid::rectGrob(gp = grid::gpar(fill = NA, lwd = 1)),
+                                   t = 1,
+                                   b = nrow(dbp_tod_table),
+                                   l = 1,
+                                   r = ncol(dbp_tod_table)
+  )
+
+
+  dbptitle <- grid::textGrob("DBP by Time of Day", gp = grid::gpar(fontsize = 15))
+  padding <- ggplot2::unit(7, "mm")
+
+  dbp_tod_table <- gtable::gtable_add_rows(
+    dbp_tod_table,
+    heights = grid::grobHeight(dbptitle) + padding,
+    pos = 0)
+
+  dbp_tod_table <- gtable::gtable_add_grob(
+    dbp_tod_table,
+    dbptitle,
+    1, 1, 1, ncol(dbp_tod_table))
+
+
+
+
+  ## Return all table visuals in a list
+
+  out <- list(sbp_dow_table, dbp_dow_table, sbp_tod_table, dbp_tod_table)
   return(out)
 
 }
