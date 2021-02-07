@@ -26,19 +26,19 @@
 #' data(bp_jhs)
 #'
 #' # Process hypnos_data
-#' data1 <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
+#' hyp_proc <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
 #' id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp = "rpp")
 #' # Process bp_jhs data
-#' data2 <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", bp_datetime = "DateTime",
+#' jhs_proc <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", bp_datetime = "DateTime",
 #' hr = "Pulse.bpm.")
 #'
 #' # BP Magnitude Calculation
-#' bp_mag(data1)
-#' bp_mag(data2, inc_date = TRUE)
+#' bp_mag(hyp_proc)
+#' bp_mag(jhs_proc, inc_date = TRUE)
 bp_mag <- function(data, inc_date = FALSE, bp_type = 0){
 
-  SBP = DBP = . = NULL
-  rm(list = c('SBP', 'DBP', '.'))
+  SBP = DBP = ID = . = NULL
+  rm(list = c('SBP', 'DBP', 'ID', '.'))
 
   if(bp_type == 0 | bp_type == 1){
 
@@ -58,18 +58,38 @@ bp_mag <- function(data, inc_date = FALSE, bp_type = 0){
     }
   }
 
+
+  # This should be an extraneous step because ID column will be generated in data_process
+  # but this serves as an extra "back-up" in case not
+  if(!("ID" %in% colnames(data))){
+    # Create placeholder ID column for use with other functions / plots
+    data <- data %>% dplyr::mutate(ID = 1)
+  }
+
+
   # Determine how granular to calculate based on which columns are available
   if(inc_date == TRUE){
+
     grps = c("ID", "VISIT", "WAKE", "DATE")
+
+    if(!("DATE" %in% colnames(data))){
+        warning('inc_date = TRUE but no DATE column found')
+      }
+
   }else{
+
     grps = c("ID", "VISIT", "WAKE")
+
   }
 
   grps = grps[which(grps %in% colnames(data) == TRUE)]
 
-  if(length(grps) == 0){
 
-    warning('No columns specified for ID, VISIT, or WAKE. All SV values aggregated.')
+
+
+  if(length(grps) == 1 & all(grps == "ID")){
+
+    message('No columns specified for DATE, VISIT, or WAKE. All bp_mag values aggregated for single subject.')
 
   }
 

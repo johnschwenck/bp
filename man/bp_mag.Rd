@@ -35,13 +35,13 @@ data(hypnos_data)
 data(bp_jhs)
 
 # Process hypnos_data
-data1 <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
+hyp_proc <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
 id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp = "rpp")
 # Process bp_jhs data
-data2 <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", bp_datetime = "DateTime",
+jhs_proc <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", bp_datetime = "DateTime",
 hr = "Pulse.bpm.")
 
 # BP Magnitude Calculation
-bp_mag(data1)
-bp_mag(data2, inc_date = TRUE)
+bp_mag(hyp_proc)
+bp_mag(jhs_proc, inc_date = TRUE)
 }
