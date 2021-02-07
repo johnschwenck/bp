@@ -21,7 +21,8 @@
 #' but HIGHLY recommended to supply if available.
 #'
 #' @param id Optional column name (character string) corresponding to subject ID. Typically
-#' needed for data corresponding to more than one subject.
+#' needed for data corresponding to more than one subject. For one-subject datasets, ID
+#' will default to 1 (if ID column not found in dataset)
 #'
 #' @param wake Optional column name (character string) corresponding to sleep status. A
 #' WAKE value of 1 indicates that the subject is awake and 0 implies asleep.
@@ -91,19 +92,19 @@
 #' data("hypnos_data")
 #'
 #' # Process data for hypnos_data
-#' data1 <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
+#' hyp_proc <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
 #' id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp = "rpp")
 #'
-#' data1
+#' hyp_proc
 #'
 #' # Load bp_jhs data
 #' data("bp_jhs")
 #'
 #' # Process data for bp_jhs
-#' data2 <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", bp_datetime = "DateTime",
+#' jhs_proc <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", bp_datetime = "DateTime",
 #' hr = "Pulse.bpm.")
 #'
-#' data2
+#' jhs_proc
 #'
 process_data <- function(data,
                          sbp = NULL,
@@ -671,6 +672,13 @@ process_data <- function(data,
       data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
 
     }
+  }else{
+
+    if(!("ID" %in% colnames(data))){
+      # Create placeholder ID column for use with other functions / plots
+      data <- data %>% dplyr::mutate(ID = 1)
+    }
+
   }
 
 
