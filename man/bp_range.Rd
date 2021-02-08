@@ -19,6 +19,22 @@ to overlap due to recordings during sleep.}
 A tibble with SBP_max, SBP_min, SBP_range, DBP_max, DBP_min, DBP_range
 and any additional optional columns included in data such as \code{ID}, \code{VISIT},
 \code{WAKE}, and \code{DATE}. If inc_date = TRUE, each row will correspond to a date.
+The resulting tibble consists of:
+\itemize{
+
+   \item \code{ID}: The unique identifier of the subject. For single-subject datasets, ID = 1
+   \item \code{VISIT}: (If applicable) Corresponds to the visit # of the subject, if more than 1
+   \item \code{WAKE}: (If applicable) Corresponds to the awake status of the subject (0 = asleep |
+   1 = awake)
+   \item \code{SBP_max} / \code{DBP_max}: Finds the maximum value for the given grouping granularity
+   \item \code{SBP_min} / \code{DBP_min}: Finds the minimum value for the given grouping granularity
+   \item \code{SBP_range} / \code{DBP_range}: Calculates the range between the max and min values
+   \item \code{N}: The number of observations for that particular grouping. If \code{inc_date = TRUE},
+   \code{N} corresponds to the number of observations for that date. If \code{inc_date = FALSE},
+   \code{N} corresponds to the number of observations for the most granular grouping available
+   (i.e. a combination of \code{ID}, \code{VISIT}, and \code{WAKE})
+
+}
 }
 \description{
 Calculates the range (max - min) of both SBP and DBP values in addition to max and
@@ -31,13 +47,13 @@ data(hypnos_data)
 data(bp_jhs)
 
 # Process hypnos_data
-data1 <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
+hypnos_proc <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
 id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp = "rpp")
 # Process bp_jhs data
-data2 <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", bp_datetime = "DateTime",
+jhs_proc <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", bp_datetime = "DateTime",
 hr = "Pulse.bpm.")
 
 # Calculate BP range
-bp_range(data1)
-bp_range(data2, inc_date = 1)
+bp_range(hypnos_proc)
+bp_range(jhs_proc, inc_date = 1)
 }

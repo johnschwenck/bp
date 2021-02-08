@@ -23,7 +23,22 @@ use bp_type = 1, and for \strong{DBP-only} use bp_type = 2}
 }
 \value{
 A tibble object with a row corresponding to each subject, or alternatively
-a row corresponding to each date if inc_date = TRUE
+a row corresponding to each date if inc_date = TRUE. The resulting tibble consists of:
+\itemize{
+
+   \item \code{ID}: The unique identifier of the subject. For single-subject datasets, ID = 1
+   \item \code{VISIT}: (If applicable) Corresponds to the visit # of the subject, if more than 1
+   \item \code{WAKE}: (If applicable) Corresponds to the awake status of the subject (0 = asleep |
+   1 = awake)
+   \item \code{SV_SBP} / \code{SV_DBP}: Calculates the square root of the average squared differences
+   between successive measurements. The resulting value averages across the granularity
+   grouping for however many observations are present.
+   \item N: The number of observations for that particular grouping. If \code{inc_date = TRUE},
+   \code{N} corresponds to the number of observations for that date. If \code{inc_date = FALSE}, N
+   corresponds to the number of observations for the most granular grouping available (i.e.
+   a combination of \code{ID}, \code{VISIT}, and \code{WAKE})
+
+}
 }
 \description{
 Calculate the successive variation (SV) at various levels of granularity
@@ -45,13 +60,13 @@ data(hypnos_data)
 data(bp_jhs)
 
 # Process hypnos_data
-data1 <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
+hypnos_proc <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
 id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp = "rpp")
 # Process bp_jhs data
-data2 <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", bp_datetime = "DateTime",
+jhs_proc <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", bp_datetime = "DateTime",
 hr = "Pulse.bpm.")
 
 # SV Calculation
-sv(data1)
-sv(data2)
+sv(hypnos_proc)
+sv(jhs_proc)
 }

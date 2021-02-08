@@ -23,7 +23,24 @@ use bp_type = 1, and for \strong{DBP-only} use bp_type = 2}
 }
 \value{
 A tibble object with a row corresponding to each subject, or alternatively
-a row corresponding to each date if inc_date = TRUE
+a row corresponding to each date if inc_date = TRUE. The resulting tibble consists of:
+\itemize{
+
+   \item \code{ID}: The unique identifier of the subject. For single-subject datasets, ID = 1
+   \item \code{VISIT}: (If applicable) Corresponds to the visit # of the subject, if more than 1
+   \item \code{WAKE}: (If applicable) Corresponds to the awake status of the subject (0 = asleep |
+   1 = awake)
+   \item \code{CV_SBP} / \code{CV_DBP}: Calculates the ratio of standard deviation to the mean. \code{CV_SBP}
+   or \code{CV_DBP} is useful for comparing the degree of variation from one data series
+   to another.
+   \item \code{SD_SBP} / \code{SD_DBP}: For completeness, the \code{cv} function also includes the
+   standard deviation as a comparison metric to measure spread around the average.
+   \item \code{N}: The number of observations for that particular grouping. If \code{inc_date = TRUE},
+   \code{N} corresponds to the number of observations for that date. If \code{inc_date = FALSE}, N
+   corresponds to the number of observations for the most granular grouping available (i.e.
+   a combination of \code{ID}, \code{VISIT}, and \code{WAKE})
+
+}
 }
 \description{
 Calculate the coefficient of variation at various levels of granularity
@@ -36,13 +53,13 @@ data(hypnos_data)
 data(bp_jhs)
 
 # Process hypnos_data
-data1 <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
+hypnos_proc <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
 id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp = "rpp")
 # Process bp_jhs data
-data2 <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", bp_datetime = "DateTime",
+jhs_proc <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", bp_datetime = "DateTime",
 hr = "Pulse.bpm.")
 
 # CV Calculation
-cv(data1)
-cv(data2)
+cv(hypnos_proc)
+cv(jhs_proc)
 }
