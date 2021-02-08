@@ -20,7 +20,22 @@
 #' and for DBP-only use bp_type = 2
 #'
 #' @return A tibble object with a row corresponding to each subject, or alternatively
-#' a row corresponding to each date, if inc_date = TRUE
+#' a row corresponding to each date, if inc_date = TRUE. The resulting tibble consists of:
+#' \itemize{
+#'
+#'    \item \code{ID}: The unique identifier of the subject. For single-subject datasets, ID = 1
+#'    \item \code{VISIT}: (If applicable) Corresponds to the visit # of the subject, if more than 1
+#'    \item \code{WAKE}: (If applicable) Corresponds to the awake status of the subject (0 = asleep |
+#'    1 = awake)
+#'    \item \code{ARV_SBP} / \code{ARV_DBP}: Calculates the average of the absolute differences between
+#'    successive measurements. The resulting value averages across the granularity grouping
+#'    for however many observations are present.
+#'    \item \code{N}: The number of observations for that particular grouping. If \code{inc_date = TRUE},
+#'    \code{N} corresponds to the number of observations for that date. If \code{inc_date = FALSE}, N
+#'    corresponds to the number of observations for the most granular grouping available (i.e.
+#'    a combination of \code{ID}, \code{VISIT}, and \code{WAKE})
+#'
+#' }
 #'
 #' @references
 #' Mena et al. (2005) A reliable index for the prognostic significance of
@@ -36,15 +51,15 @@
 #' data(bp_jhs)
 #'
 #' # Process hypnos_data
-#' data1 <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
+#' hypnos_proc <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
 #' id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp = "rpp")
 #' # Process bp_jhs data
-#' data2 <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", bp_datetime = "DateTime",
+#' jhs_proc <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", bp_datetime = "DateTime",
 #' hr = "Pulse.bpm.")
 #'
 #' # ARV Calculation
-#' arv(data1)
-#' arv(data2)
+#' arv(hypnos_proc)
+#' arv(jhs_proc, inc_date = 1)
 #' @export
 arv <- function(data, inc_date = 0, bp_type = 0){
 
@@ -89,10 +104,10 @@ arv <- function(data, inc_date = 0, bp_type = 0){
     dplyr::group_by_at(dplyr::vars(grps) ) %>%
 
     #ARV Calculation
-    { if (bp_type == 1) dplyr::summarise(., ARV = sum( abs( (SBP - dplyr::lag(SBP))[2:length(SBP - dplyr::lag(SBP))] ) ) / (dplyr::n() - 1)) else . } %>% # SBP only
-    { if (bp_type == 2) dplyr::summarise(., ARV = sum( abs( (DBP - dplyr::lag(DBP))[2:length(DBP - dplyr::lag(DBP))] ) ) / (dplyr::n() - 1)) else . } %>% # DBP only
+    { if (bp_type == 1) dplyr::summarise(., ARV = sum( abs( (SBP - dplyr::lag(SBP))[2:length(SBP - dplyr::lag(SBP))] ) ) / (dplyr::n() - 1), N = dplyr::n()) else . } %>% # SBP only
+    { if (bp_type == 2) dplyr::summarise(., ARV = sum( abs( (DBP - dplyr::lag(DBP))[2:length(DBP - dplyr::lag(DBP))] ) ) / (dplyr::n() - 1), N = dplyr::n()) else . } %>% # DBP only
     { if (bp_type == 0) dplyr::summarise(., ARV_SBP = sum( abs( (SBP - dplyr::lag(SBP))[2:length(SBP - dplyr::lag(SBP))] ) ) / (dplyr::n() - 1),
-                                            ARV_DBP = sum( abs( (DBP - dplyr::lag(DBP))[2:length(DBP - dplyr::lag(DBP))] ) ) / (dplyr::n() - 1)) else . } # both SBP and DBP
+                                            ARV_DBP = sum( abs( (DBP - dplyr::lag(DBP))[2:length(DBP - dplyr::lag(DBP))] ) ) / (dplyr::n() - 1), N = dplyr::n()) else . } # both SBP and DBP
 
 
   return(out)

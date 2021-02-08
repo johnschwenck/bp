@@ -16,7 +16,22 @@
 #' use bp_type = 1, and for \strong{DBP-only} use bp_type = 2
 #'
 #' @return A tibble object with a row corresponding to each subject, or alternatively
-#' a row corresponding to each date if inc_date = TRUE
+#' a row corresponding to each date if inc_date = TRUE. The resulting tibble consists of:
+#' \itemize{
+#'
+#'    \item \code{ID}: The unique identifier of the subject. For single-subject datasets, ID = 1
+#'    \item \code{VISIT}: (If applicable) Corresponds to the visit # of the subject, if more than 1
+#'    \item \code{WAKE}: (If applicable) Corresponds to the awake status of the subject (0 = asleep |
+#'    1 = awake)
+#'    \item \code{Peak_SBP} / \code{Peak_DBP}: Measures the difference between the max value and the average
+#'    \item \code{Trough_SBP} / \code{Trough_DBP}: Measures the difference between the average and the
+#'    min value
+#'    \item \code{N}: The number of observations for that particular grouping. If \code{inc_date = TRUE},
+#'    \code{N} corresponds to the number of observations for that date. If \code{inc_date = FALSE}, \code{N}
+#'    corresponds to the number of observations for the most granular grouping available (i.e.
+#'    a combination of \code{ID}, \code{VISIT}, and \code{WAKE})
+#'
+#' }
 #'
 #' @export
 #'
@@ -26,14 +41,14 @@
 #' data(bp_jhs)
 #'
 #' # Process hypnos_data
-#' hyp_proc <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
+#' hypnos_proc <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
 #' id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp = "rpp")
 #' # Process bp_jhs data
 #' jhs_proc <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", bp_datetime = "DateTime",
 #' hr = "Pulse.bpm.")
 #'
 #' # BP Magnitude Calculation
-#' bp_mag(hyp_proc)
+#' bp_mag(hypnos_proc)
 #' bp_mag(jhs_proc, inc_date = TRUE)
 bp_mag <- function(data, inc_date = FALSE, bp_type = 0){
 
