@@ -414,6 +414,24 @@ process_data <- function(data,
       data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
 
     }
+
+    # if( length( unique(data$VISIT) ) > 1){
+    #
+    #   tmp <- data %>%
+    #     group_by(ID, VISIT) %>%
+    #     select(SBP, DBP) %>%
+    #     dplyr::mutate(
+    #       first_SBP = dplyr::first(SBP),
+    #       first_DBP = dplyr::first(DBP)
+    #     ) %>%
+    #     mutate( tmp = SBP - first_SBP ) %>%
+    #     select(-first_SBP)
+    #
+    # ############
+    #   ##############
+    #   ############
+    #   }
+
   }
 
 
@@ -707,6 +725,9 @@ process_data <- function(data,
            DBP_Category = factor(DBP_Category, levels = c("Low", "Normal", "Elevated", "Stage 1", "Stage 2", "Crisis")),
            )
 
+
+  # Sanity check for any future additions to this function to ensure all columns are capitalized for consistency
+  colnames(data) <- toupper( colnames(data) )
 
   return(data)
 }

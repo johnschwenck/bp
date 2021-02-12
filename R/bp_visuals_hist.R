@@ -5,7 +5,7 @@
 #' function.
 #'
 #' @param data A processed dataframe resulting from the \code{process_data} function that
-#' contains the \code{SBP}, \code{DBP}, \code{SBP_Category}, and \code{DBP_Category} columns.
+#' contains the \code{SBP}, \code{DBP}, \code{SBP_CATEGORY}, and \code{DBP_CATEGORY} columns.
 #'
 #' @return A list containing three histogram visual graphics corresponding to the SBP / DBP totals,
 #' SBP frequency, and DBP frequency.
@@ -44,11 +44,11 @@ bp_hist <- function(data){
   # Assumes bp_type = 0 (both) and bp_tables parameters as defaults
   # Packages: ggplots2, cowplot
 
-  SBP = DBP = SBP_Category = DBP_Category = Category = n = bp_type = NULL
-  rm(list = c("SBP", "DBP", "SBP_Category", "DBP_Category", "Category", "n", "bp_type"))
+  SBP = DBP = SBP_CATEGORY = DBP_CATEGORY = Category = n = bp_type = NULL
+  rm(list = c("SBP", "DBP", "SBP_CATEGORY", "DBP_CATEGORY", "Category", "n", "bp_type"))
 
   # Ensure that the necessary columns exist in data set
-  if( all(c("SBP", "DBP", "SBP_Category", "DBP_Category") %in% names(data)) == FALSE){
+  if( all(c("SBP", "DBP", "SBP_CATEGORY", "DBP_CATEGORY") %in% names(data)) == FALSE){
 
     stop('One or more of the required variables are missing. \nEnsure that you have run the process_data() function first.')
 
@@ -111,7 +111,7 @@ bp_hist <- function(data){
 
 
   # SBP Frequency
-  hist2 <- ggplot(data = data, aes(x = SBP, fill = SBP_Category)) +
+  hist2 <- ggplot(data = data, aes(x = SBP, fill = SBP_CATEGORY)) +
     geom_histogram(position = "identity", alpha = 0.65, color = 'gray57') +
     ggtitle("Frequency of SBP Readings") +
     ylab("Freq") +
@@ -121,7 +121,7 @@ bp_hist <- function(data){
 
 
   # DBP Frequency
-  hist3 <- ggplot(data = data, aes(x = DBP, fill = DBP_Category)) +
+  hist3 <- ggplot(data = data, aes(x = DBP, fill = DBP_CATEGORY)) +
     geom_histogram(position = "identity", alpha = 0.65, color = 'gray57')+
     ggtitle("Frequency of DBP Readings") +
     ylab("Freq") +

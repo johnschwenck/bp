@@ -8,8 +8,8 @@ bp_tables(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin = 2)
 }
 \arguments{
 \item{data}{A processed dataframe resulting from the \code{process_data} function that
-contains the \code{SBP}, \code{DBP}, \code{DAY_OF_WEEK}, \code{Time_of_Day}, \code{SBP_Category},
-and \code{DBP_Category} columns.}
+contains the \code{SBP}, \code{DBP}, \code{DAY_OF_WEEK}, \code{Time_of_Day}, \code{SBP_CATEGORY},
+and \code{DBP_CATEGORY} columns.}
 
 \item{bp_type}{An indicator of the type of blood pressure data to output based on either
 0 (both SBP and DBP), 1 (SBP only), or 2 (DBP only). Must be of type integer.}

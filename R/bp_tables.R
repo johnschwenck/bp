@@ -4,8 +4,8 @@
 #' specific to blood pressure.
 #'
 #' @param data A processed dataframe resulting from the \code{process_data} function that
-#' contains the \code{SBP}, \code{DBP}, \code{DAY_OF_WEEK}, \code{Time_of_Day}, \code{SBP_Category},
-#' and \code{DBP_Category} columns.
+#' contains the \code{SBP}, \code{DBP}, \code{DAY_OF_WEEK}, \code{Time_of_Day}, \code{SBP_CATEGORY},
+#' and \code{DBP_CATEGORY} columns.
 #'
 #' @param bp_type An indicator of the type of blood pressure data to output based on either
 #' 0 (both SBP and DBP), 1 (SBP only), or 2 (DBP only). Must be of type integer.
@@ -52,8 +52,8 @@
 #'
 bp_tables <- function(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin = 2){
 
-  SBP_Category = DBP_Category = NULL
-  rm(list = c(SBP_Category, DBP_Category))
+  SBP_CATEGORY = DBP_CATEGORY = NULL
+  rm(list = c('SBP_CATEGORY', 'DBP_CATEGORY'))
 
   if(!(bp_type %in% c(0, 1, 2)) ){
     stop('bp_type can only take on numeric values of either 0 (both SBP and DBP), 1 (SBP only), or 2 (DBP only).')
@@ -78,8 +78,8 @@ bp_tables <- function(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin
   # 4) Contingency table of each bp type (SBP / DBP) and Time of Day
 
   # Number of Recordings in each stage and their respective percentages
-  stages_SBP <- data %>% dplyr::count(SBP_Category) %>% dplyr::mutate(Perc = prop.table((data %>% dplyr::count(SBP_Category))$n), bp_type = "SBP")
-  stages_DBP <- data %>% dplyr::count(DBP_Category) %>% dplyr::mutate(Perc = prop.table((data %>% dplyr::count(DBP_Category))$n), bp_type = "DBP")
+  stages_SBP <- data %>% dplyr::count(SBP_CATEGORY) %>% dplyr::mutate(Perc = prop.table((data %>% dplyr::count(SBP_CATEGORY))$n), bp_type = "SBP")
+  stages_DBP <- data %>% dplyr::count(DBP_CATEGORY) %>% dplyr::mutate(Perc = prop.table((data %>% dplyr::count(DBP_CATEGORY))$n), bp_type = "DBP")
 
   names(stages_SBP)[1] <- "Category"
   names(stages_DBP)[1] <- "Category"
@@ -90,10 +90,10 @@ bp_tables <- function(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin
   stages_all <- rbind(stages_SBP, stages_DBP) # may be able to comment this line out
 
   # Counts for each combination of SBP and DBP for each stage
-  stages_combo <- data %>% dplyr::count(SBP_Category, DBP_Category)
+  stages_combo <- data %>% dplyr::count(SBP_CATEGORY, DBP_CATEGORY)
 
   # Contingency table of SBP vs DBP (Counts)
-  bp_count <- stats::xtabs(~ SBP_Category + DBP_Category, data = data)
+  bp_count <- stats::xtabs(~ SBP_CATEGORY + DBP_CATEGORY, data = data)
 
   # Alternate: Contingency table of SBP vs DBP (Percentages)
   bp_perc <- prop.table(bp_count, margin = bp_perc_margin)
@@ -102,17 +102,15 @@ bp_tables <- function(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin
 
 
   # Day of Week
-  #SBP_DoW <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ SBP_Category + Weekday, data = data), margin = 2 ) )
-  SBP_DoW <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ SBP_Category + DAY_OF_WEEK, data = data), margin = 2 ) )
+  SBP_DoW <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ SBP_CATEGORY + DAY_OF_WEEK, data = data), margin = 2 ) )
   names(SBP_DoW)[ length(names(SBP_DoW)) ] <- "Total"
 
-  #DBP_DoW <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ DBP_Category + Weekday, data = data), margin = 2 ) )
-  DBP_DoW <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ DBP_Category + DAY_OF_WEEK, data = data), margin = 2 ) )
+  DBP_DoW <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ DBP_CATEGORY + DAY_OF_WEEK, data = data), margin = 2 ) )
   names(DBP_DoW)[ length(names(DBP_DoW)) ] <- "Total"
 
   # Time of Day
-  SBP_ToD <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ SBP_Category + Time_of_Day, data = data), margin = 2 ) )
-  DBP_ToD <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ DBP_Category + Time_of_Day, data = data), margin = 2 ) )
+  SBP_ToD <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ SBP_CATEGORY + TIME_OF_DAY, data = data), margin = 2 ) )
+  DBP_ToD <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ DBP_CATEGORY + TIME_OF_DAY, data = data), margin = 2 ) )
 
   SBP_ToD <- SBP_ToD[,c(3,1,2,4,5)]
   DBP_ToD <- DBP_ToD[,c(3,1,2,4,5)]
@@ -123,8 +121,8 @@ bp_tables <- function(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin
   # Awake Status (if applicable)
   if("WAKE" %in% names(data)){
 
-    SBP_wake <- stats::xtabs(~ SBP_Category + WAKE, data = data)
-    DBP_wake <- stats::xtabs(~ DBP_Category + WAKE, data = data)
+    SBP_wake <- stats::xtabs(~ SBP_CATEGORY + WAKE, data = data)
+    DBP_wake <- stats::xtabs(~ DBP_CATEGORY + WAKE, data = data)
 
     SBP_wake_perc <- round(prop.table(SBP_wake, margin = wake_perc_margin),3)
     DBP_wake_perc <- round(prop.table(DBP_wake, margin = wake_perc_margin),3)
@@ -133,11 +131,11 @@ bp_tables <- function(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin
     DBP_wake <- as.data.frame.matrix( DBP_wake )
 
     # Consider for the future?
-    # xtabs(~ SBP_Category + WAKE + Time_of_Day, data = data)
-    # xtabs(~ DBP_Category + WAKE + Time_of_Day, data = data)
+    # xtabs(~ SBP_CATEGORY + WAKE + TIME_OF_DAY, data = data)
+    # xtabs(~ DBP_CATEGORY + WAKE + TIME_OF_DAY, data = data)
     #
-    # xtabs(~ SBP_Category + WAKE + DAY_OF_WEEK, data = data)
-    # xtabs(~ DBP_Category + WAKE + DAY_OF_WEEK, data = data)
+    # xtabs(~ SBP_CATEGORY + WAKE + DAY_OF_WEEK, data = data)
+    # xtabs(~ DBP_CATEGORY + WAKE + DAY_OF_WEEK, data = data)
 
   }else{
 

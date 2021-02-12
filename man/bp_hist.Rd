@@ -8,7 +8,7 @@ bp_hist(data)
 }
 \arguments{
 \item{data}{A processed dataframe resulting from the \code{process_data} function that
-contains the \code{SBP}, \code{DBP}, \code{SBP_Category}, and \code{DBP_Category} columns.}
+contains the \code{SBP}, \code{DBP}, \code{SBP_CATEGORY}, and \code{DBP_CATEGORY} columns.}
 }
 \value{
 A list containing three histogram visual graphics corresponding to the SBP / DBP totals,
