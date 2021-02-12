@@ -7,14 +7,22 @@
 #' @param data Required argument. Pre-processed dataframe with SBP and DBP columns
 #' with optional ID, VISIT, WAKE, and DATE columns if available.
 #' Use \code{process_data} to properly format data.
+#'
 #' @param inc_date Optional argument. Default is FALSE. As ABPM data typically
 #' overlaps due to falling asleep on one date and waking up on another, the \code{inc_date}
 #' argument is typically kept as FALSE, but the function will work regardless. Setting
 #' \code{inc_date = TRUE} will include these dates as a grouping level.
+#'
+#' @param subj Optional argument. Allows the user to specify and subset specific subjects
+#' from the \code{ID} column of the supplied data set. The \code{subj} argument can be a single
+#' value or a vector of elements. The input type should be character, but the function will
+#' comply with integers so long as they are all present in the \code{ID} column of the data.
+#'
 #' @param bp_type Optional argument. Determines whether to calculate ARV for SBP
 #' values or DBP values. Default is 0 corresponding to output for both SBP & DBP.
 #' For \strong{both} SBP and DBP ARV values use bp_type = 0, for \strong{SBP-only}
 #' use bp_type = 1, and for \strong{DBP-only} use bp_type = 2
+#'
 #' @param add_groups Optional argument. Allows the user to aggregate the data by an
 #' additional "group" to further refine the output. The supplied input must be a
 #' character vector with the strings corresponding to existing column names of the
@@ -57,11 +65,21 @@
 #' hr = "Pulse.bpm.")
 #'
 #' # BP Center Calculation
-#' bp_center(hypnos_proc)
-bp_center <- function(data, inc_date = FALSE, bp_type = 0, add_groups = NULL){
+#' bp_center(hypnos_proc, subj = c(70417, 70435))
+bp_center <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups = NULL){
 
   SBP = DBP = grps = . = NULL
   rm(list = c('SBP', 'DBP', 'grps', '.'))
+
+
+  # If user supplies a vector corresponding to a subset of multiple subjects (multi-subject only)
+  if(!is.null(subj)){
+
+    # check to ensure that supplied subject vector is compatible
+    data <- subject_subset(data, subj)
+
+  }
+
 
   if(bp_type == 0 | bp_type == 1){
 

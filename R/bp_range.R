@@ -6,10 +6,17 @@
 #'
 #' @param data Required dataframe with SBP and DBP columns corresponding to
 #' Systolic and Diastolic BP. This dataframe should come from \code{data_process}
+#'
 #' @param inc_date Optional argument. Default is FALSE. As ABPM data typically
 #' overlaps due to falling asleep on one date and waking up on another, the \code{inc_date}
 #' argument is typically kept as FALSE, but the function will work regardless. Setting
 #' \code{inc_date = TRUE} will include these dates as a grouping level.
+#'
+#' @param subj Optional argument. Allows the user to specify and subset specific subjects
+#' from the \code{ID} column of the supplied data set. The \code{subj} argument can be a single
+#' value or a vector of elements. The input type should be character, but the function will
+#' comply with integers so long as they are all present in the \code{ID} column of the data.
+#'
 #' @param add_groups Optional argument. Allows the user to aggregate the data by an
 #' additional "group" to further refine the output. The supplied input must be a
 #' character vector with the strings corresponding to existing column names of the
@@ -56,10 +63,20 @@
 #' bp_range(hypnos_proc)
 #' bp_range(jhs_proc, inc_date = TRUE, add_groups = c("meal_time"))
 #' # Notice that meal_time is not a column from process_data, but it still works
-bp_range <- function(data, inc_date = FALSE, add_groups = NULL){
+bp_range <- function(data, inc_date = FALSE, subj = NULL, add_groups = NULL){
 
   SBP = DBP = NULL
   rm(list = c('SBP', 'DBP'))
+
+
+  # If user supplies a vector corresponding to a subset of multiple subjects (multi-subject only)
+  if(!is.null(subj)){
+
+    # check to ensure that supplied subject vector is compatible
+    data <- subject_subset(data, subj)
+
+  }
+
 
   # Verify that add_groups is valid and create grps variable for dplyr
   grps <- create_grps(data = data, inc_date = inc_date, add_groups = add_groups)

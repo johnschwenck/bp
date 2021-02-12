@@ -6,10 +6,13 @@
 #'
 #' @return Logical indicating whether the subj vector passes the checks (\code{TRUE}),
 #' or not (\code{FALSE})
-subject_subset_check <- function(data, subj = NULL){
+subject_subset <- function(data, subj = NULL){
 
-  subj <- as.integer(subj)
-  data$ID <- as.integer(data$ID)
+  ID = NULL
+  rm(list = c(ID))
+
+  subj <- as.character(subj)
+  data$ID <- as.character(data$ID)
 
   if(!is.vector(subj)){
     stop('subj argument must be a vector corresponding to the selected individuals to analyze')
@@ -20,10 +23,24 @@ subject_subset_check <- function(data, subj = NULL){
   }
 
   if(all(subj %in% data$ID) == FALSE){
+    cat("ERROR: The following subj argument elements are not present in the ID column of the supplied dataset:\n", subj[which(!subj %in% data$ID)],"\n")
     stop('One or more of the supplied subject IDs are not present in the supplied data')
   }
 
-  return(TRUE)
+  # Ensure that there are actually multiple cubjects to subset
+  if(length(unique(data$ID)) == 1){
+
+    warning('Only one unique ID found in data set. Ignoring subj subset argument.')
+
+  }else{
+
+    # Filter data based on subset of subjects
+    data <- data %>%
+      dplyr::filter(ID == subj)
+
+  }
+
+  return(data)
 }
 
 
@@ -198,6 +215,13 @@ create_grps <- function(data, inc_date, add_groups){
 #   message('No columns specified for DATE, VISIT, or WAKE. All bp_mag values aggregated for single subject.')
 #
 # }
+
+
+
+
+
+
+
 
 
 

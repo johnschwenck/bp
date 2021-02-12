@@ -4,7 +4,7 @@
 \alias{bp_range}
 \title{Blood Pressure Range}
 \usage{
-bp_range(data, inc_date = FALSE, add_groups = NULL)
+bp_range(data, inc_date = FALSE, subj = NULL, add_groups = NULL)
 }
 \arguments{
 \item{data}{Required dataframe with SBP and DBP columns corresponding to
@@ -14,6 +14,11 @@ Systolic and Diastolic BP. This dataframe should come from \code{data_process}}
 overlaps due to falling asleep on one date and waking up on another, the \code{inc_date}
 argument is typically kept as FALSE, but the function will work regardless. Setting
 \code{inc_date = TRUE} will include these dates as a grouping level.}
+
+\item{subj}{Optional argument. Allows the user to specify and subset specific subjects
+from the \code{ID} column of the supplied data set. The \code{subj} argument can be a single
+value or a vector of elements. The input type should be character, but the function will
+comply with integers so long as they are all present in the \code{ID} column of the data.}
 
 \item{add_groups}{Optional argument. Allows the user to aggregate the data by an
 additional "group" to further refine the output. The supplied input must be a

@@ -75,6 +75,6 @@ jhs_proc <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", bp_datet
 hr = "Pulse.bpm.")
 
 # BP Stats Aggregated Table
-bp_stats(hypnos_proc, subj = c(70417), add_groups = c("SBP_Category"))
-bp_stats(jhs_proc, inc_date = TRUE, add_groups = c("SBP_Category"))
+bp_stats(hypnos_proc, subj = c(70417, 70435), add_groups = c("SBP_Category"))
+bp_stats(jhs_proc, add_groups = c("SBP_Category"))
 }

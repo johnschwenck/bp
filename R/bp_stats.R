@@ -65,8 +65,8 @@
 #' hr = "Pulse.bpm.")
 #'
 #' # BP Stats Aggregated Table
-#' bp_stats(hypnos_proc, subj = c(70417), add_groups = c("SBP_Category"))
-#' bp_stats(jhs_proc, inc_date = TRUE, add_groups = c("SBP_Category"))
+#' bp_stats(hypnos_proc, subj = c(70417, 70435), add_groups = c("SBP_Category"))
+#' bp_stats(jhs_proc, add_groups = c("SBP_Category"))
 bp_stats <- function(data,
                      inc_date = FALSE,
                      subj = NULL,
@@ -79,12 +79,8 @@ bp_stats <- function(data,
   # If user supplies a vector corresponding to a subset of multiple subjects (multi-subject only)
   if(!is.null(subj)){
 
-    # check to ensure that supplied subject vector is compatable
-    subject_subset_check(data, subj)
-
-    # Filter data based on subset of subjects
-    data <- data %>%
-      dplyr::filter(ID == subj)
+    # check to ensure that supplied subject vector is compatible
+    data <- subject_subset(data, subj)
 
   }
 
@@ -103,7 +99,7 @@ bp_stats <- function(data,
   }
 
 
-  # Pull in all necessary data from functions
+  # Pull in all necessary data from functions --> functions do not need subj argument because data is already filtered above
   bp_center_tmp <- bp_center(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups)
   arv_tmp       <- arv(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups)
   sv_tmp        <- sv(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups)
