@@ -4,16 +4,22 @@
 \alias{bp_range}
 \title{Blood Pressure Range}
 \usage{
-bp_range(data, inc_date = 0)
+bp_range(data, inc_date = FALSE, add_groups = NULL)
 }
 \arguments{
 \item{data}{Required dataframe with SBP and DBP columns corresponding to
 Systolic and Diastolic BP. This dataframe should come from \code{data_process}}
 
-\item{inc_date}{Optional argument that specifies whether or not to break down
-range by date. Default value is \code{inc_date = 0} indicating that date is
-omitted from grouping. This is typically omitted for ABPM data as dates tend
-to overlap due to recordings during sleep.}
+\item{inc_date}{Optional argument. Default is FALSE. As ABPM data typically
+overlaps due to falling asleep on one date and waking up on another, the \code{inc_date}
+argument is typically kept as FALSE, but the function will work regardless. Setting
+\code{inc_date = TRUE} will include these dates as a grouping level.}
+
+\item{add_groups}{Optional argument. Allows the user to aggregate the data by an
+additional "group" to further refine the output. The supplied input must be a
+character vector with the strings corresponding to existing column names of the
+processed \code{data} input supplied. Capitalization of \code{add_groups} does not matter.
+Ex: \code{add_groups = c("Time_of_Day")}}
 }
 \value{
 A tibble with SBP_max, SBP_min, SBP_range, DBP_max, DBP_min, DBP_range
@@ -33,6 +39,8 @@ The resulting tibble consists of:
    \code{N} corresponds to the number of observations for that date. If \code{inc_date = FALSE},
    \code{N} corresponds to the number of observations for the most granular grouping available
    (i.e. a combination of \code{ID}, \code{VISIT}, and \code{WAKE})
+   \item Any add_groups variables supplied to function argument will be present as a column in the
+   resulting tibble.
 
 }
 }
@@ -55,5 +63,6 @@ hr = "Pulse.bpm.")
 
 # Calculate BP range
 bp_range(hypnos_proc)
-bp_range(jhs_proc, inc_date = 1)
+bp_range(jhs_proc, inc_date = TRUE, add_groups = c("meal_time"))
+# Notice that meal_time is not a column from process_data, but it still works
 }

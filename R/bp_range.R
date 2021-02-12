@@ -6,10 +6,15 @@
 #'
 #' @param data Required dataframe with SBP and DBP columns corresponding to
 #' Systolic and Diastolic BP. This dataframe should come from \code{data_process}
-#' @param inc_date Optional argument that specifies whether or not to break down
-#' range by date. Default value is \code{inc_date = 0} indicating that date is
-#' omitted from grouping. This is typically omitted for ABPM data as dates tend
-#' to overlap due to recordings during sleep.
+#' @param inc_date Optional argument. Default is FALSE. As ABPM data typically
+#' overlaps due to falling asleep on one date and waking up on another, the \code{inc_date}
+#' argument is typically kept as FALSE, but the function will work regardless. Setting
+#' \code{inc_date = TRUE} will include these dates as a grouping level.
+#' @param add_groups Optional argument. Allows the user to aggregate the data by an
+#' additional "group" to further refine the output. The supplied input must be a
+#' character vector with the strings corresponding to existing column names of the
+#' processed \code{data} input supplied. Capitalization of \code{add_groups} does not matter.
+#' Ex: \code{add_groups = c("Time_of_Day")}
 #'
 #' @return A tibble with SBP_max, SBP_min, SBP_range, DBP_max, DBP_min, DBP_range
 #' and any additional optional columns included in data such as \code{ID}, \code{VISIT},
@@ -28,6 +33,8 @@
 #'    \code{N} corresponds to the number of observations for that date. If \code{inc_date = FALSE},
 #'    \code{N} corresponds to the number of observations for the most granular grouping available
 #'    (i.e. a combination of \code{ID}, \code{VISIT}, and \code{WAKE})
+#'    \item Any add_groups variables supplied to function argument will be present as a column in the
+#'    resulting tibble.
 #'
 #' }
 #'
@@ -47,27 +54,28 @@
 #'
 #' # Calculate BP range
 #' bp_range(hypnos_proc)
-#' bp_range(jhs_proc, inc_date = 1)
-bp_range <- function(data, inc_date = 0){
+#' bp_range(jhs_proc, inc_date = TRUE, add_groups = c("meal_time"))
+#' # Notice that meal_time is not a column from process_data, but it still works
+bp_range <- function(data, inc_date = FALSE, add_groups = NULL){
 
   SBP = DBP = NULL
   rm(list = c('SBP', 'DBP'))
 
-  # Determine how granular to calculate based on which columns are available
-  if(inc_date != 0){
-    grps = c("ID", "VISIT", "WAKE", "DATE")
-  }else{
-    grps = c("ID", "VISIT", "WAKE")
-  }
-
-  grps = grps[which(grps %in% colnames(data) == TRUE)]
+  # Verify that add_groups is valid and create grps variable for dplyr
+  grps <- create_grps(data = data, inc_date = inc_date, add_groups = add_groups)
 
   if(length(grps) == 0){
 
-    warning('No columns specified for ID, VISIT, or WAKE. All ARV values aggregated.')
+    message('NOTE: No columns specified for ID, VISIT, or WAKE. All ARV values aggregated.')
 
   }
 
+  # Avoid issues with capitalization by the user
+  colnames(data) <- toupper( colnames(data) )
+  grps <- toupper(grps)
+
+
+  # Summary Output
   out <- data %>%
     dplyr::group_by_at( dplyr::vars(grps) ) %>%
     dplyr::add_count() %>%

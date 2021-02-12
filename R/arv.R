@@ -10,14 +10,19 @@
 #' @param data Required argument. Pre-processed dataframe containing SBP and
 #' DBP with optional ID, VISIT, WAKE, and DATE columns if available.
 #' Use \code{process_data} to properly format data.
-#' @param inc_date Optional argument. Default is FALSE. inc_date = TRUE will include
-#' Date as a grouping level. For ABPM data this is typically omitted as sleep
-#' is recorded over multiple days. This argument is useful for self-monitoring
-#' as with the bp_jhs data
+#' @param inc_date Optional argument. Default is FALSE. As ABPM data typically
+#' overlaps due to falling asleep on one date and waking up on another, the \code{inc_date}
+#' argument is typically kept as FALSE, but the function will work regardless. Setting
+#' \code{inc_date = TRUE} will include these dates as a grouping level.
 #' @param bp_type Optional argument. Determines whether to calculate ARV for SBP
 #' values or DBP values. Default is 0 corresponding to output for both SBP & DBP.
 #' For both SBP and DBP ARV values use bp_type = 0, for SBP-only use bp_type = 1,
 #' and for DBP-only use bp_type = 2
+#' @param add_groups Optional argument. Allows the user to aggregate the data by an
+#' additional "group" to further refine the output. The supplied input must be a
+#' character vector with the strings corresponding to existing column names of the
+#' processed \code{data} input supplied. Capitalization of \code{add_groups} does not matter.
+#' Ex: \code{add_groups = c("Time_of_Day")}
 #'
 #' @return A tibble object with a row corresponding to each subject, or alternatively
 #' a row corresponding to each date, if inc_date = TRUE. The resulting tibble consists of:
@@ -34,6 +39,8 @@
 #'    \code{N} corresponds to the number of observations for that date. If \code{inc_date = FALSE}, N
 #'    corresponds to the number of observations for the most granular grouping available (i.e.
 #'    a combination of \code{ID}, \code{VISIT}, and \code{WAKE})
+#'    \item Any add_groups variables supplied to function argument will be present as a column in the
+#'    resulting tibble.
 #'
 #' }
 #'
@@ -58,10 +65,10 @@
 #' hr = "Pulse.bpm.")
 #'
 #' # ARV Calculation
-#' arv(hypnos_proc)
-#' arv(jhs_proc, inc_date = 1)
+#' arv(hypnos_proc, add_groups = c("SBP_Category"))
+#' arv(jhs_proc, inc_date = TRUE)
 #' @export
-arv <- function(data, inc_date = 0, bp_type = 0){
+arv <- function(data, inc_date = FALSE, bp_type = 0, add_groups = NULL){
 
   SBP = DBP = . = NULL
   rm(list = c('SBP', 'DBP', '.'))
@@ -84,20 +91,19 @@ arv <- function(data, inc_date = 0, bp_type = 0){
     }
   }
 
-  # Determine how granular to calculate based on which columns are available
-  if(inc_date != 0){
-    grps = c("ID", "VISIT", "WAKE", "DATE")
-  }else{
-    grps = c("ID", "VISIT", "WAKE")
-  }
 
-  grps = grps[which(grps %in% colnames(data) == TRUE)]
+  # Verify that add_groups is valid and create grps variable for dplyr
+  grps <- create_grps(data = data, inc_date = inc_date, add_groups = add_groups)
 
   if(length(grps) == 0){
 
     message('NOTE: No columns specified for ID, VISIT, or WAKE. All ARV values aggregated.')
 
   }
+
+  # Avoid issues with capitalization by the user
+  colnames(data) <- toupper( colnames(data) )
+  grps <- toupper(grps)
 
   # Group data by whichever of the three above variables are present in the data
   out <- data %>%
