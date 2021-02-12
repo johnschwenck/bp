@@ -87,7 +87,15 @@ sv <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups = NU
   if(!is.null(subj)){
 
     # check to ensure that supplied subject vector is compatible
-    data <- subject_subset(data, subj)
+    data <- subject_subset_check(data, subj)
+
+    if(length(unique(data$ID)) > 1){
+
+      # Filter data based on subset of subjects
+      data <- data %>%
+        dplyr::filter(ID == subj)
+
+    }
 
   }
 

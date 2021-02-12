@@ -6,7 +6,7 @@
 #'
 #' @return Logical indicating whether the subj vector passes the checks (\code{TRUE}),
 #' or not (\code{FALSE})
-subject_subset <- function(data, subj = NULL){
+subject_subset_check <- function(data, subj = NULL){
 
   ID = NULL
   rm(list = c(ID))
@@ -27,20 +27,14 @@ subject_subset <- function(data, subj = NULL){
     stop('One or more of the supplied subject IDs are not present in the supplied data')
   }
 
-  # Ensure that there are actually multiple cubjects to subset
+  # Ensure that there are actually multiple subjects to subset
   if(length(unique(data$ID)) == 1){
 
     warning('Only one unique ID found in data set. Ignoring subj subset argument.')
 
-  }else{
-
-    # Filter data based on subset of subjects
-    data <- data %>%
-      dplyr::filter(ID == subj)
-
   }
 
-  return(data)
+  return(TRUE)
 }
 
 
