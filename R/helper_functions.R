@@ -8,9 +8,6 @@
 #' or not (\code{FALSE})
 subject_subset_check <- function(data, subj = NULL){
 
-  ID = NULL
-  rm(list = c(ID))
-
   subj <- as.character(subj)
   data$ID <- as.character(data$ID)
 

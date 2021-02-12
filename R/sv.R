@@ -79,15 +79,15 @@
 #' # Notice that meal_time is not a column from process_data, but it still works
 sv <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups = NULL){
 
-  SBP = DBP = . = NULL
-  rm(list = c('SBP', 'DBP', '.'))
+  SBP = DBP = ID = . = NULL
+  rm(list = c('SBP', 'DBP', 'ID', '.'))
 
 
   # If user supplies a vector corresponding to a subset of multiple subjects (multi-subject only)
   if(!is.null(subj)){
 
     # check to ensure that supplied subject vector is compatible
-    data <- subject_subset_check(data, subj)
+    subject_subset_check(data, subj)
 
     if(length(unique(data$ID)) > 1){
 

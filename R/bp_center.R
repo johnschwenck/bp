@@ -68,15 +68,15 @@
 #' bp_center(hypnos_proc, subj = c(70417, 70435))
 bp_center <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups = NULL){
 
-  SBP = DBP = grps = . = NULL
-  rm(list = c('SBP', 'DBP', 'grps', '.'))
+  SBP = DBP = ID = grps = . = NULL
+  rm(list = c('SBP', 'DBP', 'ID', 'grps', '.'))
 
 
   # If user supplies a vector corresponding to a subset of multiple subjects (multi-subject only)
   if(!is.null(subj)){
 
     # check to ensure that supplied subject vector is compatible
-    data <- subject_subset_check(data, subj)
+    subject_subset_check(data, subj)
 
     if(length(unique(data$ID)) > 1){
 
