@@ -144,13 +144,23 @@ create_grps <- function(data, inc_date, add_groups){
 
   # Determine how granular to calculate based on which columns are available
   if(inc_date == TRUE){
+
+      if( !"DATE" %in% toupper(colnames(data)) ){
+        warning('inc_date = TRUE but no DATE column found in supplied data set. Ignored inc_date argument.')
+      }
+
     grps = c("ID", "VISIT", "WAKE", "DATE", add_groups)
+
   }else{
+
     grps = c("ID", "VISIT", "WAKE", add_groups)
-  }
+
+    }
 
   # Remove any duplicates
-  grps <- grps[ - which(duplicated(grps) == TRUE) ]
+  if( any(duplicated(grps)) ){
+    grps <- grps[ - which(duplicated(grps) == TRUE) ]
+  }
 
   # Subset based on which are available in data
   grps = grps[which(toupper(grps) %in% toupper(colnames(data)) == TRUE)]
@@ -163,7 +173,31 @@ create_grps <- function(data, inc_date, add_groups){
 
 
 
-
+# # Determine how granular to calculate based on which columns are available
+# if(inc_date == TRUE){
+#
+#   grps = c("ID", "VISIT", "WAKE", "DATE")
+#
+#   if(!("DATE" %in% colnames(data))){
+#       warning('inc_date = TRUE but no DATE column found')
+#     }
+#
+# }else{
+#
+#   grps = c("ID", "VISIT", "WAKE")
+#
+# }
+#
+# grps = grps[which(grps %in% colnames(data) == TRUE)]
+#
+#
+#
+#
+# if(length(grps) == 1 & all(grps == "ID")){
+#
+#   message('No columns specified for DATE, VISIT, or WAKE. All bp_mag values aggregated for single subject.')
+#
+# }
 
 
 
