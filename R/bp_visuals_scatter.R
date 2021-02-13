@@ -62,6 +62,12 @@
 #' \code{dbp_stages_alt = c(30, 70, 90, 100, 110, 120, 140)} corresponds to a Low stage from
 #' 30 - 70, a Normal stage from 70 - 90, and so forth for all 6 stages.
 #'
+#' @param subj Optional argument. Allows the user to specify and subset specific subjects
+#' from the \code{ID} column of the supplied data set. The \code{subj} argument can be a single
+#' value or a vector of elements. The input type should be character, but the function will
+#' comply with integers so long as they are all present in the \code{ID} column of the data.
+#'
+#'
 #' @return A scatter plot graphic using the ggplot2 package overlaying each reading (represented as
 #' points) onto a background that contains each stage
 #' @export
@@ -106,12 +112,30 @@
 #'
 #' bp_scatter(jhs_proc)
 
-bp_scatter <- function(data, sbp_stages_alt = NULL, dbp_stages_alt = NULL){
+bp_scatter <- function(data, sbp_stages_alt = NULL, dbp_stages_alt = NULL, subj = NULL){
 
   # Variables needed: SBP, DBP, possibly VISIT
 
-  SBP = DBP = VISIT = NULL
-  rm(list = c(SBP, DBP, VISIT))
+  SBP = DBP = VISIT = ID = NULL
+  rm(list = c("SBP", "DBP", "VISIT", "ID"))
+
+
+  # If user supplies a vector corresponding to a subset of multiple subjects (multi-subject only)
+  if(!is.null(subj)){
+
+    # check to ensure that supplied subject vector is compatible
+    subject_subset_check(data, subj)
+
+    if(length(unique(data$ID)) > 1){
+
+      # Filter data based on subset of subjects
+      data <- data %>%
+        dplyr::filter(ID == subj)
+
+    }
+
+  }
+
 
   # Ensure that the necessary columns exist in data set
   if( all(c("SBP", "DBP") %in% names(data)) == FALSE){

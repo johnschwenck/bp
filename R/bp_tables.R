@@ -19,6 +19,12 @@
 #' applicable (i.e. if the WAKE column is present). The argument can take on values either
 #' 0 (both SBP and DBP), 1 (SBP only), or 2 (DBP only).
 #'
+#' @param subj Optional argument. Allows the user to specify and subset specific subjects
+#' from the \code{ID} column of the supplied data set. The \code{subj} argument can be a single
+#' value or a vector of elements. The input type should be character, but the function will
+#' comply with integers so long as they are all present in the \code{ID} column of the data.
+#'
+#'
 #' @return A list of table outputs for various subsets of the data based on which bp_type is selected
 #' (default is bp_type = 0 i.e. both SBP and DBP tables)
 #'
@@ -50,10 +56,10 @@
 #' bp_tables(jhs_proc)
 #' bp_tables(hyp_proc)
 #'
-bp_tables <- function(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin = 2){
+bp_tables <- function(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin = 2, subj = NULL){
 
-  SBP_CATEGORY = DBP_CATEGORY = NULL
-  rm(list = c('SBP_CATEGORY', 'DBP_CATEGORY'))
+  SBP_CATEGORY = DBP_CATEGORY = ID = NULL
+  rm(list = c('SBP_CATEGORY', 'DBP_CATEGORY', 'ID'))
 
   if(!(bp_type %in% c(0, 1, 2)) ){
     stop('bp_type can only take on numeric values of either 0 (both SBP and DBP), 1 (SBP only), or 2 (DBP only).')
@@ -70,6 +76,24 @@ bp_tables <- function(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin
       stop('wake_perc_margin can only take on either NULL (overall (no marginal) percentages), 1 (row margin percentages), or 2 (column margin percentages).')
     }
   }
+
+
+  # If user supplies a vector corresponding to a subset of multiple subjects (multi-subject only)
+  if(!is.null(subj)){
+
+    # check to ensure that supplied subject vector is compatible
+    subject_subset_check(data, subj)
+
+    if(length(unique(data$ID)) > 1){
+
+      # Filter data based on subset of subjects
+      data <- data %>%
+        dplyr::filter(ID == subj)
+
+    }
+
+  }
+
 
   # Create the following tables and report them as a list:
   # 1) Count of the number of recordings in each stage

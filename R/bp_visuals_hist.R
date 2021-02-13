@@ -7,6 +7,12 @@
 #' @param data A processed dataframe resulting from the \code{process_data} function that
 #' contains the \code{SBP}, \code{DBP}, \code{SBP_CATEGORY}, and \code{DBP_CATEGORY} columns.
 #'
+#' @param subj Optional argument. Allows the user to specify and subset specific subjects
+#' from the \code{ID} column of the supplied data set. The \code{subj} argument can be a single
+#' value or a vector of elements. The input type should be character, but the function will
+#' comply with integers so long as they are all present in the \code{ID} column of the data.
+#'
+#'
 #' @return A list containing three histogram visual graphics corresponding to the SBP / DBP totals,
 #' SBP frequency, and DBP frequency.
 #'
@@ -37,15 +43,33 @@
 #'
 #' bp_hist(hyp_proc)
 #' bp_hist(jhs_proc)
-bp_hist <- function(data){
+bp_hist <- function(data, subj = NULL){
 
 
   # Primary variables needed: SBP, DBP, SBP_Category, DBP_Category
   # Assumes bp_type = 0 (both) and bp_tables parameters as defaults
   # Packages: ggplots2, cowplot
 
-  SBP = DBP = SBP_CATEGORY = DBP_CATEGORY = Category = n = bp_type = NULL
-  rm(list = c("SBP", "DBP", "SBP_CATEGORY", "DBP_CATEGORY", "Category", "n", "bp_type"))
+  SBP = DBP = SBP_CATEGORY = DBP_CATEGORY = Category = n = bp_type = ID = NULL
+  rm(list = c("SBP", "DBP", "SBP_CATEGORY", "DBP_CATEGORY", "Category", "n", "bp_type", "ID"))
+
+
+  # If user supplies a vector corresponding to a subset of multiple subjects (multi-subject only)
+  if(!is.null(subj)){
+
+    # check to ensure that supplied subject vector is compatible
+    subject_subset_check(data, subj)
+
+    if(length(unique(data$ID)) > 1){
+
+      # Filter data based on subset of subjects
+      data <- data %>%
+        dplyr::filter(ID == subj)
+
+    }
+
+  }
+
 
   # Ensure that the necessary columns exist in data set
   if( all(c("SBP", "DBP", "SBP_CATEGORY", "DBP_CATEGORY") %in% names(data)) == FALSE){

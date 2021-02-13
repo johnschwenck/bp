@@ -4,12 +4,17 @@
 \alias{dow_tod_plots}
 \title{Blood Pressure Tables in Graphical Format}
 \usage{
-dow_tod_plots(data)
+dow_tod_plots(data, subj = NULL)
 }
 \arguments{
 \item{data}{A processed dataframe resulting from the \code{process_data} function that
 contains the \code{SBP}, \code{DBP}, \code{DAY_OF_WEEK}, \code{Time_of_Day}, \code{SBP_Category},
 and \code{DBP_Category} columns.}
+
+\item{subj}{Optional argument. Allows the user to specify and subset specific subjects
+from the \code{ID} column of the supplied data set. The \code{subj} argument can be a single
+value or a vector of elements. The input type should be character, but the function will
+comply with integers so long as they are all present in the \code{ID} column of the data.}
 }
 \value{
 A list of four `gtables` that correspond to the tables for Day of Week and

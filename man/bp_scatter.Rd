@@ -4,7 +4,7 @@
 \alias{bp_scatter}
 \title{Blood Pressure Stage Scatter Plot}
 \usage{
-bp_scatter(data, sbp_stages_alt = NULL, dbp_stages_alt = NULL)
+bp_scatter(data, sbp_stages_alt = NULL, dbp_stages_alt = NULL, subj = NULL)
 }
 \arguments{
 \item{data}{A processed dataframe resulting from the \code{process_data} function that
@@ -30,6 +30,11 @@ stage must be the lower limit for the next).
 For example, the alternative vector:
 \code{dbp_stages_alt = c(30, 70, 90, 100, 110, 120, 140)} corresponds to a Low stage from
 30 - 70, a Normal stage from 70 - 90, and so forth for all 6 stages.}
+
+\item{subj}{Optional argument. Allows the user to specify and subset specific subjects
+from the \code{ID} column of the supplied data set. The \code{subj} argument can be a single
+value or a vector of elements. The input type should be character, but the function will
+comply with integers so long as they are all present in the \code{ID} column of the data.}
 }
 \value{
 A scatter plot graphic using the ggplot2 package overlaying each reading (represented as

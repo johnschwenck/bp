@@ -4,6 +4,11 @@
 #' contains the \code{SBP}, \code{DBP}, \code{DAY_OF_WEEK}, \code{Time_of_Day}, \code{SBP_Category},
 #' and \code{DBP_Category} columns.
 #'
+#' @param subj Optional argument. Allows the user to specify and subset specific subjects
+#' from the \code{ID} column of the supplied data set. The \code{subj} argument can be a single
+#' value or a vector of elements. The input type should be character, but the function will
+#' comply with integers so long as they are all present in the \code{ID} column of the data.
+#'
 #' @return A list of four `gtables` that correspond to the tables for Day of Week and
 #' Time of Day broken down by both \code{SBP} and \code{DBP}.
 #'
@@ -33,17 +38,33 @@
 #'                            dow_tod_plots_tmp[[3]],dow_tod_plots_tmp[[4]],
 #'                            nrow = 2, ncol = 2)
 #'                            )
-dow_tod_plots <- function(data){
+dow_tod_plots <- function(data, subj = NULL){
 
 
   # Primary variables needed:    SBP, DBP, DAY_OF_WEEK, Time_of_Day
   # Secondary variables needed:  SBP_Category (bp_tables), DBP_Category (bp_tables)
 
-  SBP = DBP = DAY_OF_WEEK = Time_of_Day = Sun = Mon = Tue = Wed = Thu = Fri = Sat = Total = Morning = Afternoon = Evening = Night = . = NULL
-  rm(list = c("SBP", "DBP", "DAY_OF_WEEK", "Time_of_Day",
+  SBP = DBP = DAY_OF_WEEK = ID = Time_of_Day = Sun = Mon = Tue = Wed = Thu = Fri = Sat = Total = Morning = Afternoon = Evening = Night = . = NULL
+  rm(list = c("SBP", "DBP", "DAY_OF_WEEK", "ID", "Time_of_Day",
               "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Total",
               "Morning", "Afternoon", "Evening", "Night", "."))
 
+
+  # If user supplies a vector corresponding to a subset of multiple subjects (multi-subject only)
+  if(!is.null(subj)){
+
+    # check to ensure that supplied subject vector is compatible
+    subject_subset_check(data, subj)
+
+    if(length(unique(data$ID)) > 1){
+
+      # Filter data based on subset of subjects
+      data <- data %>%
+        dplyr::filter(ID == subj)
+
+    }
+
+  }
 
 
   ###################

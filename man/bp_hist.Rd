@@ -4,11 +4,16 @@
 \alias{bp_hist}
 \title{Blood Pressure Histograms}
 \usage{
-bp_hist(data)
+bp_hist(data, subj = NULL)
 }
 \arguments{
 \item{data}{A processed dataframe resulting from the \code{process_data} function that
 contains the \code{SBP}, \code{DBP}, \code{SBP_CATEGORY}, and \code{DBP_CATEGORY} columns.}
+
+\item{subj}{Optional argument. Allows the user to specify and subset specific subjects
+from the \code{ID} column of the supplied data set. The \code{subj} argument can be a single
+value or a vector of elements. The input type should be character, but the function will
+comply with integers so long as they are all present in the \code{ID} column of the data.}
 }
 \value{
 A list containing three histogram visual graphics corresponding to the SBP / DBP totals,

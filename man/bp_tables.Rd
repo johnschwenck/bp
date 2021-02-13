@@ -4,7 +4,13 @@
 \alias{bp_tables}
 \title{Blood Pressure Tables}
 \usage{
-bp_tables(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin = 2)
+bp_tables(
+  data,
+  bp_type = 0,
+  bp_perc_margin = NULL,
+  wake_perc_margin = 2,
+  subj = NULL
+)
 }
 \arguments{
 \item{data}{A processed dataframe resulting from the \code{process_data} function that
@@ -22,6 +28,11 @@ values either 0 (both SBP and DBP), 1 (SBP only), or 2 (DBP only).}
 to include in the tables pertaining to the percentages of awake / asleep readings if
 applicable (i.e. if the WAKE column is present). The argument can take on values either
 0 (both SBP and DBP), 1 (SBP only), or 2 (DBP only).}
+
+\item{subj}{Optional argument. Allows the user to specify and subset specific subjects
+from the \code{ID} column of the supplied data set. The \code{subj} argument can be a single
+value or a vector of elements. The input type should be character, but the function will
+comply with integers so long as they are all present in the \code{ID} column of the data.}
 }
 \value{
 A list of table outputs for various subsets of the data based on which bp_type is selected
