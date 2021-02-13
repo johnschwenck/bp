@@ -69,7 +69,7 @@ The basic workflow is to load in the user-supplied unprocessed raw data, process
 data("hypnos_data")
 
 ## Assign the output of the process_data function to a new dataframe object
-data1 <- process_data(hypnos_data,
+hypnos_proc <- process_data(hypnos_data,
                      sbp = 'syst',
                      dbp = 'diast',
                      bp_datetime = 'date.time',
@@ -84,7 +84,7 @@ data1 <- process_data(hypnos_data,
 Notice how the column names of the original `hypnos_data` changed in the processed `data`. Notably, `SYST` became `SBP`, `DIAST` became `DBP`, and `DATE.TIME` became `DATE_TIME`.
 ```{r}
 names(hypnos_data)
-names(data1)
+names(hypnos_proc)
 ```
 
 While the results seem to be trivial at first glance, let's see what happens when we use a much different data set with a completely different naming convention: the `bp_jhs` data set. Unlike `hypnos_data` which has all of the available columns needed in the `process_data` function with multiple subjects, `bp_jhs` is a single-subject data set without many of the multi-subject identifiers such as `ID`, `VISIT`, or `WAKE` (as it is non-ABPM data). Further, there is no `MAP` or `PP` column, but these (as we will see) can be automatically created. 
@@ -94,17 +94,17 @@ While the results seem to be trivial at first glance, let's see what happens whe
 data("bp_jhs")
 
 ## Assign the output of the process_data function to a new dataframe object
-data2 <- process_data(bp_jhs,
+jhs_proc <- process_data(bp_jhs,
                      sbp = 'sys.mmhg.',
                      dbp = 'dias.mmhg.',
                      bp_datetime = 'datetime',
                      hr = 'PULSE.BPM.')
-head(data2, 5)
+head(jhs_proc, 5)
 ```
 After a quick inspection of the original `bp_jhs` data set and the newly processed `data` data set, it should be evident that there was a lot going on "under the hood" of the `process_data` function. As we can see from the column names, the awkward nuisance of typing `sys.mmhg.`, `dias.mmhg.`, `pulse.bpm.`, and `datetime` have now been replaced with the more concise `SBP`, `DBP`, `HR`, and `DATE_TIME` names, respectively. Additionally, `MAP`, `PP`, `RPP`, `SBP_Category`, and `DBP_Category` were all calculated as additional columns which previously did not exist in the data. Additionally, if the supplied data has a column corresponding to a "date/time" format, the columns `Time_of_Day` and `DAY_OF_WEEK` will also be created for ease.
 ```{r}
 names(bp_jhs)
-names(data2)
+names(jhs_proc)
 ```
 **NOTE:** For consistency, `process_data` will coerce all column names to upper-case.
 
@@ -145,22 +145,22 @@ dip_calc    | Nocturnal Dipping \% and Classification | [Okhubo et al (1997)](ht
 
 Let's say we are working with the `hypnos_data` and would like to compare the time-dependent nature of the `arv` with the `sv` for each subject. 
 ```{r}
-head(arv(data1))
-head(sv(data1))
+head(arv(hypnos_proc))
+head(sv(hypnos_proc))
 ```
 Comparing vertically can be challenging, so with some help from `dplyr` we can obtain the following:
 ```{r}
-head(dplyr::left_join(arv(data1), cv(data1)))
+head(dplyr::left_join(arv(hypnos_proc), cv(hypnos_proc)))
 ```
 Note that this is possible thanks to the work we did in standardizing column names from the processing step.
 
 Suppose instad we wanted to look at peaks and troughs of the single-subject data set `bp_jhs`. We would then call the `bp_mag` function on our data.
 ```{r}
-head(bp_mag(data2))
+head(bp_mag(jhs_proc))
 ```
 Here, we notice something different. Because there weren't `ID`, `VISIT`, or `WAKE` columns, the `bp_mag` aggregated everything together. This is technically correct, but say we wanted to glean more information by breaking our data down by `DATE` instead; we would need to include the `inc_date = TRUE` optional argument to the function.
 ```{r}
-tail(bp_mag(data2, inc_date = TRUE))
+tail(bp_mag(jhs_proc, inc_date = TRUE))
 ```
 ***Interpretation:*** While it may not seem obvious at first glance, the blood pressure magnitude (whether a peak or a trough) is calculated as $peak = max(BP) - mean(BP)$ and $trough = mean(BP) - min(BP)$ where BP could correspond to either SBP or DBP. If we manually inspect the data from `2019-07-31` we see that N = 2 measurements and within the `bp_jhs` data set we see the two measurements are 126 and 128 for SBP and 77, and 76 for DBP. $\bar{x}_{SBP} = \frac{(126+128)}{2} = 127$ and $\bar{x}_{DBP} = \frac{(78+76)}{2} = 76.5$ so the respective peak and trough values from our output make sense.
   
@@ -177,7 +177,7 @@ bp_report        | Exportable Blood Pressure Report
 
 Continuing with our previous example using the `bp_jhs` data set, let's suppose we wanted to explore how to peaks and troughs of systolic blood pressure changed over time. Note that there is a subtle assumption here in that we have multiple measurements for a given day, otherwise a single value will be both the peak and trough; however, the plot still works regardless.
 ```{r fig1, fig.height = 4, fig.width = 7.5, fig.align = "center"}
-viz_data <- bp_mag(data2, inc_date = TRUE)
+viz_data <- bp_mag(jhs_proc, inc_date = TRUE)
 plot(viz_data[which(viz_data$Peak_SBP > 0 & viz_data$N > 1),]$DATE, viz_data[which(viz_data$Peak_SBP > 0 & viz_data$N > 1),]$Peak_SBP, type = 'l', col = "red", xlab ="DATE", ylab = "Magnitude")
 lines(viz_data[which(viz_data$Peak_SBP > 0 & viz_data$N > 1),]$DATE, viz_data[which(viz_data$Trough_SBP > 0 & viz_data$N > 1),]$Trough_SBP, col = "darkgreen")
 legend("topright", legend = c("Peak", "Trough"), col = c("red","darkgreen"), lty =1)
@@ -192,20 +192,20 @@ Recall that in the processing stage, there were additional columns that were aut
 
 The `bp_hist` returns three histograms of all readings corresponding to total number within each stage, frequency of SBP readings, and frequency of DBP readings. Furthermore, it breaks the data down by color according to which blood pressure stage it falls under:
 ```{r fig1a, fig.height = 2.5, fig.width = 5.5, fig.align = "center", results = FALSE, message = FALSE}
-bp_hist(data2)
+bp_hist(jhs_proc)
 ```
 
 The above plots show a cautiously high frequency of Elevated and Stage 1 readings for `SBP`, but the frequency of `DBP` readings seems to fare better in the Normal and Elevated stages. 
 
 Let's now suppose that we wish to break down our readings by Time of Day and Day of Week. For this, we can implement the `dow_tod_plots` function. Because this function is mainly used as a helper function for the `bp_report` function, we need to add a couple steps using the `gridExtra` package
 ```{r fig1b, fig.height = 6, fig.width = 6, fig.align = "center", results = FALSE, message = FALSE}
-bptable_ex <- dow_tod_plots(data2)
+bptable_ex <- dow_tod_plots(jhs_proc)
 gridExtra::grid.arrange(bptable_ex[[1]], bptable_ex[[2]], bptable_ex[[3]], bptable_ex[[4]], nrow = 2)
 ```
 
 As a final step before returning to our other example, let's compile everything that we have done so far into a more compact and digestible report that visualizes everything simultaneously. To do so, we will rely on the `bp_report` function, which will generate a report in PDF (although other formats such as PNG are available):
 ```{r, eval = FALSE}
-bp_report(data2)
+bp_report(jhs_proc)
 ```
 
 ```{r fig.width=8, fig.height=7, echo=FALSE}
@@ -218,9 +218,9 @@ grid::grid.raster(img)
 
 Suppose now that we turn our attention back to the `hypnos_data` example where we joined the `ARV` and `CV` metrics together. We would now like to visualize these for all of the subjects to see if we can discern any patterns. From the first scatterplot matrix we see that the between-subject values differ and from the second scatterplot matrix we see that there is a very stark contrast between `ARV` and `CV` during sleep vs awake.  
 ```{r fig2, fig.height = 4.5, fig.width = 6.5, fig.align = "center"}
-viz_arv_cv <- dplyr::left_join(arv(data1), cv(data1))
+viz_arv_cv <- dplyr::left_join(arv(hypnos_proc), cv(hypnos_proc))
 pairs(viz_arv_cv[,4:(ncol(viz_arv_cv)-1)], upper.panel = NULL, col = factor(viz_arv_cv$ID))
-pairs(data1[,6:11], upper.panel = NULL, col = factor(data1$WAKE))
+pairs(hypnos_proc[,6:11], upper.panel = NULL, col = factor(hypnos_proc$WAKE))
 ```
 
 
