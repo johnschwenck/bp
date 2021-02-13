@@ -9,7 +9,8 @@ dip_calc(
   sleep_int = NULL,
   dip_thresh = 0.1,
   extreme_thresh = 0.2,
-  inc_date = FALSE
+  inc_date = FALSE,
+  subj = NULL
 )
 }
 \arguments{
@@ -41,6 +42,11 @@ data set already contains a \code{WAKE} column.}
 
 \item{inc_date}{Default to FALSE. Indicates whether or not to include the date in the grouping of
 the final output}
+
+\item{subj}{Optional argument. Allows the user to specify and subset specific subjects
+from the \code{ID} column of the supplied data set. The \code{subj} argument can be a single
+value or a vector of elements. The input type should be character, but the function will
+comply with integers so long as they are all present in the \code{ID} column of the data.}
 }
 \value{
 A list containing 2 tibble objects. The first tibble object lists grouped average values for SBP and DBP
@@ -71,7 +77,7 @@ extreme dippers and the non-dippers (including reverse dippers) are both more pr
 data(hypnos_data)
 
 ## Process hypnos_data
-data <- process_data(hypnos_data,
+hypnos_proc <- process_data(hypnos_data,
                      sbp = 'syst',
                      dbp = 'diast',
                      bp_datetime = 'date.time',
@@ -83,7 +89,7 @@ data <- process_data(hypnos_data,
                      visit = 'Visit',
                      wake = 'wake')
 
-dip_calc(data)
+dip_calc(hypnos_proc)
 }
 \references{
 Okhubo, T., Imai, Y., Tsuji, K., Nagai, K., Watanabe, N., Minami, J., Kato, J., Kikuchi, N., Nishiyama, A.,

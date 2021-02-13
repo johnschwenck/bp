@@ -45,6 +45,11 @@
 #' Default to FALSE. Indicates whether or not to include the date in the grouping of
 #' the final output
 #'
+#' @param subj Optional argument. Allows the user to specify and subset specific subjects
+#' from the \code{ID} column of the supplied data set. The \code{subj} argument can be a single
+#' value or a vector of elements. The input type should be character, but the function will
+#' comply with integers so long as they are all present in the \code{ID} column of the data.
+#'
 #' @references
 #' Okhubo, T., Imai, Y., Tsuji, K., Nagai, K., Watanabe, N., Minami, J., Kato, J., Kikuchi, N., Nishiyama, A.,
 #' Aihara, A., Sekino, M., Satoh, H., and Hisamichi, S. (1997). Relation Between Nocturnal Decline in Blood
@@ -72,7 +77,7 @@
 #' data(hypnos_data)
 #'
 #' ## Process hypnos_data
-#' data <- process_data(hypnos_data,
+#' hypnos_proc <- process_data(hypnos_data,
 #'                      sbp = 'syst',
 #'                      dbp = 'diast',
 #'                      bp_datetime = 'date.time',
@@ -84,9 +89,8 @@
 #'                      visit = 'Visit',
 #'                      wake = 'wake')
 #'
-#' dip_calc(data)
-dip_calc <- function(data, sleep_int = NULL, dip_thresh = 0.10, extreme_thresh = 0.20, inc_date = FALSE){
-
+#' dip_calc(hypnos_proc)
+dip_calc <- function(data, sleep_int = NULL, dip_thresh = 0.10, extreme_thresh = 0.20, inc_date = FALSE, subj = NULL){
 
 
   # Features:
@@ -94,12 +98,29 @@ dip_calc <- function(data, sleep_int = NULL, dip_thresh = 0.10, extreme_thresh =
   #           If not, default to Awake: 6am - 11pm | Asleep: 11pm - 6am |
   #        X Give user ability to choose time frame interval if no awake indicator column provided
   #        X User-defined dipping threshold, default to 10%
-  #        - Screening criteria  for {SBP > 250 | SBP < 70} and {DBP < 45 | DBP > 150} and {HR < 40 | HR > 200} according to Holt-Lunstad, Jones, and Birmingham (2009) paper
+  #        - (data_process) Screening criteria  for {SBP > 250 | SBP < 70} and {DBP < 45 | DBP > 150} and {HR < 40 | HR > 200} according to Holt-Lunstad, Jones, and Birmingham (2009) paper
   #        X Calculate the percent difference between two successive groups. In this case: Awake vs Asleep
 
 
-  avg_SBP = avg_DBP = dip_sys = dip_dias = class_sys = class_dias = SBP = DBP = . = NULL
-  rm(list = c('avg_SBP','avg_DBP','dip_sys','dip_dias','class_sys','class_dias','SBP', 'DBP', '.'))
+  avg_SBP = avg_DBP = dip_sys = dip_dias = class_sys = class_dias = SBP = DBP = ID = . = NULL
+  rm(list = c('avg_SBP','avg_DBP','dip_sys','dip_dias','class_sys','class_dias','SBP', 'DBP', 'ID', '.'))
+
+
+  # If user supplies a vector corresponding to a subset of multiple subjects (multi-subject only)
+  if(!is.null(subj)){
+
+    # check to ensure that supplied subject vector is compatible
+    subject_subset_check(data, subj)
+
+    if(length(unique(data$ID)) > 1){
+
+      # Filter data based on subset of subjects
+      data <- data %>%
+        dplyr::filter(ID == subj)
+
+    }
+
+  }
 
 
   if(is.null(data$WAKE)){ # No Sleep / Awake indicator column provided (WAKE column)
@@ -322,15 +343,6 @@ dip_calc <- function(data, sleep_int = NULL, dip_thresh = 0.10, extreme_thresh =
     dplyr::summarise(avg_SBP = mean(SBP),
                      avg_DBP = mean(DBP),
                      N = dplyr::n() )
-#
-#   dip_pct <- dip %>%
-#     dplyr::summarise( dip_sys = -(1 - pct(avg_SBP)),
-#                       dip_dias = -(1 - pct(avg_DBP)) ) %>%
-#     dplyr::mutate(class_sys = ifelse(dip_sys <= -dip_thresh, "dipper",
-#                                    ifelse(dip > 0, "reverse", "non-dipper")),
-#                   class_dias = ifelse(dip_dias <= -dip_thresh, "dipper",
-#                                       ifelse(dip_dias > 0, "reverse", "non-dipper"))) %>%
-#     dplyr::relocate(class_sys, .after = dip_sys)
 
   dip_pct <- dip %>%
 
