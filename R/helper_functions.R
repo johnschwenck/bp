@@ -221,6 +221,146 @@ create_grps <- function(data, inc_date, add_groups){
 
 
 
+#path = 'C:\\Users\\John\\Documents\\GitHub\\abpm'
+#path = "C:/Documents"
+#path_check(path)
+
+path_check <- function(path){
+
+  path <- path.expand(path)
+
+  path <- file.path(dirname(path), basename(path))
+
+  if( utils::file_test("-d", path) == FALSE){
+
+    stop('Invalid path argument. Directory does not exist.')
+
+  }
+
+  if( !dir.exists(path) ){
+
+    stop('Invalid path argument. Directory does not exist.')
+
+  }
+
+  return(path)
+
+}
+
+
+
+
+
+
+
+
+
+##############################################################
+#
+# pdf("bp_report.pdf", width = 7, height = 5)
+# for(i in c(idx, n+1)){
+#
+#   grid::grid.newpage()
+#   grid::grid.draw(final[[i]])
+#
+# }
+# dev.off()
+#
+##############################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+######################################################################################
+######################################################################################
+
+# # Determine how granular to calculate based on which columns are available
+# grps = c("ID", "VISIT")
+# grps = grps[which(grps %in% colnames(data) == TRUE)]
+#
+# if(length(grps) == 0){
+#
+#   message('No columns specified for ID, VISIT, or WAKE. All data values aggregated.')
+#
+# }
+#
+# data %>%
+#   dplyr::group_by_at(dplyr::vars(grps) ) %>%
+#   bp_report()
+
+# For multiple pages
+#final_report = ggpubr::ggarrange(final_1, final_2)
+
+####################################################################################
+# # Save final report to PDF
+# if(save_report == 1){
+#
+#   # Compatibility checks for loc path
+#   if(!is.null(loc)){
+#
+#     # Check that loc path is valid
+#     if(!dir.exists(loc)){
+#       stop('Invalid filepath for loc argument.')
+#     }
+#
+#     # Check that the end of the loc path has either \\ or /  and if not, add it
+#     # if(grep("\\", loc)){
+#     #
+#     # }
+#
+#     # Check that naming convention is correct i.e. cant start with a number or character, etc
+#
+#     # Check whether there already exists a file in the loc directory and
+#     # if so, give user option to choose whether or not to override it
+#     # if( file.exists( paste(loc, filename, sep = "") ) ){
+#     #
+#     #   # user option to override
+#     #
+#     # }
+#
+#   }else{
+#     loc <- paste(getwd(), "\\",sep = "")
+#   }
+#
+#   # Save final report
+#   ggplot2::ggsave(grid::grid.draw(final_1), filename = paste(loc, filename, sep = ""), device = 'pdf', width = width, height = height)
+#
+# } else if(save_report == 0){
+#
+#   warning('Report not saved. To save, specify save_report = 1 in function argument.')
+#
+# } else{
+#
+#   warning('Invalid specification of save_report. save_report can only take values 0 or 1. \nReport not saved.')
+#
+# }
+
+####################################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

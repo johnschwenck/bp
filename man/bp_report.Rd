@@ -6,13 +6,16 @@
 \usage{
 bp_report(
   data,
+  subj = NULL,
+  inc_all = TRUE,
+  save_report = 1,
+  path = NULL,
   filename = "bp_report",
   width = 11,
   height = 8.5,
   filetype = "pdf",
   units = "in",
-  loc = NULL,
-  save_report = 1
+  scale = 1.25
 )
 }
 \arguments{
@@ -36,16 +39,32 @@ if more than one
 
 }}
 
-\item{filename}{A string corresponding to the name of the report. The default is
+\item{subj}{Optional argument. Allows the user to specify and subset specific subjects
+from the \code{ID} column of the supplied data set. The \code{subj} argument can be a single
+value or a vector of elements. The input type should be character, but the function will
+comply with integers so long as they are all present in the \code{ID} column of the data.}
+
+\item{inc_all}{An indicator to dictate whether or not an overview page containing the data for
+all subjects (aggregated together) should be included in the report. By default, \code{inc_all = TRUE}.}
+
+\item{save_report}{A binary indicator (1 or 0) that determines whether or not to save the output.
+The default is \code{save_report = 1} indicating that the report will be saved. Regardless of the
+input, the report will still appear in the RStudio Plots pane.}
+
+\item{path}{Optional argument. A string corresponding to the respective file path by which the
+report is to be saved. Do not include trailing slashes (i.e. ~/loc/) or the file name (i.e. ~/loc/testfile.pdf).
+By default, if not \code{path} argument specified, will save at the current working directory.}
+
+\item{filename}{Optional argument. A string corresponding to the name of the report. The default is
 "bp_report". The string cannot begin with a number or non-alphabetical character.
 \cr
 \cr Note: DO NOT include the file type extension (such as ".pdf" or ".png") at the end of the string;
 the \code{bp_report} function will automatically join the name with the file type.}
 
-\item{width}{An numeric value corresponding to the width of the output document.
+\item{width}{Optional argument. An numeric value corresponding to the width of the output document.
 The default is set to 12 inches.}
 
-\item{height}{An numeric value corresponding to the height of the output document.
+\item{height}{Optional argument. An numeric value corresponding to the height of the output document.
 The default is set to 8.53 inches.}
 
 \item{filetype}{A string corresponding to he particular type of file that the report is to be saved as.
@@ -66,11 +85,7 @@ Although PDF is the default possible options include:
 correspond to in the exported output. The default is inches ("in"), but centimeters ("cm") and
 millimeters ("mm") are also available.}
 
-\item{loc}{Test}
-
-\item{save_report}{A binary indicator (1 or 0) that determines whether or not to save the output.
-The default is \code{save_report = 1} indicating that the report will be saved. Regardless of the
-input, the report will still appear in the RStudio Plots pane.}
+\item{scale}{A multiplicative scaling factor for the report output.}
 }
 \value{
 A report visual containing various blood pressure metrics and visuals and a saved report (if
@@ -106,10 +121,7 @@ jhs_proc <- process_data(bp_jhs,
 rm(hypnos_data, bp_jhs)
 # Single-subject Report
 # Note: save_report set to 0 for illustrative purposes of the example, not to actually save
-## Not Run
-\dontrun{
 bp_report(jhs_proc, filetype = 'png', save_report = 0)
-}
 
 # Multi-subject Report
 # Note: save_report set to 0 for illustrative purposes of the example, not to actually save
