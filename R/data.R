@@ -5,7 +5,7 @@
 #' variables pertaining to Date/Time, Systolic BP, Diastolic BP, and Heart Rate. The data assumes a threshold
 #' blood pressure of 135 / 85 which is used to calculate excess amounts.
 #'
-#' @source \url{https://doi.org/10.7910/DVN/EA1SAP}
+#' @source \doi{10.7910/DVN/EA1SAP}
 #'
 #' @format A data frame with the following columns:
 #' \describe{

@@ -24,7 +24,7 @@ A data frame with the following columns:
 }
 }
 \source{
-\url{https://doi.org/10.7910/DVN/EA1SAP}
+\doi{10.7910/DVN/EA1SAP}
 }
 \usage{
 bp_jhs
