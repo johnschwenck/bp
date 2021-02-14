@@ -73,8 +73,8 @@ bp_stats <- function(data,
                      bp_type = 0,
                      add_groups = NULL){
 
-  ID = N = DATE = SBP_mean = DBP_mean = SBP_med = DBP_med = SD_SBP = SD_DBP = CV_SBP = CV_DBP = SBP_range = DBP_range = NULL
-  rm(list = c(ID, N, DATE, SBP_mean, DBP_mean, SBP_med, DBP_med, SD_SBP, SD_DBP, CV_SBP, CV_DBP, SBP_range, DBP_range))
+  ID = N = DATE = SBP_mean = DBP_mean = SBP_med = DBP_med = SD = SD_SBP = SD_DBP = CV_SBP = CV_DBP = SBP_max = DBP_max = SBP_min = DBP_min = SBP_range = DBP_range = . = NULL
+  rm(list = c(ID, N, DATE, SBP_mean, DBP_mean, SBP_med, DBP_med, SD, SD_SBP, SD_DBP, CV_SBP, CV_DBP, SBP_range, DBP_range, SBP_max, SBP_min, DBP_max, DBP_min, .))
 
   # If user supplies a vector corresponding to a subset of multiple subjects (multi-subject only)
   if(!is.null(subj)){
@@ -150,11 +150,49 @@ bp_stats <- function(data,
   out <- dplyr::left_join(out, bp_mag_tmp, by = c(grps))
 
 
+
+
+
+  #
+  #
+  # bp_type <- match.arg(bp_type)
+  # switch(bp_type,
+  #
+  #        # Reorder columns - both
+  #        both <- out %>% dplyr::relocate(ID, N, DATE) %>%
+  #          dplyr::relocate(SD_SBP, .after = DBP_med) %>%
+  #          dplyr::relocate(SD_DBP, .after = SD_SBP) %>% dplyr::relocate(SBP_range, .before = DBP_range),
+  #
+  #        sys <- out %>% dplyr::relocate(ID, N, DATE) %>%
+  #          dplyr::relocate(SD, .after = SBP_med) %>%
+  #          dplyr::select(-DBP_max, -DBP_min, -DBP_range),
+  #
+  #        dia <- out %>% dplyr::relocate(ID, N, DATE) %>%
+  #          dplyr::relocate(SD, .after = DBP_med) %>%
+  #          dplyr::select(-SBP_max, -SBP_min, -SBP_range)
+  #
+  # )
+
   # Reorder columns
-  out <- out %>% dplyr::relocate(ID, N, DATE)
-  out <- out %>% dplyr::relocate(SD_SBP, .after = DBP_med)
-  out <- out %>% dplyr::relocate(SD_DBP, .after = SD_SBP)
-  out <- out %>% dplyr::relocate(SBP_range, .before = DBP_range)
+  out <- out %>% dplyr::relocate(ID, N, DATE) %>%
+    {if (bp_type == 0) dplyr::relocate(., SD_SBP, .after = DBP_med) %>%
+                       dplyr::relocate(., SD_DBP, .after = SD_SBP) %>%
+                       dplyr::relocate(., SBP_range, .before = DBP_range) else . } %>%
+    {if (bp_type == 1) dplyr::relocate(., SD, .after = SBP_med) %>% dplyr::select(., -DBP_max, -DBP_min, -DBP_range) else . } %>%
+    {if (bp_type == 2) dplyr::relocate(., SD, .after = DBP_med) %>% dplyr::select(., -SBP_max, -SBP_min, -SBP_range) else . }
+
+
+
+
+
+
+
+#
+#   # Reorder columns
+#   out <- out %>% dplyr::relocate(ID, N, DATE)
+#   out <- out %>% dplyr::relocate(SD_SBP, .after = DBP_med)
+#   out <- out %>% dplyr::relocate(SD_DBP, .after = SD_SBP)
+#   out <- out %>% dplyr::relocate(SBP_range, .before = DBP_range)
 
   return(out)
 }
