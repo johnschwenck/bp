@@ -136,7 +136,7 @@ arv <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups = N
   out <- data %>%
     dplyr::group_by_at(dplyr::vars(grps) ) %>%
 
-    #ARV Calculation
+    # ARV Calculation
     { if (bp_type == 1) dplyr::summarise(., ARV = sum( abs( (SBP - dplyr::lag(SBP))[2:length(SBP - dplyr::lag(SBP))] ) ) / (dplyr::n() - 1), N = dplyr::n()) else . } %>% # SBP only
     { if (bp_type == 2) dplyr::summarise(., ARV = sum( abs( (DBP - dplyr::lag(DBP))[2:length(DBP - dplyr::lag(DBP))] ) ) / (dplyr::n() - 1), N = dplyr::n()) else . } %>% # DBP only
     { if (bp_type == 0) dplyr::summarise(., ARV_SBP = sum( abs( (SBP - dplyr::lag(SBP))[2:length(SBP - dplyr::lag(SBP))] ) ) / (dplyr::n() - 1),
