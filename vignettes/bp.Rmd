@@ -33,7 +33,7 @@ Of primary concern to researchers is the ability to accurately quantify blood pr
 
 We introduce the first comprehensive open-source R package, **`bp`**, that both analyzes and visualizes blood pressure data. In an effort to help clinicians make sense of their patients' data without requiring multiple software platforms for data processing, `bp` uses only a minimal amount of code to do so and offers additional capabilities beyond the traditional proprietary counterparts. At the time of writing, to the best of the authors' knowledge, there are currently no other available software packages through the Comprehensive R Archive Network (CRAN) dedicated to blood pressure analysis.
 
-In this paper, we demonstrate the main functionality of the **`bp`** package by exploring and analyzing both a single-subject pilot study of [ 8 ] and a multi-subject study, HYPNOS $\color{red}{\text{[source]}}$, to illustrate the differences between dataset structures and elaborate how to adjust the settings within the R package to accommodate either. 
+In this paper, we demonstrate the main functionality of the **`bp`** package by exploring and analyzing both a single-subject pilot study of [ 8 ] and a multi-subject study, HYPNOS [ 11 ], to illustrate the differences between dataset structures and elaborate how to adjust the settings within the R package to accommodate either. 
 
 ###### Blood Pressure Monitoring Overview
 Blood pressure monitoring devices work by measuring the pressure of the artery’s restricted blood flow; for digital devices, the vibrations are translated into electrical signals. Unlike home monitors that only take readings upon the subject's initiation, ambulatory blood pressure monitoring (ABPM) devices take automatic readings at pre-specified intervals over a 24-hour period or longer.
@@ -259,4 +259,6 @@ doi: 10.1097/HJH.0b013e32834cf213
 
 9. Webb S. AHA 2019 Heart Disease and Stroke Statistics. American College of Cardiology. https://www.acc.org/latest-in-cardiology/ten-points-to-remember/2019/02/15/14/39/aha-2019-heart-disease-and-stroke-statistics
 
-10. Bilo G, Grillo A, Guida V, Parati G. Morning blood pressure surge: pathophysiology, clinical relevance and therapeutic aspects. *Integr Blood Press Control*. 2018;11:47-56. Published 2018 May 24. doi:10.2147/IBPC.S130277
+10. Bilo G, Grillo A, Guida V, Parati G. Morning blood pressure surge: pathophysiology, clinical relevance and therapeutic aspects. *Integr Blood Press Control*. 2018;11:47-56. Published 2018 May 24. https://doi.org/10.2147/IBPC.S130277
+
+11. Irina Gaynanova, Naresh Punjabi, Ciprian Crainiceanu, Modeling continuous glucose monitoring (CGM) data during sleep, *Biostatistics*, 2020. https://doi.org/10.1093/biostatistics/kxaa023
