@@ -4,8 +4,7 @@ Title: Blood Pressure Analysis in R
 Version: 1.0.0
 Authors@R: person("John","Schwenck", email = "jschwenck12@gmail.com", role = c("aut", "cre"))
 Maintainer: John Schwenck <jschwenck12@gmail.com>
-Description: A comprehensive package to aid in the analysis of blood pressure data of all forms.
-    The bp package will provide both descriptive and inferential tools for researchers.
+Description: A comprehensive package to aid in the analysis of blood pressure data of all forms by providing both descriptive and visualization tools for researchers.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
@@ -29,3 +28,4 @@ Suggests:
     knitr,
     rmarkdown
 VignetteBuilder: knitr
+Language: en-US

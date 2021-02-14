@@ -120,15 +120,15 @@ categories of hypertension (normal, elevated, or hypertensive).
 
 The following metrics are currently offered through the `bp` package:
 
-| Function   | Metric Name                                | Source                                                                    |
-| ---------- | ------------------------------------------ | ------------------------------------------------------------------------- |
-| arv        | Average Real Variability                   | [Mena et al (2005)](https://doi.org/10.1097/01.hjh.0000160205.81652.5a)   |
-| bp\_center | Mean and Median                            | [Amaro Lijarcio et al (2006)](https://doi.org/10.1016/j.ejim.2006.07.023) |
-| bp\_mag    | Blood Pressure Magnitude (peak and trough) | [Munter et al (2011)](https://doi.org/10.1097/HJH.0b013e32834cf213)       |
-| bp\_range  | Blood Pressure Range                       | [Levitan et al (2013)](https://doi.org/10.1038/jhh.2013.19)               |
-| cv         | Coefficient of Variation                   | [Munter et al (2011)](https://doi.org/10.1097/HJH.0b013e32834cf213)       |
-| sv         | Successive Variation                       | [Munter et al (2011)](https://doi.org/10.1097/HJH.0b013e32834cf213)       |
-| dip\_calc  | Nocturnal Dipping % and Classification     | [Okhubo et al (1997)](https://doi.org/10.1016/s0895-7061\(97\)00274-4)    |
+| Function   | Metric Name                                | Source                                                                        |
+| ---------- | ------------------------------------------ | ----------------------------------------------------------------------------- |
+| arv        | Average Real Variability                   | [Mena et al (2005)](https://doi.org/10.1097/01.hjh.0000160205.81652.5a)       |
+| bp\_center | Mean and Median                            | [Amaro Lijarcio et al (2006)](https://doi.org/10.1016/j.ejim.2006.07.023)     |
+| bp\_mag    | Blood Pressure Magnitude (peak and trough) | [Munter et al (2011)](https://doi.org/10.1097/HJH.0b013e32834cf213)           |
+| bp\_range  | Blood Pressure Range                       | [Levitan et al (2013)](https://doi.org/10.1038/jhh.2013.19)                   |
+| cv         | Coefficient of Variation                   | [Munter et al (2011)](https://doi.org/10.1097/HJH.0b013e32834cf213)           |
+| sv         | Successive Variation                       | [Munter et al (2011)](https://doi.org/10.1097/HJH.0b013e32834cf213)           |
+| dip\_calc  | Nocturnal Dipping % and Classification     | [Okhubo et al (1997)](https://academic.oup.com/ajh/article/10/11/1201/148906) |
 
 ## Example - HYPNOS data
 

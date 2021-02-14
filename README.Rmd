@@ -91,7 +91,7 @@ bp_mag      | Blood Pressure Magnitude (peak and trough)  | [Munter et al (2011)
 bp_range    | Blood Pressure Range                        | [Levitan et al (2013)](https://doi.org/10.1038/jhh.2013.19)
 cv          | Coefficient of Variation                    | [Munter et al (2011)](https://doi.org/10.1097/HJH.0b013e32834cf213 )
 sv          | Successive Variation                        | [Munter et al (2011)](https://doi.org/10.1097/HJH.0b013e32834cf213 )
-dip_calc    | Nocturnal Dipping \% and Classification     | [Okhubo et al (1997)](https://doi.org/10.1016/s0895-7061(97)00274-4)
+dip_calc    | Nocturnal Dipping \% and Classification     | [Okhubo et al (1997)](https://academic.oup.com/ajh/article/10/11/1201/148906)
 
 
 

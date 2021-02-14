@@ -5,7 +5,6 @@
 #' of dispersion that takes into account the temporal structure of the data and relies
 #' on the sum of absolute differences in successive observations, unlike the
 #' successive variation (SV) which relies on the sum of squared differences.
-#' \deqn{SV = (\sum|x_{i+1} - x_i|/(n-1))^{1/2}}
 #'
 #' @param data Required argument. Pre-processed dataframe containing SBP and
 #' DBP with optional ID, VISIT, WAKE, and DATE columns if available.
