@@ -192,7 +192,7 @@ bp_scatter <- function(data, sbp_stages_alt = NULL, dbp_stages_alt = NULL, subj 
     geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[6] - ( (sbp_breaks[6] - sbp_breaks[5]) / 2), label = 'Stage 2'), color = 'black', hjust = .35, vjust = 1.5, size = 3) +
     geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[7], label = 'Crisis'), color = 'black', hjust = .35, vjust = 1.5, size = 3) +
 
-    ggtitle('Scatterplot of BP Values', subtitle = 'According to American Heart Association')
+    ggtitle('Scatterplot of BP Values', subtitle = 'Source: American Heart Association')
 
 
   return(scat1)
