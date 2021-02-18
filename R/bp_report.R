@@ -171,7 +171,7 @@ bp_report <- function(data,
 
     # Right-side plots
     all_1 <- gridExtra::grid.arrange( gridExtra::arrangeGrob(hist_all[[1]], nrow = 1), # side by side histogram of SBP / DBP totals
-                                   grid::linesGrob(y = unit(1.5, "lines"),
+                                   grid::linesGrob(y = grid::unit(1.5, "lines"),
                                                    gp = grid::gpar(col = "black")),
                                    gridExtra::arrangeGrob(dow_tod_plots_all[[1]], dow_tod_plots_all[[2]], nrow = 1), # hist of SBP and DBP freqs
                                    nrow = 3, heights = c(1.5, 0.25, 1.5))
@@ -256,7 +256,7 @@ bp_report <- function(data,
 
       # Right-side plots
       tmp_1 <- gridExtra::grid.arrange( gridExtra::arrangeGrob(hist_tmp[[1]], nrow = 1), # side by side histogram of SBP / DBP totals
-                                        grid::linesGrob(y = unit(1.5, "lines"),
+                                        grid::linesGrob(y = grid::unit(1.5, "lines"),
                                                         gp = grid::gpar(col = "black")),
                                         gridExtra::arrangeGrob(dow_tod_plots_tmp[[1]], dow_tod_plots_tmp[[2]], nrow = 1), # hist of SBP and DBP freqs
                                         nrow = 3, heights = c(1.5, 0.25, 1.5))
@@ -285,6 +285,8 @@ bp_report <- function(data,
 
     message('Report not saved. To save, specify save_report = 1 in function argument.')
 
+    grid::grid.draw(gridExtra::marrangeGrob(grobs = final, nrow = 1, ncol = 1))
+
   }else if(save_report == 1){
 
     # Verify that location (path) is valid and create proper path
@@ -294,7 +296,7 @@ bp_report <- function(data,
     out_path <- file.path(path, out_filename)
 
     # Save final report
-    ggsave(out_path, gridExtra::marrangeGrob(grobs = final, nrow = 1, ncol = 1),
+    ggplot2::ggsave(out_path, gridExtra::marrangeGrob(grobs = final, nrow = 1, ncol = 1),
            width = width,
            height = height,
            units = units,

@@ -198,19 +198,27 @@ create_grps <- function(data, inc_date, add_groups){
 
 path_check <- function(path){
 
-  path <- path.expand(path)
+  if(!is.null(path)){
 
-  path <- file.path(dirname(path), basename(path))
+      path <- path.expand(path)
 
-  if( utils::file_test("-d", path) == FALSE){
+      path <- file.path(dirname(path), basename(path))
 
-    stop('Invalid path argument. Directory does not exist.')
+      if( utils::file_test("-d", path) == FALSE){
 
-  }
+        stop('Invalid path argument. Directory does not exist.')
 
-  if( !dir.exists(path) ){
+      }
 
-    stop('Invalid path argument. Directory does not exist.')
+      if( !dir.exists(path) ){
+
+        stop('Invalid path argument. Directory does not exist.')
+
+      }
+
+  }else{
+
+    path <- getwd()
 
   }
 
