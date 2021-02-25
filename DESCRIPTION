@@ -7,7 +7,7 @@ Maintainer: John Schwenck <jschwenck12@gmail.com>
 Description: A comprehensive package to aid in the analysis of blood pressure data of all forms by providing both descriptive and visualization tools for researchers.
 License: GPL-3
 URL: https://github.com/johnschwenck/bp
-Issues: https://github.com/johnschwenck/bp/issues
+BugReports: https://github.com/johnschwenck/bp/issues
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
