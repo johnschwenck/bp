@@ -55,7 +55,7 @@
 #' Aihara, A., Sekino, M., Satoh, H., and Hisamichi, S. (1997). Relation Between Nocturnal Decline in Blood
 #' Pressure and Mortality: The Ohasama Study,
 #' \emph{American Journal of Hypertension} \strong{10(11)}, 1201--1207,
-#' \url{https://academic.oup.com/ajh/article/10/11/1201/148906}.
+#' \doi{10.1016/S0895-7061(97)00274-4}.
 #'
 #' @return A list containing 2 tibble objects. The first tibble object lists grouped average values for SBP and DBP
 #' for awake and asleep periods. The second \code{dip_pct} tibble object lists the dipping percentage and
