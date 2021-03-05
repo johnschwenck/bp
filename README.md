@@ -9,6 +9,10 @@
 status](https://travis-ci.com/johnschwenck/bp.svg?branch=master)](https://travis-ci.com/johnschwenck/bp)
 [![AppVeyor build
 status](https://ci.appveyor.com/api/projects/status/github/johnschwenck/bp?branch=master&svg=true)](https://ci.appveyor.com/project/johnschwenck/bp)
+
+[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/bp)](https://cran.r-project.org/package=bp)
+[![](https://cranlogs.r-pkg.org/badges/bp)](https://CRAN.R-project.org/package=bp)
+
 <!-- badges: end -->
 
 ## bp: Blood Pressure Analysis for R
