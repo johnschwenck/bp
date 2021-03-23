@@ -80,8 +80,8 @@
 #' @examples
 #'
 #' data("bp_jhs")
-#' data("hypnos_data")
-#' hyp_proc <- process_data(hypnos_data,
+#' data("bp_hypnos")
+#' hyp_proc <- process_data(bp_hypnos,
 #'                          sbp = "syst",
 #'                          dbp = "DIAST",
 #'                          bp_datetime = "date.time",
@@ -99,7 +99,7 @@
 #'                          dbp = "Dias.mmHg.",
 #'                          bp_datetime = "DateTime",
 #'                          hr = "pulse.bpm.")
-#' rm(hypnos_data, bp_jhs)
+#' rm(bp_hypnos, bp_jhs)
 #
 #' # Single-subject Report
 #' # Note: save_report set to 0 for illustrative purposes of the example, not to actually save

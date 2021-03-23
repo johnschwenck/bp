@@ -26,8 +26,8 @@ function.
 }
 \examples{
 data("bp_jhs")
-data("hypnos_data")
-hyp_proc <- process_data(hypnos_data,
+data("bp_hypnos")
+hyp_proc <- process_data(bp_hypnos,
                          sbp = "syst",
                          dbp = "DIAST",
                          bp_datetime = "date.time",
@@ -45,7 +45,7 @@ jhs_proc <- process_data(bp_jhs,
                          dbp = "Dias.mmHg.",
                          bp_datetime = "DateTime",
                          hr = "pulse.bpm.")
-rm(hypnos_data, bp_jhs)
+rm(bp_hypnos, bp_jhs)
 
 bp_hist(hyp_proc)
 bp_hist(jhs_proc)

@@ -55,12 +55,12 @@ min values for reference with the option to specify date as an additional level
 of granularity
 }
 \examples{
-# Load hypnos_data
-data(hypnos_data)
+# Load bp_hypnos
+data(bp_hypnos)
 data(bp_jhs)
 
-# Process hypnos_data
-hypnos_proc <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
+# Process bp_hypnos
+hypnos_proc <- process_data(bp_hypnos, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
 id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp = "rpp")
 # Process bp_jhs data
 jhs_proc <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", bp_datetime = "DateTime",

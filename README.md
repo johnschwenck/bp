@@ -25,7 +25,7 @@ and visualizations to bring more clarity to CVD.
 
 The  package includes two sample data sets:
 
-  - `hypnos_data`: a sample of a larger [HYPNOS
+  - `bp_hypnos`: a sample of a larger [HYPNOS
     study](https://clinicaltrials.gov/ct2/show/NCT02454153) containing
     ABPM data for multiple subjects using continuous monitoring devices
   - `bp_jhs`: a single-subject data set from a [2019 pilot
@@ -147,11 +147,11 @@ processing step and the functionality / analysis step.
 #devtools::install_github("johnschwenck/bp")
 library(bp)
 
-## Load hypnos_data
-data(hypnos_data)
+## Load bp_hypnos
+data(bp_hypnos)
 
-## Process hypnos_data
-hypnos_proc <- process_data(hypnos_data, 
+## Process bp_hypnos
+hypnos_proc <- process_data(bp_hypnos, 
                      sbp = 'syst', 
                      dbp = 'diast', 
                      bp_datetime = 'date.time', 
@@ -166,7 +166,7 @@ hypnos_proc <- process_data(hypnos_data,
 
 **NOTE:** the `process_data` function is insensitive to capitalization
 of the supplied data column names. For this example, even though the
-original column name “SYST” exists in the `hypnos_data`, “syst” is still
+original column name “SYST” exists in the `bp_hypnos`, “syst” is still
 an acceptable name to be given to the function as shown. For emphasis,
 all of the above column names were intentionally entered using the wrong
 capitalization.
@@ -175,7 +175,7 @@ capitalization.
 properly.
 
 2.  Using the newly processed `hypnos_proc`, we can now calculate
-    various metrics. Now that the `hypnos_data` has been processed into
+    various metrics. Now that the `bp_hypnos` has been processed into
     `hypnos_proc`, we can now instead rely on this new dataframe to
     calculate various metrics and visualizations. The calculation of the
     nocturnal dipping classification is shown below, using a subset of

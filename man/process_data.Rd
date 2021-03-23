@@ -111,11 +111,11 @@ dataframe. This function ensures that the supplied data complies with every
 function within the \code{bp} package. See Vignette for further details.
 }
 \examples{
-# Load hypnos_data
-data("hypnos_data")
+# Load bp_hypnos
+data("bp_hypnos")
 
-# Process data for hypnos_data
-hyp_proc <- process_data(hypnos_data, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
+# Process data for bp_hypnos
+hyp_proc <- process_data(bp_hypnos, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
 id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp = "rpp")
 
 hyp_proc

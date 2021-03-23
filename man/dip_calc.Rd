@@ -73,11 +73,11 @@ There is a "U-shaped" relationship that exists among the magnitude of nocturnal 
 extreme dippers and the non-dippers (including reverse dippers) are both more prone to mortality risk than normal dippers.
 }
 \examples{
-## Load hypnos_data
-data(hypnos_data)
+## Load bp_hypnos
+data(bp_hypnos)
 
-## Process hypnos_data
-hypnos_proc <- process_data(hypnos_data,
+## Process bp_hypnos
+hypnos_proc <- process_data(bp_hypnos,
                      sbp = 'syst',
                      dbp = 'diast',
                      bp_datetime = 'date.time',

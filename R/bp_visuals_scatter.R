@@ -74,8 +74,8 @@
 #'
 #' @examples
 #' data("bp_jhs")
-#' data("hypnos_data")
-#' hyp_proc <- process_data(hypnos_data,
+#' data("bp_hypnos")
+#' hyp_proc <- process_data(bp_hypnos,
 #'                          sbp = "syst",
 #'                          dbp = "DIAST",
 #'                          bp_datetime = "date.time",
@@ -93,7 +93,7 @@
 #'                          dbp = "Dias.mmHg.",
 #'                          bp_datetime = "DateTime",
 #'                          hr = "pulse.bpm.")
-#' rm(hypnos_data, bp_jhs)
+#' rm(bp_hypnos, bp_jhs)
 #'
 #' # An example of a multiple-subject data set with
 #' # all points aggregated across subjects, split by visits:

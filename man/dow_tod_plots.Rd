@@ -25,8 +25,8 @@ Blood Pressure Tables in Graphical Format
 }
 \examples{
 
-data("hypnos_data")
-hyp_proc <- process_data(hypnos_data,
+data("bp_hypnos")
+hyp_proc <- process_data(bp_hypnos,
                          sbp = "syst",
                          dbp = "DIAST",
                          bp_datetime = "date.time",
@@ -39,7 +39,7 @@ hyp_proc <- process_data(hypnos_data,
                          pp = "pp",
                          ToD_int = c(5, 13, 18, 23))
 
-rm(hypnos_data)
+rm(bp_hypnos)
 
 dow_tod_plots_tmp <- dow_tod_plots(hyp_proc)
 grid::grid.draw(
