@@ -569,9 +569,10 @@ process_data <- function(data,
 
           # If applicable, Check that all date values of the identified date column match the date_time values in as.Date format
           if( !all(data[,grep("^DATE$", names(data))] == as.Date(data[,grep("^DATE_TIME$", names(data))])) ){
-            warning('User-supplied DATE column does not align with DATE_TIME values.\nCreated additional column DATE_OLD in place of DATE.')
             data$DATE_OLD <- data$DATE
             data$DATE <- as.Date(data$DATE_TIME)
+            warning('User-supplied DATE column does not align with DATE_TIME values.\nCreated additional column DATE_OLD in place of DATE.\nMismatches between rows among DATE_OLD and DATE_TIME columns\n')
+            #which(as.Date(data$DATE_TIME) != data$DATE_OLD)
           }
 
         } # No DATE_TIME column but identified DATE column present --> continue
