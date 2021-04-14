@@ -6,7 +6,7 @@
 \usage{
 dip_calc(
   data,
-  sleep_int = NULL,
+  sleep_start_end = NULL,
   dip_thresh = 0.1,
   extreme_thresh = 0.2,
   inc_date = FALSE,
@@ -21,12 +21,12 @@ In the event of non-ABPM data (i.e. a data set without a corresponding \code{WAK
 \code{DATE_TIME} column \strong{must} be present in order to denote which times correspond to sleep and which
 times correspond to awake.}
 
-\item{sleep_int}{(optional) User-supplied sleep interval to indicate start and end time of
-the sleep interval of interest. Must only contain 2 values and must be 24-hour denoted integers
+\item{sleep_start_end}{(optional) User-supplied manual override to adjust sleep interval indicating indicate start and end time
+corresponding to the sleep interval of interest. Must only contain 2 values and must be 24-hour denoted integers
 
-Example: \code{sleep_int = c(22,5)} indicates a sleep period from 10pm - 5am.
+Example: \code{sleep_start_end = c(22,5)} indicates a sleep period from 10pm - 5am.
 
-\strong{NOTE:} If the \code{sleep_int} function argument is specified, and no \code{WAKE} column
+\strong{NOTE:} If the \code{sleep_start_end} function argument is specified, and no \code{WAKE} column
 exists, then awake/asleep indicators will be assigned according the the \code{DATE_TIME}
 column (which must exist). Otherwise, if \code{sleep_int} is not supplied, then the
 WAKE column will default to a sleep period between 11PM - 6AM as specified in the
