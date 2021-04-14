@@ -1,0 +1,72 @@
+Privacy,Generic privacy consent form permits participation in audit
+AN_PET,"Antenatal diagnosis of pre-eclampsia 1 = yes, 0 = no"
+IP_PET,"Intrapartum diagnosis of pre-eclampsia 1 = yes, 0 = no"
+PN_PET,"Postnatal diagnosis of pre-eclampsia 1 = yes, 0 = no"
+PIERS,Pre-eclampsia Integrated Estimate of Risk (%)
+DOB_Dryad,Maternal date of birth modified by adding a random number of days between -7 and +7
+Age,Maternal age at estimated date of confinement
+D_att_Dryad,Date of attendance modified by adding a random number of days between -7 and +7
+GA_att,Gestational age (weeks) at attendance
+EDC_Dryad,Estimated date of confinement modified by adding a random number of days between -7 and +7
+Grav,Gravidity: number of pregnancies including the current one
+Para,"Parity: number of pregnancies proceding to 20 or more weeks, not including the current one"
+SBP_0,Systolic blood pressure at 0 minutes (mm Hg)
+DBP_0,Diastolic blood pressure at 0 minutes (mm Hg)
+SBP_30,
+DBP_30,
+SBP_60,
+DBP_60,
+SBP_90,
+DBP_90,
+SBP_120,
+DBP_120,
+SBP_150,
+DBP_150,
+SBP_180,
+DBP_180,
+SBP_210,
+DBP_210,
+SBP_240,
+DBP_240,
+Platelets,10^9 per mL
+Urate,mmol/L
+Urea,micromol/L
+Creatinine,micromol/L
+ALP,Alkaline phosphatase u/L 
+ALT,Alanaine transaminase u/L 
+GGT,Gamma glutamyl transaminase u/L 
+Baseline,"Baseline fetal heart rate (normal, bradycardia, tachycardia)"
+Variability,Fetal heart rate variability as judged visually
+Accelerations,Fetal heart rate accelerations
+Decelerations,Fetal heart rate decelerations
+CTG,Cardiotocogram
+UrinePCR,Spot urine protein:creatinine ratio mg/mmol
+Headache,"1= yes, 0 = 0"
+Visual Disturbances,"1= yes, 0 = 0"
+Abdominal pain,"1= yes, 0 = 0"
+Nausea,"1= yes, 0 = 0"
+Oedema,"1= yes, 0 = 0"
+SOB,"Shortness of breath: 1= yes, 0 = 0"
+Bruising,"1= yes, 0 = 0"
+Hyperreflexia,"1= yes, 0 = 0"
+Asymptomatic,"1= yes, 0 = 0"
+Safe for discharge at 1 hour?,"1= yes, 0 = 0"
+Safe for discharge at 1 hour? - Other (please specify),
+PrevPDAC,Number of previous PDAC assessments this pregnancy
+Bk_SBP,Booking systolic blood pressure (mmHg)
+Bk_DBP,Booking diastolic blood pressure (mmHg)
+Wt,Pre-pregnancy or early pregnancy weight (kg)
+Ht,Maternal height (cm)
+BMI,Body mass index
+PHx_PET,Past history of pre-eclampsia
+PHx_Eclampsia,Past history of eclampsia
+PHx_EssBP,Past history of essential hypertension
+PHx_Smoker,Smoking history
+PHx_ASA,Prescribed aspirin in this pregnancy
+DrRV,Medical review during PDAC
+Self-discharge,Self-discharge from PDAC
+Admission,Admission from PDAC
+Antihypertensive Meds,Current antihypertensive medication
+IOL,Induction of labour
+EmCS,Emergency Caesarean section
+Final Diagnosis:,"Final diagnosis: 0 = nil, 1 = pregnancy induced hypertension, 2 = pre-eclampsia"
