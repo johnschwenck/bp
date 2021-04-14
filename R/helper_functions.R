@@ -209,9 +209,9 @@ bp_stages <- function(data, sbp, dbp, sbp_stages_alt = NULL, dbp_stages_alt = NU
                                                   DBP > dbp_stages[6] ~ "Crisis"),
                   DBP_Category = factor(DBP_Category, levels = c("Low", "Normal", "Elevated", "Stage 1", "Stage 2", "Crisis")) )
 
-    data <- data %>%
-      dplyr::relocate(SBP_Category, .after = SBP) %>%
-      dplyr::relocate(DBP_Category, .after = DBP)
+  data <- data %>%
+    dplyr::relocate(SBP_Category, .after = SBP) %>%
+    dplyr::relocate(DBP_Category, .after = DBP)
 
 
   return(data)
