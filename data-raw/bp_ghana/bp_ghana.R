@@ -21,5 +21,7 @@ bp_ghana_adj <- bp_ghana %>%
   relocate(ID, Time_Elapsed, SBP, DBP)
 
 #View(bp_ghana_adj)
+bp_ghana <- bp_ghana_adj
+rm(bp_ghana_adj)
 
-usethis::use_data(bp_ghana_adj, overwrite = TRUE)
+usethis::use_data(bp_ghana, overwrite = TRUE)

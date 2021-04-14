@@ -22,7 +22,10 @@ bp_preg_adj <- bp_preg %>%
   relocate(ID, Time_Elapsed, SBP, DBP) %>%
   relocate(Privacy, AN_PET, IP_PET, PN_PET, PIERS, .after = EDC_Dryad)
 
-usethis::use_data(bp_preg_adj, overwrite = TRUE)
+bp_preg <- bp_preg_adj
+rm(bp_preg_adj)
+
+usethis::use_data(bp_preg, overwrite = TRUE)
 
 
 
