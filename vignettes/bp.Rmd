@@ -175,7 +175,7 @@ dow_tod_plots    | Day of Week / Time of Day chart
 bp_report        | Exportable Blood Pressure Report
 
 
-Continuing with our previous example using the `bp_jhs` data set, let's suppose we wanted to explore how to peaks and troughs of systolic blood pressure changed over time. Note that there is a subtle assumption here in that we have multiple measurements for a given day, otherwise a single value will be both the peak and trough; however, the plot still works regardless.
+Continuing with our previous example using the `bp_jhs` data set, let's suppose we wanted to explore how peaks and troughs of systolic blood pressure change over time. Note that there is a subtle assumption here in that we have multiple measurements for a given day, otherwise a single value will be both the peak and trough; however, the plot still works regardless.
 ```{r fig1, fig.height = 4, fig.width = 7.5, fig.align = "center"}
 viz_data <- bp_mag(jhs_proc, inc_date = TRUE)
 plot(viz_data[which(viz_data$Peak_SBP > 0 & viz_data$N > 1),]$DATE, viz_data[which(viz_data$Peak_SBP > 0 & viz_data$N > 1),]$Peak_SBP, type = 'l', col = "red", xlab ="DATE", ylab = "Magnitude")
