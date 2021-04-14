@@ -80,7 +80,7 @@ data(bp_hypnos)
 hypnos_proc <- process_data(bp_hypnos,
                      sbp = 'syst',
                      dbp = 'diast',
-                     bp_datetime = 'date.time',
+                     date_time = 'date.time',
                      hr = 'hr',
                      pp = 'PP',
                      map = 'MaP',

@@ -8,7 +8,7 @@ process_data(
   data,
   sbp = NULL,
   dbp = NULL,
-  bp_datetime = NULL,
+  date_time = NULL,
   id = NULL,
   wake = NULL,
   visit = NULL,
@@ -34,7 +34,7 @@ Pressure (mmHg)}
 \item{dbp}{Required column name (character string) corresponding to Diastolic Blood
 Pressure (mmHg)}
 
-\item{bp_datetime}{Optional column name (character string) corresponding to Date/Time,
+\item{date_time}{Optional column name (character string) corresponding to Date/Time,
 but HIGHLY recommended to supply if available.}
 
 \item{id}{Optional column name (character string) corresponding to subject ID. Typically
@@ -123,7 +123,7 @@ data("bp_hypnos")
 hypnos_proc <- process_data(bp_hypnos,
                               sbp = 'syst',
                               dbp = 'diast',
-                              bp_datetime = 'date.time',
+                              date_time = 'date.time',
                               hr = 'hr',
                               pp = 'PP',
                               map = 'MaP',
@@ -143,7 +143,7 @@ data("bp_jhs")
 jhs_proc <- process_data(bp_jhs,
                          sbp = "Sys.mmHg.",
                          dbp = "Dias.mmHg.",
-                         bp_datetime = "DateTime",
+                         date_time = "DateTime",
                          hr = "Pulse.bpm.")
 
 jhs_proc

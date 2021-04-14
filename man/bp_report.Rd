@@ -103,7 +103,7 @@ data("bp_hypnos")
 hyp_proc <- process_data(bp_hypnos,
                          sbp = "syst",
                          dbp = "DIAST",
-                         bp_datetime = "date.time",
+                         date_time = "date.time",
                          id = "id",
                          wake = "wake",
                          visit = "visit",
@@ -116,7 +116,7 @@ hyp_proc <- process_data(bp_hypnos,
 jhs_proc <- process_data(bp_jhs,
                          sbp = "Sys.mmHg.",
                          dbp = "Dias.mmHg.",
-                         bp_datetime = "DateTime",
+                         date_time = "DateTime",
                          hr = "pulse.bpm.")
 rm(bp_hypnos, bp_jhs)
 # Single-subject Report
