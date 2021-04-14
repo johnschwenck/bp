@@ -72,7 +72,7 @@ data("bp_hypnos")
 hypnos_proc <- process_data(bp_hypnos,
                      sbp = 'syst',
                      dbp = 'diast',
-                     bp_datetime = 'date.time',
+                     date_time = 'date.time',
                      id = 'id',
                      visit = 'visit',
                      hr = 'hr',
@@ -97,7 +97,7 @@ data("bp_jhs")
 jhs_proc <- process_data(bp_jhs,
                      sbp = 'sys.mmhg.',
                      dbp = 'dias.mmhg.',
-                     bp_datetime = 'datetime',
+                     date_time = 'datetime',
                      hr = 'PULSE.BPM.')
 head(jhs_proc, 5)
 ```
