@@ -64,9 +64,8 @@ Adds SBP_Category and DBP_Category columns to supplied dataframe.
 Supplied dataframe must adhere to the unified format using the \code{process_data} function.
 }
 \examples{
-
 # Load bp_hypnos
-data("bp_hypnos")
+data(bp_hypnos)
 
 bp_stages(bp_hypnos,
             sbp = "syst",
@@ -77,7 +76,7 @@ bp_stages(bp_hypnos,
 
 
 # Load bp_jhs data
-data("bp_jhs")
+data(bp_jhs)
 
 bp_stages(bp_jhs,
             sbp = "sys.mmhg.",

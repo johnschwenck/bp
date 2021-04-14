@@ -174,9 +174,8 @@ stage_check <- function(sbp_stages, dbp_stages){
 #' @export
 #'
 #' @examples
-#'
 #' # Load bp_hypnos
-#' data("bp_hypnos")
+#' data(bp_hypnos)
 #'
 #' bp_stages(bp_hypnos,
 #'             sbp = "syst",
@@ -187,7 +186,7 @@ stage_check <- function(sbp_stages, dbp_stages){
 #'
 #'
 #' # Load bp_jhs data
-#' data("bp_jhs")
+#' data(bp_jhs)
 #'
 #' bp_stages(bp_jhs,
 #'             sbp = "sys.mmhg.",
