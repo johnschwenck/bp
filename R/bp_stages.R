@@ -54,7 +54,22 @@
 #' # Load bp_hypnos
 #' data(bp_hypnos)
 #'
-#' bp_stages(bp_hypnos,
+#' #bp_hypnos  <- sbp_adj(data = bp_hypnos, sbp = "syst", screen = screen)
+#' #bp_hypnos <- dbp_adj(data = bp_hypnos, dbp = "diast", screen = screen)
+#'
+#' hypnos_proc <- bp::process_data(bp::bp_hypnos,
+#' sbp = "syst",
+#' dbp = "DIAST",
+#' date_time = "date.time",
+#' id = "id",
+#' wake = "wake",
+#' visit = "visit",
+#' hr = "hr",
+#' map = "map",
+#' rpp = "rpp",
+#' pp = "pp")
+#'
+#' bp_stages(hypnos_proc,
 #'             sbp = "syst",
 #'             dbp = "diast",
 #'             sbp_stages_alt = c(80, 100, 120, 130, 140, 170, 200),
@@ -65,7 +80,13 @@
 #' # Load bp_jhs data
 #' data(bp_jhs)
 #'
-#' bp_stages(bp_jhs,
+#' jhs_proc <- process_data(bp_jhs,
+#' sbp = "Sys.mmHg.",
+#' dbp = "Dias.mmHg.",
+#' date_time = "DateTime",
+#' hr = "pulse.bpm.")
+#'
+#' bp_stages(jhs_proc,
 #'             sbp = "sys.mmhg.",
 #'             dbp = "dias.mmhg.",
 #'             sbp_stages_alt = c(80, 100, 120, 130, 160, 170, 200),
@@ -80,10 +101,10 @@ bp_stages <- function(data, sbp, dbp, sbp_stages_alt = NULL, dbp_stages_alt = NU
   rm(list = c("SBP", "DBP", "SBP_Category", "DBP_Category", "."))
 
   # Adjust SBP
-  data <- sbp_adj(data = data, sbp = sbp, screen = screen)
+  #data <- sbp_adj(data = data, sbp = sbp, screen = screen)
 
   # Adjust DBP
-  data <- dbp_adj(data = data, dbp = dbp, screen = screen)
+  #data <- dbp_adj(data = data, dbp = dbp, screen = screen)
 
   # Compatibility Check for user-supplied stages if applicable
   sbp_stages <- stage_check(sbp_stages_alt, dbp_stages_alt)[[1]]
