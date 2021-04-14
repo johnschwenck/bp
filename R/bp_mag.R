@@ -56,10 +56,10 @@
 #' data(bp_jhs)
 #'
 #' # Process bp_hypnos
-#' hypnos_proc <- process_data(bp_hypnos, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
+#' hypnos_proc <- process_data(bp_hypnos, sbp = "SYST", dbp = "DIAST", date_time = "date.time",
 #' id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp = "rpp")
 #' # Process bp_jhs data
-#' jhs_proc <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", bp_datetime = "DateTime",
+#' jhs_proc <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", date_time = "DateTime",
 #' hr = "Pulse.bpm.")
 #'
 #' # BP Magnitude Calculation

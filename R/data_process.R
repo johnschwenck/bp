@@ -17,7 +17,7 @@
 #' @param dbp Required column name (character string) corresponding to Diastolic Blood
 #' Pressure (mmHg)
 #'
-#' @param bp_datetime Optional column name (character string) corresponding to Date/Time,
+#' @param date_time Optional column name (character string) corresponding to Date/Time,
 #' but HIGHLY recommended to supply if available.
 #'
 #' @param id Optional column name (character string) corresponding to subject ID. Typically
@@ -99,7 +99,7 @@
 #' hypnos_proc <- process_data(bp_hypnos,
 #'                               sbp = 'syst',
 #'                               dbp = 'diast',
-#'                               bp_datetime = 'date.time',
+#'                               date_time = 'date.time',
 #'                               hr = 'hr',
 #'                               pp = 'PP',
 #'                               map = 'MaP',
@@ -119,7 +119,7 @@
 #' jhs_proc <- process_data(bp_jhs,
 #'                          sbp = "Sys.mmHg.",
 #'                          dbp = "Dias.mmHg.",
-#'                          bp_datetime = "DateTime",
+#'                          date_time = "DateTime",
 #'                          hr = "Pulse.bpm.")
 #'
 #' jhs_proc
@@ -127,7 +127,7 @@
 process_data <- function(data,
                          sbp = NULL,
                          dbp = NULL,
-                         bp_datetime = NULL,
+                         date_time = NULL,
                          id = NULL,
                          wake = NULL,
                          visit = NULL,
@@ -512,15 +512,15 @@ process_data <- function(data,
 
 
   # Date & Time (DateTime object)
-  if(!is.null(bp_datetime)){
+  if(!is.null(date_time)){
 
-    if(toupper(bp_datetime) %in% colnames(data) == FALSE){
+    if(toupper(date_time) %in% colnames(data) == FALSE){
 
-      stop('User-defined bp_datetime name does not match column name within supplied dataset\n')
+      stop('User-defined date_time name does not match column name within supplied dataset\n')
 
     } else {
 
-      col_idx <- grep(paste("\\b",toupper(bp_datetime),"\\b", sep = ""), names(data))
+      col_idx <- grep(paste("\\b",toupper(date_time),"\\b", sep = ""), names(data))
       colnames(data)[col_idx] <- "DATE_TIME"
       data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
 
