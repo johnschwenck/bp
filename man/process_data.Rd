@@ -19,7 +19,8 @@ process_data(
   DoW = NULL,
   ToD_int = NULL,
   sbp_stages_alt = NULL,
-  dbp_stages_alt = NULL
+  dbp_stages_alt = NULL,
+  screen = TRUE
 )
 }
 \arguments{
@@ -98,6 +99,10 @@ given by \code{c(25, 60, 80, 85, 90, 120, 140)} where:
    \item Crisis - default: > 120 (specifically 120 - 140)
 
 }}
+
+\item{screen}{Default to TRUE. Screens for extreme values in the data for both \code{SBP} and \code{DBP}
+according to Omboni, et al (1995) paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment
+from Ambulatory Blood Pressure: Methodological Aspects}
 }
 \value{
 A processed dataframe object that cooperates with every other
@@ -115,17 +120,31 @@ function within the \code{bp} package. See Vignette for further details.
 data("bp_hypnos")
 
 # Process data for bp_hypnos
-hyp_proc <- process_data(bp_hypnos, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
-id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp = "rpp")
+hypnos_proc <- process_data(bp_hypnos,
+                              sbp = 'syst',
+                              dbp = 'diast',
+                              bp_datetime = 'date.time',
+                              hr = 'hr',
+                              pp = 'PP',
+                              map = 'MaP',
+                              rpp = 'Rpp',
+                              id = 'id',
+                              visit = 'Visit',
+                              wake = 'wake',
+                              screen = FALSE)
 
-hyp_proc
+hypnos_proc
+
 
 # Load bp_jhs data
 data("bp_jhs")
 
 # Process data for bp_jhs
-jhs_proc <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", bp_datetime = "DateTime",
-hr = "Pulse.bpm.")
+jhs_proc <- process_data(bp_jhs,
+                         sbp = "Sys.mmHg.",
+                         dbp = "Dias.mmHg.",
+                         bp_datetime = "DateTime",
+                         hr = "Pulse.bpm.")
 
 jhs_proc
 

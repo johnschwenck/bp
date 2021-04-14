@@ -83,6 +83,10 @@
 #'
 #' }
 #'
+#' @param screen Default to TRUE. Screens for extreme values in the data for both \code{SBP} and \code{DBP}
+#' according to Omboni, et al (1995) paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment
+#' from Ambulatory Blood Pressure: Methodological Aspects
+#'
 #' @return A processed dataframe object that cooperates with every other
 #' function within the bp package - all column names and formats comply.
 #' @export
@@ -92,17 +96,31 @@
 #' data("bp_hypnos")
 #'
 #' # Process data for bp_hypnos
-#' hyp_proc <- process_data(bp_hypnos, sbp = "SYST", dbp = "DIAST", bp_datetime = "date.time",
-#' id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp = "rpp")
+#' hypnos_proc <- process_data(bp_hypnos,
+#'                               sbp = 'syst',
+#'                               dbp = 'diast',
+#'                               bp_datetime = 'date.time',
+#'                               hr = 'hr',
+#'                               pp = 'PP',
+#'                               map = 'MaP',
+#'                               rpp = 'Rpp',
+#'                               id = 'id',
+#'                               visit = 'Visit',
+#'                               wake = 'wake',
+#'                               screen = FALSE)
 #'
-#' hyp_proc
+#' hypnos_proc
+#'
 #'
 #' # Load bp_jhs data
 #' data("bp_jhs")
 #'
 #' # Process data for bp_jhs
-#' jhs_proc <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", bp_datetime = "DateTime",
-#' hr = "Pulse.bpm.")
+#' jhs_proc <- process_data(bp_jhs,
+#'                          sbp = "Sys.mmHg.",
+#'                          dbp = "Dias.mmHg.",
+#'                          bp_datetime = "DateTime",
+#'                          hr = "Pulse.bpm.")
 #'
 #' jhs_proc
 #'
@@ -120,7 +138,13 @@ process_data <- function(data,
                          DoW = NULL,
                          ToD_int = NULL,
                          sbp_stages_alt = NULL,
-                         dbp_stages_alt = NULL){
+                         dbp_stages_alt = NULL,
+                         screen = TRUE){
+
+
+
+  SBP = DBP = HR = NULL
+  rm(list = c("SBP", "DBP", "HR"))
 
 
   # Ensure that data is either data.frame or matrix
@@ -179,7 +203,20 @@ process_data <- function(data,
 
         colnames(data)[1] <- "SBP"
         data$SBP <- as.numeric(data$SBP)
+
       }
+
+      # Screen for extreme values
+      if(screen == TRUE){
+
+        # Screening criteria: Eliminate values {SBP > 240 | SBP < 50} according to Omboni, et al (1995) paper
+        #   - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory
+        #     Blood Pressure: Methodological Aspects
+        data <- data %>%
+          dplyr::filter(SBP < 240 & SBP > 50)
+
+      }
+
     }
   } else {
     stop('User-defined SBP name must be character.\n')
@@ -210,7 +247,19 @@ process_data <- function(data,
 
         colnames(data)[2] <- "DBP"
         data$DBP <- as.numeric(data$DBP)
+
       }
+
+          # Screen for extreme values
+          if(screen == TRUE){
+
+            # Screening criteria: Eliminate values {DBP > 140 | DBP < 40} according to Omboni, et al (1995) paper
+            #   - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure: Methodological Aspects
+            data <- data %>%
+              dplyr::filter(DBP < 140 & DBP > 40)
+
+          }
+
     }
   } else {
     stop('User-defined DBP name must be character.\n')
@@ -266,6 +315,17 @@ process_data <- function(data,
 
       warning('HR column found in data. \nIf this column corresponds to Heart Rate, \nuse hr = "HR" in the function argument.\n')
 
+        # Screen for extreme values
+        if(screen == TRUE){
+
+          # Screening Criteria:
+          # - Lowest HR recorded: https://www.guinnessworldrecords.com/world-records/lowest-heart-rate
+          # - High HR from the common {220 - age} formula
+          data <- data %>%
+            dplyr::filter(HR < 220 & HR > 20)
+
+        }
+
     }
 
   } else if(is.character(hr)){
@@ -280,6 +340,17 @@ process_data <- function(data,
       colnames(data)[col_idx] <- "HR"
       data <- data[, c(1:3, col_idx, (4:ncol(data))[-col_idx+3])]
       data$HR <- as.numeric(data$HR)
+
+          # Screen for extreme values
+          if(screen == TRUE){
+
+              # Screening Criteria:
+              # - Lowest HR recorded: https://www.guinnessworldrecords.com/world-records/lowest-heart-rate
+              # - High HR from the common {220 - age} formula
+              data <- data %>%
+                dplyr::filter(HR < 220 & HR > 20)
+
+          }
     }
   } else {
     stop('User-defined HR name must be character.\n')
