@@ -438,6 +438,9 @@ visit_adj <- function(data, visit){
 
 date_time_adj <- function(data, date_time, ToD_int){
 
+  Time_of_Day = NULL
+  rm(list = c("Time_of_Day"))
+
         # Date & Time (DateTime object)
         if(!is.null(date_time)){
 
@@ -713,6 +716,9 @@ dow_adj <- function(data, DoW){
 ########################################################################################################
 
 id_adj <- function(data, id){
+
+  ID = NULL
+  rm(list = c("ID"))
 
   # ID
   if(!is.null(id)){
