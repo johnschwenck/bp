@@ -54,22 +54,7 @@
 #' # Load bp_hypnos
 #' data(bp_hypnos)
 #'
-#' #bp_hypnos  <- sbp_adj(data = bp_hypnos, sbp = "syst", screen = screen)
-#' #bp_hypnos <- dbp_adj(data = bp_hypnos, dbp = "diast", screen = screen)
-#'
-#' hypnos_proc <- bp::process_data(bp::bp_hypnos,
-#' sbp = "syst",
-#' dbp = "DIAST",
-#' date_time = "date.time",
-#' id = "id",
-#' wake = "wake",
-#' visit = "visit",
-#' hr = "hr",
-#' map = "map",
-#' rpp = "rpp",
-#' pp = "pp")
-#'
-#' bp_stages(hypnos_proc,
+#' bp_stages(bp_hypnos,
 #'             sbp = "syst",
 #'             dbp = "diast",
 #'             sbp_stages_alt = c(80, 100, 120, 130, 140, 170, 200),
@@ -80,16 +65,10 @@
 #' # Load bp_jhs data
 #' data(bp_jhs)
 #'
-#' jhs_proc <- process_data(bp_jhs,
-#' sbp = "Sys.mmHg.",
-#' dbp = "Dias.mmHg.",
-#' date_time = "DateTime",
-#' hr = "pulse.bpm.")
-#'
-#' bp_stages(jhs_proc,
+#' bp_stages(bp_jhs,
 #'             sbp = "sys.mmhg.",
 #'             dbp = "dias.mmhg.",
-#'             sbp_stages_alt = c(80, 100, 120, 130, 160, 170, 200),
+#'             sbp_stages_alt = c(80, 100, 120, 130, 160, 170, 200)
 #'             )
 #'
 bp_stages <- function(data, sbp, dbp, sbp_stages_alt = NULL, dbp_stages_alt = NULL, screen = FALSE){

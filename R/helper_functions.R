@@ -250,7 +250,8 @@ path_check <- function(path){
 #' the sleep interval of interest. Must only contain 2 values and must be 24-hour denoted integers
 #'
 #' @param adj Logical indicating whether or not to perform necessary adjustments / additions to data
-#' for WAKE column. Default set to TRUE. adj == FALSE essentially acts as a pass statement
+#' for WAKE column (i.e. set the default sleep time from 11PM - 6 AM if no interval specified and
+#' a DATE_TIME column is available). Default set to TRUE. adj == FALSE essentially acts as a pass statement
 #'
 #' @return
 #' Dataframe with added / adjusted WAKE column moved after DATE_TIME column containing binary 1 (awake)
@@ -331,8 +332,8 @@ sleep_int <- function(data, sleep_start_end = NULL, adj = TRUE){
         } else {
 
 
-          # adj == FALSE indicates that no adjustments will be made to data (assuming sleep_start_end == NULL)
-          # adj == FALSE is essentially a pass statement
+          # if adj == FALSE indicates then no adjustments will be made to data (assuming sleep_start_end == NULL)
+          # the argument adj == FALSE is essentially a pass statement
 
             if(adj == TRUE){
 
