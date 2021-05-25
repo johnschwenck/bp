@@ -74,6 +74,7 @@ var.labels <- c(  id = "Child ID",
 
 # Add labels to df
 Hmisc::label(bp_children_adj) <- as.list(var.labels[match(names(bp_children_adj), names(var.labels))])
+#labelled::remove_val_labels(data) # To remove labels
 
 #View(bp_children_adj)
 bp_children <- bp_children_adj

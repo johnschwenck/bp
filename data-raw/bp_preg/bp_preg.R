@@ -1,4 +1,5 @@
 ## Adjustment File for Raw Pregnancies Data File from Dryad
+library(dplyr)
 
 bp_preg <- read.csv('data-raw/bp_preg/bp_preg.csv')
 
