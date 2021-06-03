@@ -1,66 +1,77 @@
+
 #' Blood Pressure Stage Scatter Plot
 #'
 #' @description The \code{bp_scatter} function serves to display all \code{SBP} and \code{DBP}
-#' readings on a scatterplot based on which stage each recording lies, according to the
-#' levels set by the American Heart Association (AHA) (although the lower / upper limits for
-#' these stages can be adjusted in using the \code{sbp_stages_alt} and \code{dbp_stages_alt}
-#' functions). There are six total stages which are the following:
+#' readings on a scatterplot based on which stage each recording lies, according to the 8
+#' mutually exclusive levels of Hypertension set forth by Lee et al (2020). However, original
+#' levels set by the American Heart Association (AHA) are also available for plotting for
+#' legacy purposes. There are eight total stages according to Lee et al (2020) with the options
+#' to include an additional category for "Low" (Hypotension) and Hypertensive "Crisis". The
+#' categories are as follows:
 #'
 #' \itemize{
 #'
-#' \item \code{Low} - While low readings do not necessarily imply Hypotension, they are worth staying
+#' \item \code{Low} - While low readings do not necessarily imply Hypotension, they are worth being
 #' alert for. According to the AHA, low blood pressure is any \code{SBP} reading below 100 or
-#' \code{DBP} reading below 60 and is depicted in light blue in the scatter plot.
+#' \code{DBP} reading below 60 and is depicted in light blue in the scatter plot. This is indicated
+#' on the plot by setting \code{inc_low = TRUE}
 #'
-#' \item \code{Normal} - Consistent \code{SBP} readings between 100 - 120 and \code{DBP} readings
-#' between 60 - 80. This is the ideal stage where blood pressure is to be maintained at.
+#' \item \code{Normal} - (Optional) Consistent \code{SBP} readings less than 120 and \code{DBP} readings
+#' less than 80. This is the ideal stage where blood pressure is to be maintained at.
 #' Normal BP is depicted in green in the scatter plot.
 #'
-#' \item \code{Elevated} - Consistent \code{SBP} readings between 120 - 130 and \code{DBP}
+#' \item \code{Elevated} - Consistent \code{SBP} readings between 120 - 129 and \code{DBP}
 #' readings less than 80. Without intervention to control the condition, individuals are
 #' likely to develop Hypertension. Elevated BP is depicted in yellow in the scatter plot.
 #'
-#' \item \code{Stage 1} - Consistent \code{SBP} readings between 130 - 140 or \code{DBP} readings
-#' between 80 - 90. Stage 1 Hypertension will typically result in doctors prescribing
-#' medication or lifestyle changes. Stage 1 BP is depicted in orange in the scatter plot.
+#' \item \code{Stage 1 - All (SDH)} - Consistent \code{SBP} readings between 130 - 139 and \code{DBP}
+#' readings between 80 - 89. Stage 1 Hypertension will typically result in doctors prescribing
+#' medication or lifestyle changes. Stage 1 BP is depicted in dark orange in the scatter plot.
 #'
-#' \item \code{Stage 2} - Consistent \code{SBP} readings between 140 - 180 or \code{DBP} readings
+#' \item \code{Stage 1 - Isolated Diastolic Hypertension (IDH)} - Consistent \code{SBP} readings
+#' less than 130, but \code{DBP} readings between 80 - 89. This alternative stage 1 level accounts
+#' for unusually high diastolic readings, but fairly normal systolic readings and is depicted in
+#' orange in the plot.
+#'
+#' \item \code{Stage 1 - Isolated Systolic Hypertension (ISH)} - Consistent \code{SBP} readings
+#' between 130 - 139, but \code{DBP} readings less than 80. This alternative stage 1 level accounts
+#' for unusually high systolic readings, but fairly normal diastolic readings and is depicted in
+#' orange in the plot.
+#'
+#' \item \code{Stage 2 - All (SDH)} - Consistent \code{SBP} readings between 140 - 180 and \code{DBP} readings
 #' between 90 - 120. Stage 2 Hypertension will typically result in doctors prescribing both
-#' medication and lifestyle changes. Stage 2 BP is depicted in dark red in the scatter plot.
+#' medication and lifestyle changes. Stage 2 BP is depicted in bright red in the scatter plot.
 #'
-#' \item \code{Crisis} - A Hypertensive crisis is defined as a \code{SBP} reading exceeding 180 or a
+#' \item \code{Stage 2 - Isolated Diastolic Hypertension (IDH)} - Consistent \code{SBP} readings
+#' less than or equal to 140, but \code{DBP} readings greater than or equal to 90. This alternative
+#' stage 2 level accounts for unusually high diastolic readings, but fairly normal systolic readings
+#' and is depicted in red.
+#'
+#' \item \code{Stage 2 - Isolated Systolic Hypertension (IDH)} - Consistent \code{SBP} readings
+#' greater than or equal to 140, but \code{DBP} readings less or equal to 90. This alternative
+#' stage 2 level accounts for unusually high systolic readings, but fairly normal diastolic readings
+#' and is depicted in red.
+#'
+#' \item \code{Crisis} - (Optional) A Hypertensive crisis is defined as a \code{SBP} reading exceeding 180 or a
 #' \code{DBP} reading exceeding 120. This stage requires medical attention immediately.
 #' Crisis is depicted in red in the scatter plot.
 #' }
 #'
-#' Note: Because of the visual disparity between \code{DBP} readings for Normal and Elevated
-#' (both are defined as \code{DBP} below 80), the \code{bp_scatter} plot splits the difference
-#' and lists the \code{DBP} range for Normal to be from 60 - 80, Elevated from 80 - 85, and
-#' Stage 1 from 85 - 90.
 #'
 #' @param data A processed dataframe resulting from the \code{process_data} function that
 #' contains the \code{VISIT} (potentially, depending whether or not that information is
 #' available), \code{SBP}, and \code{DBP} columns.
 #'
-#' @param sbp_stages_alt Optional argument that allows the user to supply their own set of
-#' systolic blood pressure (SBP) stage thresholds. This parameter must be a vector containing
-#' 7 integers that correspond to the lower and upper limits of each of the 6 stages. The
-#' limits must be adjacent to one another as to not overlap (i.e. the upper limit for one
-#' stage must be the lower limit for the next).
 #'
-#' For example, the alternative vector:
-#' \code{sbp_stages_alt = c(90, 110, 120, 130, 140, 160, 200)} corresponds to a Low
-#' stage from 90 - 110, a Normal stage from 110 - 120, and so forth for all 6 stages.
+#' @param plot_type String corresponding to the particular type of plot to be displayed. Default
+#' plot (\code{"stages2020"}) sets the BP stages according to Lee et al (2020) with 8 mutually
+#' exclusive categories. The option to include or exclude either a "Low" or "Crisis" category are
+#' determined through the \code{inc_low} or \code{inc_crisis} function arguments, respectively.
+#' Setting \code{plot_type = "AHA"} will use the deprecated plot according to the guidelines
+#' set forth by the American Heart Association
 #'
-#' @param dbp_stages_alt Optional argument that allows the user to supply their own set of
-#' diastolic blood pressure (DBP) stage thresholds. This parameter must be a vector containing
-#' 7 integers that correspond to the lower and upper limits of each of the 6 stages. The
-#' limits must be adjacent to one another as to not overlap (i.e. the upper limit for one
-#' stage must be the lower limit for the next).
+#' (reference: \url{https://www.heart.org/en/health-topics/high-blood-pressure/understanding-blood-pressure-readings})
 #'
-#' For example, the alternative vector:
-#' \code{dbp_stages_alt = c(30, 70, 90, 100, 110, 120, 140)} corresponds to a Low stage from
-#' 30 - 70, a Normal stage from 70 - 90, and so forth for all 6 stages.
 #'
 #' @param subj Optional argument. Allows the user to specify and subset specific subjects
 #' from the \code{ID} column of the supplied data set. The \code{subj} argument can be a single
@@ -68,14 +79,49 @@
 #' comply with integers so long as they are all present in the \code{ID} column of the data.
 #'
 #'
+#' @param group_var A categorical column of the input data set that the individual points are to
+#' be grouped / separated by for a given plot. Cannot contain more than 10 levels (to avoid
+#' overcrowding the plot). This is different from the \code{wrap_var} argument which segments
+#' plots by category.
+#'
+#'
+#' @param wrap_var A categorical column of the input data set that the plots are to be segmented
+#' by. If there are multiple levels such as time of day, or visit #, the output will include a
+#' matrix with each plot corresponding to an individual level. This differs from the \code{group_var}
+#' argument which separates data within the same plot.
+#'
+#'
+#' @param inc_low A TRUE / FALSE indicator of whether or not to include the "Low" (Hypotension)
+#' category to the scatter plot. The range for Hypotension is set from a minimum of 25 for DBP or 80
+#' for SBP, or the corresponding minimum value for either category from the data until 60 for DBP and
+#' 100 for SBP.
+#'
+#'
+#' @param inc_crisis A TRUE / FALSE indicator of whether or not to include the Hypertensive "Crisis"
+#' category to the scatter plot. The range for crisis is any value above 180 for SBP or above 120 for
+#' DBP.
+#'
 #' @return A scatter plot graphic using the ggplot2 package overlaying each reading (represented as
 #' points) onto a background that contains each stage
+#'
+#' @references
+#' Lee H, Yano Y, Cho SMJ, Park JH, Park S, Lloyd-Jones DM, Kim HC. Cardiovascular risk of isolated
+#' systolic or diastolic hypertension in young adults. \emph{Circulation}. 2020; 141:1778–1786.
+#' \doi{10.1161/CIRCULATIONAHA.119.044838}
+#'
+#' Unger, T., Borghi, C., Charchar, F., Khan, N. A., Poulter, N. R., Prabhakaran, D., ... & Schutte,
+#' A. E. (2020). 2020 International Society of Hypertension global hypertension practice guidelines.
+#' \emph{Hypertension}, 75(6), 1334-1357.
+#' \doi{10.1161/HYPERTENSIONAHA.120.15026}
+#'
 #' @export
 #'
 #' @examples
 #' data("bp_jhs")
 #' data("bp_hypnos")
-#' hyp_proc <- process_data(bp_hypnos,
+#' data("bp_ghana")
+#' hypnos_proc <- process_data(bp_hypnos,
+#'                          bp_type = 'abpm',
 #'                          sbp = "syst",
 #'                          dbp = "DIAST",
 #'                          date_time = "date.time",
@@ -95,29 +141,42 @@
 #'                          hr = "pulse.bpm.")
 #' rm(bp_hypnos, bp_jhs)
 #'
-#' # An example of a multiple-subject data set with
-#' # all points aggregated across subjects, split by visits:
+#' # HYPNOS Data
+#' bp_scatter(hypnos_proc,
+#'            inc_crisis = TRUE,
+#'            inc_low = TRUE,
+#'            group_var = "wake",
+#'            wrap_var = "day_of_week")
 #'
-#' bp_scatter(hyp_proc)
+#' # JHS Data
+#' bp_scatter(jhs_proc,
+#'            plot_type = "AHA",
+#'            group_var = "time_of_day")
 #'
-#'
-#' # An example of a multiple-subject data set being filtered
-#' # to one individual for one particular visit:
-#'
-#' hyp_proc %>% dplyr::group_by(ID, VISIT) %>% dplyr::filter(ID == 70417, VISIT == 1) %>% bp_scatter()
-#'
-#'
-#' # An example of a single-subject data set without
-#' # any VISIT variable present in the data:
-#'
-#' bp_scatter(jhs_proc)
+#' # Ghana Data Set
+#' #(Note that column names are of proper naming convention so no processing needed)
+#' bp_scatter(bp::bp_ghana, inc_crisis = TRUE, inc_low = FALSE, group_var = "TIME_ELAPSED")
+bp_scatter <- function(data,
+                           plot_type = c("stages2020", "AHA"),
+                           subj = NULL,
+                           group_var = NULL,
+                           wrap_var = NULL,
+                           inc_crisis = TRUE,
+                           inc_low = TRUE){
 
-bp_scatter <- function(data, sbp_stages_alt = NULL, dbp_stages_alt = NULL, subj = NULL){
-
-  # Variables needed: SBP, DBP, possibly VISIT
-
+  # Set global variables
   SBP = DBP = VISIT = ID = NULL
   rm(list = c("SBP", "DBP", "VISIT", "ID"))
+
+  # Force to dataframe
+  data <- as.data.frame(data)
+
+  # Upper case all column names
+  colnames(data) <- toupper( colnames(data) )
+
+  # Coerce user input to upper case and match with either 8 stage thresholds or the AHA guidelines
+  #plot_type = toupper(plot_type)
+  plot_type = match.arg(plot_type)
 
 
   # If user supplies a vector corresponding to a subset of multiple subjects (multi-subject only)
@@ -137,6 +196,37 @@ bp_scatter <- function(data, sbp_stages_alt = NULL, dbp_stages_alt = NULL, subj 
   }
 
 
+  # Grouping Variable for WITHIN plots
+  if(!is.null(group_var)){
+
+    group_var <- toupper( group_var )
+
+    if( (group_var %in% toupper( colnames(data) ) ) == FALSE){
+      stop('group_var not found in data set. Ensure that spelling matches column name in data set.')
+    }
+
+    if( length( unique( data[[group_var]] ) ) > 10 ){
+      stop('group_var must be categorical with no more than 10 groups')
+    }
+
+    #print("Grouping Variable: ", group_var, sep = "")
+
+  }
+
+
+  # Wrap variable for facet_wrap plots (multi-plots by group)
+  if(!is.null(wrap_var)){
+
+    wrap_var <- toupper( wrap_var )
+
+    if( (wrap_var %in% toupper( colnames(data) ) ) == FALSE){
+      stop('wrap_var not found in data set. Ensure that spelling matches column name in data set.')
+    }
+
+    #print("Wrapping Variable: ", wrap_var, sep = "")
+  }
+
+
   # Ensure that the necessary columns exist in data set
   if( all(c("SBP", "DBP") %in% names(data)) == FALSE){
 
@@ -145,57 +235,308 @@ bp_scatter <- function(data, sbp_stages_alt = NULL, dbp_stages_alt = NULL, subj 
   }
 
 
-  ##############################################################
+  # Initialize IDH - S1, Elevated, and ISH - S1 as they never change
+  xlim_breaks <- c(80, 90)
+  ylim_breaks <- c(120, 130, 140)
 
-  # Compatibility Check for user-supplied stages if applicable
-  sbp_breaks <- stage_check(sbp_stages_alt, dbp_stages_alt)[[1]]
-  dbp_breaks <- stage_check(sbp_stages_alt, dbp_stages_alt)[[2]]
+    # Check whether user wants to include a 'Low (Hypotension)' category
+    if( inc_low == TRUE ){
 
-  ##############################################################
+      low_x_lim <- c( floor(min(25, min(data$DBP, na.rm = TRUE) - 10)), 60)
+      low_y_lim <- c( floor(min(80, min(data$SBP, na.rm = TRUE) - 10)), 100)
 
+      norm_x_lim <- c(60, 80)
+      norm_y_lim <- c(100, 120)
 
-  # Scatterplot of bp stages
+      xlim_breaks <- c(low_x_lim, xlim_breaks)
+      ylim_breaks <- c(low_y_lim, ylim_breaks)
 
-  scat1 <- ggplot(data, aes(DBP, SBP)) +
+    }else{
 
-    # Give user option to adjust breaks
-    scale_y_continuous(breaks = sbp_breaks) +
-    scale_x_continuous(breaks = dbp_breaks) +
+      xlim_breaks <- c( floor(min(25, min(data$DBP, na.rm = TRUE) - 10)), xlim_breaks )
+      ylim_breaks <- c( floor(min(80, min(data$SBP, na.rm = TRUE) - 10)), ylim_breaks )
 
-    # Y axis bars:
-    annotate("rect", xmin = dbp_breaks[1], xmax = dbp_breaks[2],  ymin = sbp_breaks[1], ymax = sbp_breaks[2], fill = 'lightblue') +
-    annotate("rect", xmin = dbp_breaks[1], xmax = dbp_breaks[3],  ymin = sbp_breaks[2], ymax = sbp_breaks[3], fill = 'darkgreen',  alpha = .5) +
-    annotate("rect", xmin = dbp_breaks[1], xmax = dbp_breaks[4],  ymin = sbp_breaks[3], ymax = sbp_breaks[4], fill = 'yellow',     alpha = .5) +
-    annotate("rect", xmin = dbp_breaks[1], xmax = dbp_breaks[5],  ymin = sbp_breaks[4], ymax = sbp_breaks[5], fill = 'orange',     alpha = .5) +
-    annotate("rect", xmin = dbp_breaks[1], xmax = dbp_breaks[6],  ymin = sbp_breaks[5], ymax = sbp_breaks[6], fill = 'darkred',    alpha = .5) +
-    annotate("rect", xmin = dbp_breaks[1], xmax = dbp_breaks[7],  ymin = sbp_breaks[6], ymax = sbp_breaks[7], fill = 'red',        alpha = .5) +
+      norm_x_lim <- c( floor(min(25, min(data$DBP, na.rm = TRUE) - 10)) , 80)
+      norm_y_lim <- c( floor(min(80, min(data$SBP, na.rm = TRUE) - 10)) , 120)
 
-    # X axis bars
-    annotate("rect", xmin = dbp_breaks[2], xmax = dbp_breaks[3], ymin = sbp_breaks[1], ymax = sbp_breaks[2], fill = 'darkgreen',  alpha = .5) +
-    annotate("rect", xmin = dbp_breaks[3], xmax = dbp_breaks[4], ymin = sbp_breaks[1], ymax = sbp_breaks[3], fill = 'yellow',     alpha = .5) +
-    annotate("rect", xmin = dbp_breaks[4], xmax = dbp_breaks[5], ymin = sbp_breaks[1], ymax = sbp_breaks[4], fill = 'orange',     alpha = .5) +
-    annotate("rect", xmin = dbp_breaks[5], xmax = dbp_breaks[6], ymin = sbp_breaks[1], ymax = sbp_breaks[5], fill = 'darkred',    alpha = .5) +
-    annotate("rect", xmin = dbp_breaks[6], xmax = dbp_breaks[7], ymin = sbp_breaks[1], ymax = sbp_breaks[6], fill = 'red',        alpha = .5) +
-
-    # If VISIT column present
-    {if( "VISIT" %in% names(data) & length(unique(data$VISIT)) > 1) geom_point(aes(color = factor(VISIT)), size = 1) } +
-    {if( "VISIT" %in% names(data) & length(unique(data$VISIT)) > 1) scale_color_brewer(type = 'div', palette = 'Blues')} +
-    {if( "VISIT" %in% names(data) & length(unique(data$VISIT)) > 1) guides(color=guide_legend(title="Visit")) } +
-
-    # If VISIT column NOT present or # Visits = 1
-    {if( !("VISIT" %in% names(data)) | length(unique(data$VISIT)) == 1 ) geom_point(color = 'blue', size = 1)} +
-
-    geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[2], label = 'Low'), color = 'black', hjust = .35, vjust = 2, size = 3) +
-    geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[3], label = 'Normal'), color = 'black', hjust = .35, vjust = 2, size = 3) +
-    geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[4], label = 'Elevated'), color = 'black', hjust = .35, vjust = 1.5, size = 3) +
-    geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[5], label = 'Stage 1'), color = 'black', hjust = .35, vjust = 1.5, size = 3) +
-    geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[6] - ( (sbp_breaks[6] - sbp_breaks[5]) / 2), label = 'Stage 2'), color = 'black', hjust = .35, vjust = 1.5, size = 3) +
-    geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[7], label = 'Crisis'), color = 'black', hjust = .35, vjust = 1.5, size = 3) +
-
-    ggtitle('Scatterplot of BP Values', subtitle = 'Source: American Heart Association')
+    }
 
 
-  return(scat1)
+    # Check whether user wants to include a hypertensive 'Crisis' category
+    if( inc_crisis == TRUE ){
+
+      crisis_x_lim <- c(120, max(140, max(data$DBP, na.rm = TRUE) + 10) )
+      crisis_y_lim <- c(180, max(200, max(data$SBP, na.rm = TRUE) + 10) )
+
+      s2_x_lim <- c(90, 120)
+      s2_y_lim <- c(140, 180)
+
+      xlim_breaks <- c( xlim_breaks, crisis_x_lim)
+      xlim_breaks <- ceiling(xlim_breaks)
+
+      ylim_breaks <- c( ylim_breaks, crisis_y_lim)
+      ylim_breaks <- ceiling(ylim_breaks)
+
+    }else{
+
+      xlim_breaks <- c(xlim_breaks, max(120, max(data$DBP, na.rm = TRUE) + 10) )
+      xlim_breaks <- ceiling(xlim_breaks)
+
+      ylim_breaks <- c(ylim_breaks, max(140, max(data$SBP, na.rm = TRUE) + 10) )
+      ylim_breaks <- ceiling(ylim_breaks)
+
+      s2_x_lim <- c( xlim_breaks[length(xlim_breaks)-1], xlim_breaks[length(xlim_breaks)] )
+      s2_y_lim <- c( ylim_breaks[length(ylim_breaks)-1], ylim_breaks[length(ylim_breaks)] )
+
+    }
+
+
+  # 8 stage thresholds according to Lee et al 2020
+  if(plot_type == "stages2020"){
+
+    scat <- ggplot(data, aes(DBP, SBP)) +
+
+      # Give user option to adjust breaks
+      scale_y_continuous(breaks = ylim_breaks) +
+      scale_x_continuous(breaks = xlim_breaks) +
+
+
+            ## Categories
+
+            # Low (Hypotension) & Normal Categories
+            {if( inc_low == FALSE ) annotate("rect", xmin = xlim_breaks[1],
+                                                     xmax = xlim_breaks[2],
+                                                     ymin = ylim_breaks[1],
+                                                     ymax = ylim_breaks[2],
+                                                     fill = 'darkgreen',    alpha = .5)} +
+
+            {if( inc_low == TRUE ) annotate("rect", xmin = xlim_breaks[1],
+                                                    xmax = xlim_breaks[2],
+                                                    ymin = ylim_breaks[1],
+                                                    ymax = ylim_breaks[2],
+                                                    fill = 'lightblue')} +
+
+            {if( inc_low == TRUE ) annotate("rect", xmin = xlim_breaks[1],
+                                                    xmax = xlim_breaks[3],
+                                                    ymin = ylim_breaks[2],
+                                                    ymax = ylim_breaks[3],
+                                                    fill = 'darkgreen',    alpha = .5)} +
+
+            {if( inc_low == TRUE ) annotate("rect", xmin = xlim_breaks[2],
+                                                    xmax = xlim_breaks[3],
+                                                    ymin = ylim_breaks[1],
+                                                    ymax = ylim_breaks[2],
+                                                    fill = 'darkgreen',    alpha = .5)} +
+
+
+              # Elevated
+              annotate("rect", xmin = xlim_breaks[1], xmax = 80,  ymin = 120, ymax = 130, fill = 'yellow',     alpha = .5) +
+
+              # Stage 1 - All
+              annotate("rect", xmin = 80, xmax = 90,  ymin = 130, ymax = 140, fill = 'orangered1',     alpha = .67) +
+              # Stage 1 - ISH
+              annotate("rect", xmin = xlim_breaks[1], xmax = 80,  ymin = 130, ymax = 140, fill = 'orange',    alpha = .5) +
+              # Stage 1 - IDH
+              annotate("rect", xmin = 80, xmax = 90,  ymin = ylim_breaks[1], ymax = 130, fill = 'orange',    alpha = .5) +
+
+
+          ################################
+          #        INCLUDE CRISIS        #
+          ################################
+
+            # Crisis - All
+            {if( inc_crisis == TRUE )
+              annotate("rect", xmin = xlim_breaks[length(xlim_breaks) - 1],
+                               xmax = xlim_breaks[length(xlim_breaks)],
+                               ymin = ylim_breaks[length(ylim_breaks) - 1],
+                               ymax = ylim_breaks[length(ylim_breaks)],
+                               fill = 'darkred',    alpha = .5) }+
+
+            # Crisis - Dias
+            {if( inc_crisis == TRUE )
+              annotate("rect", xmin = xlim_breaks[length(xlim_breaks) - 1],
+                               xmax = xlim_breaks[length(xlim_breaks)],
+                               ymin = ylim_breaks[1],
+                               ymax = ylim_breaks[length(ylim_breaks) - 1],
+                               fill = 'darkred',    alpha = .5) }+
+
+            # Crisis - Sys
+            {if( inc_crisis == TRUE )
+              annotate("rect", xmin = xlim_breaks[1],
+                               xmax = xlim_breaks[length(xlim_breaks) - 1],
+                               ymin = ylim_breaks[length(ylim_breaks) - 1],
+                               ymax = ylim_breaks[length(ylim_breaks)],
+                               fill = 'darkred',    alpha = .5) }+
+
+            # Stage 2 - All
+            {if( inc_crisis == TRUE )
+              annotate("rect", xmin = xlim_breaks[length(xlim_breaks) - 2],
+                               xmax = xlim_breaks[length(xlim_breaks) - 1],
+                               ymin = ylim_breaks[length(ylim_breaks) - 2],
+                               ymax = ylim_breaks[length(ylim_breaks) - 1],
+                               fill = 'red',    alpha = .5)} +
+
+            # Stage 2 - Isolated Diatolic
+            {if( inc_crisis == TRUE )
+              annotate("rect", xmin = xlim_breaks[length(xlim_breaks) - 2],
+                               xmax = xlim_breaks[length(xlim_breaks) - 1],
+                               ymin = ylim_breaks[1],
+                               ymax = ylim_breaks[length(ylim_breaks) - 2],
+                               fill = 'red3',    alpha = .55)} +
+            # Stage 2 - Isolated Systolic
+            {if( inc_crisis == TRUE )
+              annotate("rect", xmin = xlim_breaks[1],
+                               xmax = xlim_breaks[length(xlim_breaks) - 2],
+                               ymin = ylim_breaks[length(ylim_breaks) - 2],
+                               ymax = ylim_breaks[length(ylim_breaks) - 1],
+                               fill = 'red3',    alpha = .55)} +
+
+
+            ################################
+            #        EXCLUDE CRISIS        #
+            ################################
+
+              # Stage 2 - All
+              {if( inc_crisis == FALSE )
+                annotate("rect", xmin = xlim_breaks[length(xlim_breaks) - 1],
+                                 xmax = xlim_breaks[length(xlim_breaks)],
+                                 ymin = ylim_breaks[length(ylim_breaks) - 1],
+                                 ymax = ylim_breaks[length(ylim_breaks)],
+                                 fill = 'red3',    alpha = .55)} +
+
+              # Stage 2 - Isolated Diastolic
+              {if( inc_crisis == FALSE )
+                annotate("rect", xmin = xlim_breaks[length(xlim_breaks) - 1],
+                                 xmax = xlim_breaks[length(xlim_breaks)],
+                                 ymin = ylim_breaks[1],
+                                 ymax = ylim_breaks[length(ylim_breaks) - 1],
+                                 fill = 'red',    alpha = .45)} +
+
+              # Stage 2 - Isolated Systolic
+              {if( inc_crisis == FALSE )
+                annotate("rect", xmin = xlim_breaks[1],
+                                 xmax = xlim_breaks[length(xlim_breaks) - 1],
+                                 ymin = ylim_breaks[length(ylim_breaks) - 1],
+                                 ymax = ylim_breaks[length(ylim_breaks)],
+                                 fill = 'red',    alpha = .45)} +
+
+
+      # If group_var column NOT present or # groups in group_vars = 1
+      {if( is.null(group_var) | length( group_var %in% names(data) ) == 0 ) geom_point(color = 'blue', size = 1)} +
+
+      # If group_var column present
+      {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) geom_point(aes(color = factor(get(group_var))), size = 1) } +
+      {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) scale_color_brewer(type = 'div', palette = 'Paired')} +
+      {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) guides(color=guide_legend(title=group_var)) } +
+
+      # If wrap_var column present
+      {if( !is.null(wrap_var) & length( wrap_var %in% names(data) ) >= 1 ) facet_wrap( as.formula(paste("~", wrap_var)) )} +
+
+
+      ### Stage labels
+
+      # Low (Hypotension)
+      {if(inc_low == TRUE) geom_text(aes(x = min(xlim_breaks) + 5, y = low_y_lim[2], label = 'Low'), color = 'black', hjust = .35, vjust = 2, size = 3) }+
+
+      # Normal
+      geom_text(aes(x = min(xlim_breaks) + 5, y = norm_y_lim[2], label = 'Normal'), color = 'black', hjust = .35, vjust = 2, size = 3) +
+
+      # Elevated
+      geom_text(aes(x = min(xlim_breaks) + 5, y = 130, label = 'Elevated'), color = 'black', hjust = .35, vjust = 1.5, size = 3) +
+
+      # SDH - Stage 1 - All
+      geom_text(aes(x = 90, y = 140, label = 'S1'), color = 'black', hjust = 1.5, vjust = 1.5, size = 3) +
+
+      # SDH - Stage 2 - All
+      geom_text(aes(x = s2_x_lim[2] - 5, y = s2_y_lim[2] - 5, label = 'S2'), color = 'black', hjust = 1.5, vjust = 1.5, size = 3) +
+
+      # ******************************************************************************************************************************** #
+
+      # ISH - Stage 1
+      geom_text(aes(x = min(xlim_breaks) + 5, y = 140, label = 'ISH - S1'), color = 'black', hjust = .35, vjust = 1.5, size = 3) +
+
+      # ISH - Stage 2
+      geom_text(aes(x = min(xlim_breaks) + 5, y = s2_y_lim[2] - 5, label = 'ISH - S2'), color = 'black', hjust = .35, vjust = 1.5, size = 3) +
+
+      # ******************************************************************************************************************************** #
+
+      # IDH - Stage 1
+      geom_text(aes(x = 90, y = 90, label = 'IDH\n S1'), color = 'black', hjust = 1.25, size = 3) +
+
+      # IDH - Stage 2
+      geom_text(aes(x = s2_x_lim[2] - 5, y = 90, label = 'IDH\n S2'), color = 'black', hjust = 1.25, size = 3) +
+
+      # Crisis
+      {if(inc_crisis == TRUE) geom_text(aes(x = xlim_breaks[length(xlim_breaks)], y = ylim_breaks[length(ylim_breaks)], label = 'Crisis'), color = 'black', hjust = 1.25, vjust = 1.5, size = 3) }+
+
+      # Main Title & Subtitle
+      ggtitle('Scatterplot of BP Values', subtitle = 'Source: Lee et al (2020)')
+
+
+
+
+  }else{
+
+    ##############################################################
+    # Compatibility Check for user-supplied stages if applicable
+
+    #sbp_breaks <- stage_check(sbp_stages_alt, dbp_stages_alt)[[1]] # deprecated
+    #dbp_breaks <- stage_check(sbp_stages_alt, dbp_stages_alt)[[2]] # deprecated
+
+    sbp_breaks <- c(80,100,120,130,140,180,200)
+    dbp_breaks <- c(25,60,80,85,90,120,140)
+
+    ##############################################################
+
+
+    # Scatterplot of bp stages
+
+    scat <- ggplot(data, aes(DBP, SBP)) +
+
+      # Give user option to adjust breaks
+      scale_y_continuous(breaks = sbp_breaks) +
+      scale_x_continuous(breaks = dbp_breaks) +
+
+      # Y axis bars:
+      annotate("rect", xmin = dbp_breaks[1], xmax = dbp_breaks[2],  ymin = sbp_breaks[1], ymax = sbp_breaks[2], fill = 'lightblue') +
+      annotate("rect", xmin = dbp_breaks[1], xmax = dbp_breaks[3],  ymin = sbp_breaks[2], ymax = sbp_breaks[3], fill = 'darkgreen',  alpha = .5) +
+      annotate("rect", xmin = dbp_breaks[1], xmax = dbp_breaks[3],  ymin = sbp_breaks[3], ymax = sbp_breaks[4], fill = 'yellow',     alpha = .5) +
+      annotate("rect", xmin = dbp_breaks[1], xmax = dbp_breaks[5],  ymin = sbp_breaks[4], ymax = sbp_breaks[5], fill = 'orange',     alpha = .5) +
+      annotate("rect", xmin = dbp_breaks[1], xmax = dbp_breaks[6],  ymin = sbp_breaks[5], ymax = sbp_breaks[6], fill = 'red3',    alpha = .5) +
+      annotate("rect", xmin = dbp_breaks[1], xmax = dbp_breaks[7],  ymin = sbp_breaks[6], ymax = sbp_breaks[7], fill = 'darkred',        alpha = .5) +
+
+      # X axis bars
+      annotate("rect", xmin = dbp_breaks[2], xmax = dbp_breaks[3], ymin = sbp_breaks[1], ymax = sbp_breaks[2], fill = 'darkgreen',  alpha = .5) +
+      # annotate("rect", xmin = dbp_breaks[3], xmax = dbp_breaks[3], ymin = sbp_breaks[1], ymax = sbp_breaks[3], fill = 'yellow',     alpha = .5) +
+      annotate("rect", xmin = dbp_breaks[3], xmax = dbp_breaks[5], ymin = sbp_breaks[1], ymax = sbp_breaks[4], fill = 'orange',     alpha = .5) +
+      annotate("rect", xmin = dbp_breaks[5], xmax = dbp_breaks[6], ymin = sbp_breaks[1], ymax = sbp_breaks[5], fill = 'red3',    alpha = .5) +
+      annotate("rect", xmin = dbp_breaks[6], xmax = dbp_breaks[7], ymin = sbp_breaks[1], ymax = sbp_breaks[6], fill = 'darkred',        alpha = .5) +
+
+      # Add stage labels
+      geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[2], label = 'Low'), color = 'black', hjust = .35, vjust = 2, size = 3) +
+      geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[3], label = 'Normal'), color = 'black', hjust = .35, vjust = 2, size = 3) +
+      geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[4], label = 'Elevated'), color = 'black', hjust = .35, vjust = 1.5, size = 3) +
+      geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[5], label = 'Stage 1'), color = 'black', hjust = .35, vjust = 1.5, size = 3) +
+      geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[6] - ( (sbp_breaks[6] - sbp_breaks[5]) / 2), label = 'Stage 2'), color = 'black', hjust = .35, vjust = 1.5, size = 3) +
+      geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[7], label = 'Crisis'), color = 'black', hjust = .35, vjust = 1.5, size = 3) +
+
+      # Add title
+      ggtitle('Scatterplot of BP Values', subtitle = 'Source: American Heart Association') +
+
+      # If group_var column NOT present or # groups in group_vars = 1
+      {if( is.null(group_var) | length( group_var %in% names(data) ) == 0 ) geom_point(color = 'blue', size = 1)} +
+
+      # If group_var column present
+      {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) geom_point(aes(color = factor(get(group_var))), size = 1) } +
+      {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) scale_color_brewer(type = 'div', palette = 'Paired')} +
+      {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) guides(color=guide_legend(title=group_var)) }
+
+    # If wrap_var column present
+    {if( !is.null(wrap_var) & length( wrap_var %in% names(data) ) >= 1 ) facet_wrap( as.formula(paste("~", wrap_var)) )}
+
+  }
+
+
+  return(scat)
 
 }
-

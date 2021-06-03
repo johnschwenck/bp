@@ -4,7 +4,7 @@
 \alias{stage_check}
 \title{Compatibility Checks for User-Supplied SBP/DBP Stages Vector}
 \usage{
-stage_check(sbp_stages, dbp_stages)
+stage_check(sbp_stages = NULL, dbp_stages = NULL)
 }
 \arguments{
 \item{sbp_stages}{Checks whether the user supplied \code{sbp_stages_alt} function argument is valid or not}

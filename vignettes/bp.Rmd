@@ -70,6 +70,7 @@ data("bp_hypnos")
 
 ## Assign the output of the process_data function to a new dataframe object
 hypnos_proc <- process_data(bp_hypnos,
+                     bp_type = "abpm",
                      sbp = 'syst',
                      dbp = 'diast',
                      date_time = 'date.time',
@@ -200,12 +201,12 @@ The above plots show a cautiously high frequency of Elevated and Stage 1 reading
 Let's now suppose that we wish to break down our readings by Time of Day and Day of Week. For this, we can implement the `dow_tod_plots` function. Because this function is mainly used as a helper function for the `bp_report` function, we need to add a couple steps using the `gridExtra` package
 ```{r fig1b, fig.height = 6, fig.width = 6, fig.align = "center", results = FALSE, message = FALSE}
 bptable_ex <- dow_tod_plots(jhs_proc)
-gridExtra::grid.arrange(bptable_ex[[1]], bptable_ex[[2]], bptable_ex[[3]], bptable_ex[[4]], nrow = 2)
+#gridExtra::grid.arrange(bptable_ex[[1]], bptable_ex[[2]], bptable_ex[[3]], bptable_ex[[4]], nrow = 2)
 ```
 
 As a final step before returning to our other example, let's compile everything that we have done so far into a more compact and digestible report that visualizes everything simultaneously. To do so, we will rely on the `bp_report` function, which will generate a report in PDF (although other formats such as PNG are available):
 ```{r, eval = FALSE}
-bp_report(jhs_proc)
+bp_report(jhs_proc, save_report = 0)
 ```
 
 ```{r fig.width=8, fig.height=7, echo=FALSE}

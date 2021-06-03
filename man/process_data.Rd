@@ -6,10 +6,14 @@
 \usage{
 process_data(
   data,
+  bp_type = c("hbpm", "abpm", "ap"),
+  ap = NULL,
+  time_elap = NULL,
   sbp = NULL,
   dbp = NULL,
   date_time = NULL,
   id = NULL,
+  group = NULL,
   wake = NULL,
   visit = NULL,
   hr = NULL,
@@ -18,15 +22,23 @@ process_data(
   rpp = NULL,
   DoW = NULL,
   ToD_int = NULL,
-  sbp_stages_alt = NULL,
-  dbp_stages_alt = NULL,
-  screen = TRUE
+  eod = NULL,
+  data_screen = TRUE,
+  inc_low = TRUE,
+  inc_crisis = TRUE,
+  dt_fmt = "ymd HMS"
 )
 }
 \arguments{
 \item{data}{User-supplied dataset containing blood pressure data. Must
 contain data for Systolic blood pressure and Diastolic blood pressure at a
 minimum.}
+
+\item{bp_type}{Required}
+
+\item{ap}{Optional}
+
+\item{time_elap}{Optional}
 
 \item{sbp}{Required column name (character string) corresponding to Systolic Blood
 Pressure (mmHg)}
@@ -40,6 +52,8 @@ but HIGHLY recommended to supply if available.}
 \item{id}{Optional column name (character string) corresponding to subject ID. Typically
 needed for data corresponding to more than one subject. For one-subject datasets, ID
 will default to 1 (if ID column not found in dataset)}
+
+\item{group}{Optional}
 
 \item{wake}{Optional column name (character string) corresponding to sleep status. A
 WAKE value of 1 indicates that the subject is awake and 0 implies asleep.}
@@ -70,39 +84,17 @@ For example, ToD_int = c(5, 13, 18, 23) would correspond to a period for
 Morning starting at 5:00 (until 13:00), Afternoon starting at 13:00 (until 18:00),
 Evening starting at 18:00 (until 23:00), and Night starting at 23:00 (until 5:00)}
 
-\item{sbp_stages_alt}{(Optional) Determines the lower and upper limits for each stage
-of systolic blood pressure (\code{SBP}). If supplied, the input must be a vector
-containing 7 integers that correspond to the limits of each stage. The default vector would be
-given by \code{c(80, 100, 120, 130, 140, 180, 200)} where:
-\itemize{
+\item{eod}{Optional}
 
-   \item Low - default: < 100 (specifically 80 - 100)
-   \item Normal - default: 100 - 120
-   \item Elevated - default: 120 - 130
-   \item Stage 1 - default: 130 - 140
-   \item Stage 2 - default: 140 - 180
-   \item Crisis - default: > 180 (specifically 180 - 200)
-
-}}
-
-\item{dbp_stages_alt}{(Optional) Determines the lower and upper limits for each stage
-of diastolic blood pressure (\code{DBP}). If supplied, the input must be a vector
-containing 7 integers that correspond to the limits of each stage. The default vector would be
-given by \code{c(25, 60, 80, 85, 90, 120, 140)} where:
-\itemize{
-
-   \item Low - default: < 60 (specifically 25 - 60)
-   \item Normal - default: 60 - 80
-   \item Elevated - default: 80 - 85
-   \item Stage 1 - default: 85 - 90
-   \item Stage 2 - default: 90 - 120
-   \item Crisis - default: > 120 (specifically 120 - 140)
-
-}}
-
-\item{screen}{Default to TRUE. Screens for extreme values in the data for both \code{SBP} and \code{DBP}
+\item{data_screen}{Default to TRUE. Screens for extreme values in the data for both \code{SBP} and \code{DBP}
 according to Omboni, et al (1995) paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment
 from Ambulatory Blood Pressure: Methodological Aspects}
+
+\item{inc_low}{Optional}
+
+\item{inc_crisis}{Optional}
+
+\item{dt_fmt}{Optional}
 }
 \value{
 A processed dataframe object that cooperates with every other
@@ -121,6 +113,7 @@ data("bp_hypnos")
 
 # Process data for bp_hypnos
 hypnos_proc <- process_data(bp_hypnos,
+                              bp_type = 'abpm',
                               sbp = 'syst',
                               dbp = 'diast',
                               date_time = 'date.time',
@@ -131,7 +124,7 @@ hypnos_proc <- process_data(bp_hypnos,
                               id = 'id',
                               visit = 'Visit',
                               wake = 'wake',
-                              screen = FALSE)
+                              data_screen = FALSE)
 
 hypnos_proc
 
@@ -140,6 +133,7 @@ hypnos_proc
 data("bp_jhs")
 
 # Process data for bp_jhs
+# Note that bp_type defaults to "hbpm" and is therefore not specified
 jhs_proc <- process_data(bp_jhs,
                          sbp = "Sys.mmHg.",
                          dbp = "Dias.mmHg.",

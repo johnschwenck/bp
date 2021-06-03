@@ -8,9 +8,9 @@ bp_stages(
   data,
   sbp,
   dbp,
-  sbp_stages_alt = NULL,
-  dbp_stages_alt = NULL,
-  screen = FALSE
+  inc_low = TRUE,
+  inc_crisis = TRUE,
+  data_screen = TRUE
 )
 }
 \arguments{
@@ -20,42 +20,22 @@ bp_stages(
 
 \item{dbp}{column name corresponding to diastolic blood pressure (DBP)}
 
-\item{sbp_stages_alt}{(Optional) Determines the lower and upper limits for each stage
-of systolic blood pressure (\code{SBP}). If supplied, the input must be a vector
-containing 7 integers that correspond to the limits of each stage. The default vector would be
-given by \code{c(80, 100, 120, 130, 140, 180, 200)} where:
-\itemize{
+\item{inc_low}{A TRUE / FALSE indicator of whether or not to include the "Low" (Hypotension)
+category to the scatter plot. The range for Hypotension is set from a minimum of 25 for DBP or 80
+for SBP, or the corresponding minimum value for either category from the data until 60 for DBP and
+100 for SBP.}
 
-   \item Low - default: < 100 (specifically 80 - 100)
-   \item Normal - default: 100 - 120
-   \item Elevated - default: 120 - 130
-   \item Stage 1 - default: 130 - 140
-   \item Stage 2 - default: 140 - 180
-   \item Crisis - default: > 180 (specifically 180 - 200)
+\item{inc_crisis}{A TRUE / FALSE indicator of whether or not to include the Hypertensive "Crisis"
+category to the scatter plot. The range for crisis is any value above 180 for SBP or above 120 for
+DBP.}
 
-}}
-
-\item{dbp_stages_alt}{(Optional) Determines the lower and upper limits for each stage
-of diastolic blood pressure (\code{DBP}). If supplied, the input must be a vector
-containing 7 integers that correspond to the limits of each stage. The default vector would be
-given by \code{c(25, 60, 80, 85, 90, 120, 140)} where:
-\itemize{
-
-   \item Low - default: < 60 (specifically 25 - 60)
-   \item Normal - default: 60 - 80
-   \item Elevated - default: 80 - 85
-   \item Stage 1 - default: 85 - 90
-   \item Stage 2 - default: 90 - 120
-   \item Crisis - default: > 120 (specifically 120 - 140)
-
-}}
-
-\item{screen}{Default to TRUE. Screens for extreme values in the data for both \code{SBP} and \code{DBP}
+\item{data_screen}{Default to TRUE. data_screens for extreme values in the data for both \code{SBP} and \code{DBP}
 according to Omboni, et al (1995) paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment
 from Ambulatory Blood Pressure: Methodological Aspects}
 }
 \value{
-A dataframe with two additional columns corresponding to \code{SBP_Category} and \code{DBP_Category}
+A dataframe with additional columns corresponding to the stages of high blood pressure and the
+supplementary SBP / DBP categories
 }
 \description{
 Adds SBP_Category and DBP_Category columns to supplied dataframe.
@@ -67,42 +47,12 @@ Supplied dataframe must adhere to the unified format using the \code{process_dat
 # Load bp_hypnos
 data(bp_hypnos)
 
-#bp_hypnos  <- sbp_adj(data = bp_hypnos, sbp = "syst", screen = screen)
-#bp_hypnos <- dbp_adj(data = bp_hypnos, dbp = "diast", screen = screen)
-
-hypnos_proc <- bp::process_data(bp::bp_hypnos,
-sbp = "syst",
-dbp = "DIAST",
-date_time = "date.time",
-id = "id",
-wake = "wake",
-visit = "visit",
-hr = "hr",
-map = "map",
-rpp = "rpp",
-pp = "pp")
-
-bp_stages(hypnos_proc,
-            sbp = "syst",
-            dbp = "diast",
-            sbp_stages_alt = c(80, 100, 120, 130, 140, 170, 200),
-            dbp_stages_alt = c(25, 60, 80, 85, 90, 120, 140)
-            )
+bp_stages(bp_hypnos, sbp = "syst", dbp = "diast")
 
 
 # Load bp_jhs data
 data(bp_jhs)
 
-jhs_proc <- process_data(bp_jhs,
-sbp = "Sys.mmHg.",
-dbp = "Dias.mmHg.",
-date_time = "DateTime",
-hr = "pulse.bpm.")
-
-bp_stages(jhs_proc,
-            sbp = "sys.mmhg.",
-            dbp = "dias.mmhg.",
-            sbp_stages_alt = c(80, 100, 120, 130, 160, 170, 200),
-            )
+bp_stages(bp_jhs, sbp = "sys.mmhg.", dbp = "dias.mmhg.")
 
 }

@@ -50,7 +50,7 @@ subject_subset_check <- function(data, subj = NULL){
 #'
 #' @return A list containing two vectors that each correspond to the SBP/DBP stages for use in further processing.
 #' If the function returns no error, the supplied vectors are valid. Function arguments are coerced to integer.
-stage_check <- function(sbp_stages, dbp_stages){
+stage_check <- function(sbp_stages = NULL, dbp_stages = NULL){
 
 
   # Compatibility checks for SBP
@@ -463,4 +463,29 @@ sleep_int <- function(data, sleep_start_end = NULL, adj = TRUE){
   return(data)
 
 }
+
+
+
+
+
+
+
+
+
+
+# helper function for bp_scatter visual for inserting low / crisis values into xlim / ylim breaks vector
+# source: https://stackoverflow.com/a/18951302/14189332
+# credit: Ferdinand.kraft
+insert.at <- function(a, pos, ...){
+  dots <- list(...)
+  stopifnot(length(dots)==length(pos))
+  result <- vector("list",2*length(pos)+1)
+  result[c(TRUE,FALSE)] <- split(a, cumsum(seq_along(a) %in% (pos+1)))
+  result[c(FALSE,TRUE)] <- dots
+  unlist(result)
+}
+
+
+
+
 

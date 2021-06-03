@@ -7,7 +7,9 @@
 bp_report(
   data,
   subj = NULL,
-  inc_all = TRUE,
+  inc_low = TRUE,
+  inc_crisis = TRUE,
+  group_var = NULL,
   save_report = 1,
   path = NULL,
   filename = "bp_report",
@@ -44,8 +46,11 @@ from the \code{ID} column of the supplied data set. The \code{subj} argument can
 value or a vector of elements. The input type should be character, but the function will
 comply with integers so long as they are all present in the \code{ID} column of the data.}
 
-\item{inc_all}{An indicator to dictate whether or not an overview page containing the data for
-all subjects (aggregated together) should be included in the report. By default, \code{inc_all = TRUE}.}
+\item{inc_low}{Optional}
+
+\item{inc_crisis}{Optional}
+
+\item{group_var}{Optional}
 
 \item{save_report}{A binary indicator (1 or 0) that determines whether or not to save the output.
 The default is \code{save_report = 1} indicating that the report will be saved. Regardless of the
@@ -127,7 +132,7 @@ bp_report(jhs_proc, filetype = 'png', save_report = 0)
 # Note: save_report set to 0 for illustrative purposes of the example, not to actually save
 ## Not Run
 \dontrun{
-bp_report(hyp_proc, save_report = 0)
+bp_report(hyp_proc, group_var = 'VISIT', save_report = 0)
 }
 
 }

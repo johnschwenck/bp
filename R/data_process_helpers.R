@@ -1,13 +1,63 @@
 ## Helper Functions for process_data()
 
 
+
+
+########################################################################################################
+#                                                                                                      #
+#                                      Arterial Pressure                                         #
+#                                                                                                      #
+########################################################################################################
+
+ap_adj <- function(data, ap = NULL){
+
+  AP = NULL
+  rm(list = c("AP"))
+
+  # Arterial Pressure (AP)
+  if(is.character(ap)){
+
+    if(toupper(ap) %in% toupper( colnames(data) ) == FALSE){
+
+      warning('Could not find user-defined AP argument name in dataset. \ni.e. for example, if user improperly defines ap = "art_pres" but that column name does not exist in the dataset, \nthen there will be no matches for "art_pres". \nCheck spelling of AP argument.\n')
+
+      if(length(grep(paste("\\bAP\\b", sep = ""), toupper(names(data)))) == 1){
+
+        stop('Fix user-defined argument name for AP. \nNote: A column in the dataset DOES match the name "AP": \nif this is the correct column, indicate as such in function argument. \ni.e. ap = "AP" \n ')
+
+      }
+
+    }else{
+
+      col_idx <- grep(paste("\\b",toupper(ap),"\\b", sep = ""), toupper(names(data)) )
+      data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
+
+      if(colnames(data)[1] != "AP"){
+
+        colnames(data)[1] <- "AP"
+        data$AP <- as.numeric(data$AP)
+
+      }
+
+    }
+  } else {
+    stop('User-defined AP name must be character.\n')
+  }
+
+  return(data)
+
+}
+
+
+
+
 ########################################################################################################
 #                                                                                                      #
 #                                      Systolic Blood Pressure                                         #
 #                                                                                                      #
 ########################################################################################################
 
-sbp_adj <- function(data, sbp, screen){
+sbp_adj <- function(data, sbp = NULL, data_screen){
 
   SBP = NULL
   rm(list = c("SBP"))
@@ -38,7 +88,7 @@ sbp_adj <- function(data, sbp, screen){
           }
 
           # Screen for extreme values
-          if(screen == TRUE){
+          if(data_screen == TRUE){
 
             # Screening criteria: Eliminate values {SBP > 240 | SBP < 50} according to Omboni, et al (1995) paper
             #   - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory
@@ -66,7 +116,7 @@ sbp_adj <- function(data, sbp, screen){
 #                                                                                                      #
 ########################################################################################################
 
-dbp_adj <- function(data, dbp, screen){
+dbp_adj <- function(data, dbp = NULL, data_screen){
 
   DBP = NULL
   rm(list = c("DBP"))
@@ -96,7 +146,7 @@ dbp_adj <- function(data, dbp, screen){
           }
 
           # Screen for extreme values
-          if(screen == TRUE){
+          if(data_screen == TRUE){
 
             # Screening criteria: Eliminate values {DBP > 140 | DBP < 40} according to Omboni, et al (1995) paper
             #   - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure: Methodological Aspects
@@ -123,7 +173,8 @@ dbp_adj <- function(data, dbp, screen){
 #                                                                                                      #
 ########################################################################################################
 
-pp_adj <- function(data, pp){
+pp_adj <- function(data, pp = NULL){
+
 
       # Pulse Pressure
       if(is.null(pp)){
@@ -173,7 +224,7 @@ pp_adj <- function(data, pp){
 #                                                                                                      #
 ########################################################################################################
 
-hr_adj <- function(data, hr, screen){
+hr_adj <- function(data, hr = NULL, data_screen){
 
   HR = NULL
   rm(list = c("HR"))
@@ -186,7 +237,7 @@ hr_adj <- function(data, hr, screen){
           warning('HR column found in data. \nIf this column corresponds to Heart Rate, \nuse hr = "HR" in the function argument.\n')
 
           # Screen for extreme values
-          if(screen == TRUE){
+          if(data_screen == TRUE){
 
             # Screening Criteria:
             # - Lowest HR recorded: https://www.guinnessworldrecords.com/world-records/lowest-heart-rate
@@ -212,7 +263,7 @@ hr_adj <- function(data, hr, screen){
           data$HR <- as.numeric(data$HR)
 
           # Screen for extreme values
-          if(screen == TRUE){
+          if(data_screen == TRUE){
 
             # Screening Criteria:
             # - Lowest HR recorded: https://www.guinnessworldrecords.com/world-records/lowest-heart-rate
@@ -240,10 +291,10 @@ hr_adj <- function(data, hr, screen){
 #                                                                                                      #
 ########################################################################################################
 
-rpp_adj <- function(data, rpp){
+rpp_adj <- function(data, rpp = NULL){
 
-      # Rate Pulse Product
-      if(is.null(rpp)){
+    # Rate Pulse Product
+    if(is.null(rpp)){
 
         # Try to find "RPP" column in data: if found, length is 1 (a number), if not found, length is 0 (i.e. logical(0) )
         if(length(grep(paste("\\bRPP\\b", sep = ""), names(data))) == 1){
@@ -295,10 +346,10 @@ rpp_adj <- function(data, rpp){
 #                                                                                                      #
 ########################################################################################################
 
-map_adj <- function(data, map){
+map_adj <- function(data, map = NULL){
 
-      # Mean Arterial Pressure
-      if(is.null(map)){
+    # Mean Arterial Pressure
+    if(is.null(map)){
 
         if(length(grep(paste("\\bMAP\\b", sep = ""), names(data))) == 0){
 
@@ -343,7 +394,7 @@ map_adj <- function(data, map){
 #                                                                                                      #
 ########################################################################################################
 
-wake_adj <- function(data, wake){
+wake_adj <- function(data, wake = NULL){
 
   # Wake (1: Awake | 0: Asleep)
   if(!is.null(wake)){
@@ -387,10 +438,10 @@ wake_adj <- function(data, wake){
 #                                                                                                      #
 ########################################################################################################
 
-visit_adj <- function(data, visit){
+visit_adj <- function(data, visit = NULL){
 
-        # Visit
-        if(!is.null(visit)){
+    # Visit
+    if(!is.null(visit)){
 
           if(toupper(visit) %in% colnames(data) == FALSE){
 
@@ -436,13 +487,19 @@ visit_adj <- function(data, visit){
 #                                                                                                      #
 ########################################################################################################
 
-date_time_adj <- function(data, date_time, ToD_int){
+# dt_fmt = date/time format corresponding to valid lubridate order. Default set to "ymd HMS" but can be
+# adjusted based on user's supplied data
+# See documentation here: https://lubridate.tidyverse.org/reference/parse_date_time.html
 
-  Time_of_Day = NULL
-  rm(list = c("Time_of_Day"))
+date_time_adj <- function(data, date_time = NULL, dt_fmt = "ymd HMS", ToD_int = NULL){
 
-        # Date & Time (DateTime object)
-        if(!is.null(date_time)){
+  Time_of_Day = HOUR = DATE_TIME = NULL
+  rm(list = c("Time_of_Day", "HOUR", "DATE_TIME"))
+
+  colnames(data) <- toupper( colnames(data) )
+
+    # Date & Time (DateTime object)
+    if(!is.null(date_time)){
 
           if(toupper(date_time) %in% colnames(data) == FALSE){
 
@@ -454,18 +511,21 @@ date_time_adj <- function(data, date_time, ToD_int){
               colnames(data)[col_idx] <- "DATE_TIME"
               data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
 
-              data$DATE_TIME <- as.POSIXct(data$DATE_TIME, tz = "UTC") # coerce to proper time format
+              #data$DATE_TIME <- as.POSIXct(data$DATE_TIME, tz = "UTC") # coerce to proper time format
+              data$DATE_TIME <- lubridate::parse_date_time(data$DATE_TIME, orders = dt_fmt, tz = "UTC")
 
+              # Hour
+              data$HOUR <- lubridate::hour(data$DATE_TIME)
 
             # Time of Day
             if(is.null(ToD_int)){
 
               # Assume --> Night: 0 - 6, Morning: 6 - 12, Afternoon: 12 - 18, Evening: 18 - 24
               data <- data %>% dplyr::mutate(Time_of_Day =
-                                               dplyr::case_when(lubridate::hour(DATE_TIME) >= 0  & lubridate::hour(DATE_TIME) < 6  ~ "Night",
-                                                                lubridate::hour(DATE_TIME) >= 6  & lubridate::hour(DATE_TIME) < 12 ~ "Morning",
-                                                                lubridate::hour(DATE_TIME) >= 12 & lubridate::hour(DATE_TIME) < 18 ~ "Afternoon",
-                                                                lubridate::hour(DATE_TIME) >= 18 & lubridate::hour(DATE_TIME) < 24 ~ "Evening",))
+                                               dplyr::case_when(HOUR >= 0  & HOUR < 6  ~ "Night",
+                                                                HOUR >= 6  & HOUR < 12 ~ "Morning",
+                                                                HOUR >= 12 & HOUR < 18 ~ "Afternoon",
+                                                                HOUR >= 18 & HOUR < 24 ~ "Evening",))
 
             # ToD_int should be a vector that contains the starting hour for Morning, Afternoon, Evening, Night in that order
             }else {
@@ -517,41 +577,38 @@ date_time_adj <- function(data, date_time, ToD_int){
                   if( (ToD_int[1] < ToD_int[2]) & (ToD_int[3] < ToD_int[4]) ){
 
                     data <- data %>% dplyr::mutate(Time_of_Day =
-                                                     dplyr::case_when(lubridate::hour(DATE_TIME) >= ToD_int[4] | lubridate::hour(DATE_TIME) < ToD_int[1]  ~ "Night",
-                                                                      lubridate::hour(DATE_TIME) >= ToD_int[1] & lubridate::hour(DATE_TIME) < ToD_int[2] ~ "Morning",
-                                                                      lubridate::hour(DATE_TIME) >= ToD_int[2] & lubridate::hour(DATE_TIME) < ToD_int[3] ~ "Afternoon",
-                                                                      lubridate::hour(DATE_TIME) >= ToD_int[3] & lubridate::hour(DATE_TIME) < ToD_int[4] ~ "Evening"))
+                                                     dplyr::case_when(HOUR >= ToD_int[4] | HOUR < ToD_int[1]  ~ "Night",
+                                                                      HOUR >= ToD_int[1] & HOUR < ToD_int[2] ~ "Morning",
+                                                                      HOUR >= ToD_int[2] & HOUR < ToD_int[3] ~ "Afternoon",
+                                                                      HOUR >= ToD_int[3] & HOUR < ToD_int[4] ~ "Evening"))
 
                   }else if( (ToD_int[1] > ToD_int[2]) & (ToD_int[3] < ToD_int[4]) ){
 
                     data <- data %>% dplyr::mutate(Time_of_Day =
-                                                     dplyr::case_when(lubridate::hour(DATE_TIME) >= ToD_int[4] & lubridate::hour(DATE_TIME) < ToD_int[1]  ~ "Night",
-                                                                      ((lubridate::hour(DATE_TIME) >= ToD_int[1] & lubridate::hour(DATE_TIME) < 24)) | (lubridate::hour(DATE_TIME) < ToD_int[2]) ~ "Morning",
-                                                                      lubridate::hour(DATE_TIME) >= ToD_int[2] & lubridate::hour(DATE_TIME) < ToD_int[3] ~ "Afternoon",
-                                                                      lubridate::hour(DATE_TIME) >= ToD_int[3] & lubridate::hour(DATE_TIME) < ToD_int[4] ~ "Evening",))
+                                                     dplyr::case_when(HOUR >= ToD_int[4] & HOUR < ToD_int[1]  ~ "Night",
+                                                                    ((HOUR >= ToD_int[1] & HOUR < 24)) | (HOUR < ToD_int[2]) ~ "Morning",
+                                                                      HOUR >= ToD_int[2] & HOUR < ToD_int[3] ~ "Afternoon",
+                                                                      HOUR >= ToD_int[3] & HOUR < ToD_int[4] ~ "Evening",))
 
                   }else if( (ToD_int[1] < ToD_int[2]) & (ToD_int[3] > ToD_int[4]) ){
 
                     data <- data %>% dplyr::mutate(Time_of_Day =
-                                                     dplyr::case_when(lubridate::hour(DATE_TIME) >= ToD_int[4] & lubridate::hour(DATE_TIME) < ToD_int[1]  ~ "Night",
-                                                                      lubridate::hour(DATE_TIME) >= ToD_int[1] & lubridate::hour(DATE_TIME) < ToD_int[2] ~ "Morning",
-                                                                      lubridate::hour(DATE_TIME) >= ToD_int[2] & lubridate::hour(DATE_TIME) < ToD_int[3] ~ "Afternoon",
-                                                                      ((lubridate::hour(DATE_TIME) >= ToD_int[3]) & (lubridate::hour(DATE_TIME) < 24)) | (lubridate::hour(DATE_TIME) < ToD_int[4]) ~ "Evening"))
+                                                     dplyr::case_when(HOUR >= ToD_int[4]  & HOUR < ToD_int[1]  ~ "Night",
+                                                                      HOUR >= ToD_int[1]  & HOUR < ToD_int[2] ~ "Morning",
+                                                                      HOUR >= ToD_int[2]  & HOUR < ToD_int[3] ~ "Afternoon",
+                                                                    ((HOUR >= ToD_int[3]) & (HOUR < 24)) | (HOUR < ToD_int[4]) ~ "Evening"))
 
-                  }
-
-
+              }
             }
-          }
-        }
+
+        data <- data %>% dplyr::relocate(HOUR, .after = DATE_TIME)
+
+      }
+    }
 
   return(data)
 
 }
-
-
-
-
 
 
 
@@ -587,7 +644,7 @@ dates_adj <- function(data){
           # If applicable, Check that all date values of the identified date column match the date_time values in as.Date format
           if( !all(data[,grep("^DATE$", names(data))] == as.Date(data[,grep("^DATE_TIME$", names(data))])) ){
             data$DATE_OLD <- data$DATE
-            data$DATE <- as.Date(data$DATE_TIME)
+            data$DATE <- as.Date( lubridate::ymd_hms(data$DATE_TIME, tz = "UTC") )
             warning('User-supplied DATE column does not align with DATE_TIME values.\nCreated additional column DATE_OLD in place of DATE.\nMismatches between rows among DATE_OLD and DATE_TIME columns\n')
             #which(as.Date(data$DATE_TIME) != data$DATE_OLD)
           }
@@ -607,7 +664,7 @@ dates_adj <- function(data){
         message('NOTE: Created DATE column from DATE_TIME column\n')
 
         # Create DATE column using as.Date of DATE_TIME
-        data$DATE <- as.Date(data$DATE_TIME)
+        data$DATE <- as.Date( lubridate::ymd_hms(data$DATE_TIME, tz = "UTC") )
 
         col_idx <- grep("^DATE$", names(data))
         colnames(data)[col_idx] <- "DATE"
@@ -624,13 +681,17 @@ dates_adj <- function(data){
 
 
 
+
 ########################################################################################################
 #                                                                                                      #
 #                                          Day of the Week (DoW)                                       #
 #                                                                                                      #
 ########################################################################################################
 
-dow_adj <- function(data, DoW){
+dow_adj <- function(data, DoW = NULL){
+
+      # Coerce all column names are all upper case
+      colnames(data) <- toupper( colnames(data) )
 
       # DoW argument supplied by user
       if(!is.null(DoW)){
@@ -709,11 +770,202 @@ dow_adj <- function(data, DoW){
 
 
 
+
+
+
+########################################################################################################
+#                                                                                                      #
+#                                   Time Adjustment (Continuous Data)                                  #
+#                                                                                                      #
+########################################################################################################
+
+## NOTE: Time refers to the particular observation per time elapsed (according to sampling rate)
+
+time_adj <- function(data, time_elap = NULL){
+
+  TIME_ELAPSED = NULL
+  rm(list = c("TIME_ELAPSED"))
+
+  # Group
+  if(!is.null(time_elap)){
+
+    if(toupper(time_elap) %in% toupper( colnames(data) ) == FALSE){
+
+      stop('User-defined time_elap name does not match column name of supplied dataset\n')
+
+    } else {
+
+      col_idx <- grep(paste("\\b",toupper(time_elap),"\\b", sep = ""), toupper( names(data)) )
+      colnames(data)[col_idx] <- "TIME_ELAPSED"
+      data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
+
+    }
+
+  }
+
+  return(data)
+
+}
+
+
+
+
+
+
+########################################################################################################
+#                                                                                                      #
+#                                       End-of-Day Adjustment (EOD)                                    #
+#                                                                                                      #
+########################################################################################################
+
+eod_adj <- function(data, eod = NULL){
+
+
+  # Clean global variables
+  DATE = DATE_TIME = NULL
+  rm(list = c("DATE", "DATE_TIME"))
+
+
+  if(!is.null(eod)){
+
+      # count of digits - 3 : am | 4 : pm)
+      if( floor(log10(abs(eod))) + 1 > 4 ){
+        stop('eod argument can only take on either 3 or 4 digits that represent 24-hour time format. \n\ni.e. 130 implies 1:30 AM and 2230 imples 10:30 PM')
+      }
+
+      # Check whether user only entered hours (i.e. 22 for 10 PM instead of 2200)
+      if(floor(log10(abs(eod))) + 1 <= 2){
+
+        hour_input <- eod
+        min_input <- 0
+        warning('eod argument should be either 3 or 4 digits that correspond to 24-hour time. Coerced minutes to zero. If only supplying an hour, it is best to add zeros to the end. \n\ni.e. 22 should be represented as 2200 for 10:00 PM')
+
+      }else{
+
+        # Extract hour from eod argument
+        hour_input <- ifelse( floor(log10(abs(eod))) + 1 == 3, as.numeric( substr(eod, 1, 1) ),
+                              ifelse( floor(log10(abs(eod))) + 1 == 4, as.numeric( substr(eod, 1, 2) ), 0 ) )
+        # Extract minute from eod argument
+        min_input <- eod %% 100
+
+      }
+
+      # Check for correct hour input
+      if(hour_input > 23 | hour_input < 0){
+        stop('eod hour argument cannot be less than 0 or greater than 23. Hours of the day range from 0 to 23 where 0 denotes midnight.')
+      }
+
+      # Check for correct minute input
+      if(min_input > 59 | min_input < 0){
+        stop('eod minute argument cannot be less than 0 or exceed 59. Minutes range from 0 to 59.')
+      }
+
+      # Ensure that DATE_TIME column is present
+      if( "DATE_TIME" %in% toupper(colnames(data)) == FALSE){
+        stop('DATE_TIME column not present in supplied dataset\n')
+      }
+
+      # Set time zone to UTC --> check ymd_hms format in process helpers to ensure posixct format
+      data$DATE_TIME <- lubridate::ymd_hms(data$DATE_TIME, tz = "UTC")
+
+
+      # Adjust dates according to eod argument
+      data <- data %>%
+        dplyr::mutate(DATE = dplyr::case_when(
+
+          hour_input < 12 ~ {dplyr::case_when(
+
+            # less than minutes only (i.e. 0023 < 0030 if eod = 0030) & hour is midnight
+            lubridate::hour(DATE_TIME) == 0 & lubridate::minute(DATE_TIME) <= min_input ~ as.Date( DATE_TIME - lubridate::days(1) ),
+
+            lubridate::hour(DATE_TIME) == hour_input & lubridate::minute(DATE_TIME) <= min_input ~ as.Date( DATE_TIME - lubridate::days(1) ),
+
+            lubridate::hour(DATE_TIME) < hour_input ~ as.Date( DATE_TIME - lubridate::days(1) ),
+
+            TRUE ~ as.Date(DATE_TIME)
+
+          )},
+
+          hour_input >= 12 ~ {dplyr::case_when(
+
+            lubridate::hour(DATE_TIME) == hour_input & lubridate::minute(DATE_TIME) >= min_input ~ as.Date( DATE_TIME + lubridate::days(1) ),
+
+            lubridate::hour(DATE_TIME) > hour_input ~ as.Date( DATE_TIME + lubridate::days(1) ),
+
+            TRUE ~ as.Date(DATE_TIME)
+
+          )},
+
+          TRUE ~ as.Date(DATE_TIME)
+
+        )) %>%
+        dplyr::relocate(DATE, .after = DATE_TIME)
+
+
+  }
+
+  return(data)
+
+}
+
+
+
+
+
+
+
+########################################################################################################
+#                                                                                                      #
+#                                                Group                                                 #
+#                                                                                                      #
+########################################################################################################
+
+## NOTE: Group contains all IDs (ID subset of GROUP)
+
+## Create another group for extra variable (i.e. # cigarettes smoked, salt intake, etc.)?
+
+group_adj <- function(data, group){
+
+  GROUP = NULL
+  rm(list = c("GROUP"))
+
+  # Group
+  if(!is.null(group)){
+
+    if(toupper(group) %in% toupper( colnames(data) ) == FALSE){
+
+      stop('User-defined Group name does not match column name of supplied dataset\n')
+
+    } else {
+
+      col_idx <- grep(paste("\\b",toupper(group),"\\b", sep = ""), toupper( names(data) ) )
+      colnames(data)[col_idx] <- "GROUP"
+      data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
+
+    }
+
+  }else{
+
+    if(!("GROUP" %in% toupper( colnames(data) ))){
+      # Create placeholder GROUP column for use with other functions / plots
+      data <- data %>% dplyr::mutate(GROUP = 1)
+    }
+
+  }
+
+  return(data)
+
+}
+
+
+
 ########################################################################################################
 #                                                                                                      #
 #                                                  ID                                                  #
 #                                                                                                      #
 ########################################################################################################
+
+## NOTE: ID is a subset of Group (if group is specified)
 
 id_adj <- function(data, id){
 
@@ -723,21 +975,21 @@ id_adj <- function(data, id){
   # ID
   if(!is.null(id)){
 
-    if(toupper(id) %in% colnames(data) == FALSE){
+      if(toupper(id) %in% toupper( colnames(data) ) == FALSE){
 
-      stop('User-defined ID name does not match column name of supplied dataset\n')
+        stop('User-defined ID name does not match column name of supplied dataset\n')
 
-    } else {
+      } else {
 
-      col_idx <- grep(paste("\\b",toupper(id),"\\b", sep = ""), names(data))
-      colnames(data)[col_idx] <- "ID"
-      data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
+        col_idx <- grep(paste("\\b",toupper(id),"\\b", sep = ""), toupper( names(data) ) )
+        colnames(data)[col_idx] <- "ID"
+        data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
 
-    }
+      }
 
   }else{
 
-    if(!("ID" %in% colnames(data))){
+    if(!("ID" %in% toupper( colnames(data) ) )){
       # Create placeholder ID column for use with other functions / plots
       data <- data %>% dplyr::mutate(ID = 1)
     }
@@ -747,7 +999,6 @@ id_adj <- function(data, id){
   return(data)
 
 }
-
 
 
 

@@ -28,8 +28,11 @@
 #' value or a vector of elements. The input type should be character, but the function will
 #' comply with integers so long as they are all present in the \code{ID} column of the data.
 #'
-#' @param inc_all An indicator to dictate whether or not an overview page containing the data for
-#' all subjects (aggregated together) should be included in the report. By default, \code{inc_all = TRUE}.
+#' @param inc_low Optional
+#'
+#' @param inc_crisis Optional
+#'
+#' @param group_var Optional
 #'
 #' @param save_report A binary indicator (1 or 0) that determines whether or not to save the output.
 #' The default is \code{save_report = 1} indicating that the report will be saved. Regardless of the
@@ -109,12 +112,14 @@
 #' # Note: save_report set to 0 for illustrative purposes of the example, not to actually save
 #' ## Not Run
 #' \dontrun{
-#' bp_report(hyp_proc, save_report = 0)
+#' bp_report(hyp_proc, group_var = 'VISIT', save_report = 0)
 #' }
 #'
 bp_report <- function(data,
                       subj = NULL,
-                      inc_all = TRUE,
+                      inc_low = TRUE,
+                      inc_crisis = TRUE,
+                      group_var = NULL,
                       save_report = 1,
                       path = NULL,
                       filename = "bp_report",
@@ -127,165 +132,92 @@ bp_report <- function(data,
 
   ######################################################################################
 
+  ID = NULL
+  rm(list = c('ID'))
+
+  # If user supplies a vector corresponding to a subset of multiple subjects (multi-subject only)
+  if(!is.null(subj)){
+
+    # check to ensure that supplied subject vector is compatible
+    subject_subset_check(data, subj)
+
+    if(length(unique(data$ID)) > 1){
+
+      # Filter data based on subset of subjects
+      data <- data %>%
+        dplyr::filter(ID == subj)
+
+    }
+  }
+
   subjects <- unique(data$ID)
   n <- length(subjects)
   idx <- 1:n
-
-  final <- list()
 
   #####################################################
   # For "overview" of all subjects - aggregated plots #
   #####################################################
 
-  # Check whether user decides against including all subject (which will skip the if statement below)
-  if(inc_all == TRUE){
+  grid::grid.newpage() # necessary?
 
-    grid::grid.newpage() # necessary?
+  # Create Title graphic --> need to find a better way to make the title dynamic to adjust to different aspect ratios of the report
+  report_subtitle <- grid::textGrob(paste("\nReport Generated: ", lubridate::today(),
+                                          ifelse("DATE_TIME" %in% names(data),
+  paste('                                                                                                           Data range: ', as.Date(min(data$DATE_TIME)), " to ", as.Date(max(data$DATE_TIME)), sep = ""), ""), sep = ""),
+                                    gp = grid::gpar(fontsize = 15, fontface = 3L), hjust = 0.48)
 
-    # Create Title graphic
-    report_subtitle <- grid::textGrob(paste("Report Generated: ", lubridate::today(),
-                                            ifelse("DATE_TIME" %in% names(data),
-    paste("                                                                                                             Data range: ",
-                                                         as.Date(min(data$DATE_TIME)),
-                                                         " to ",
-                                                         as.Date(max(data$DATE_TIME)), sep = ""), ""), sep = ""),
-                                      gp = grid::gpar(fontsize = 15, fontface = 3L), hjust = 0.25)
-
-    report_title <- grid::textGrob( ifelse(n > 1, "Blood Pressure Report - All Subjects", "Blood Pressure Report - Overview"),
-                                    gp = grid::gpar(fontsize = 30),
-                                    hjust = -0.0)
+  report_title <- grid::textGrob( ifelse(n > 1, "Blood Pressure Report - All Subjects", "Blood Pressure Report - Overview"),
+                                  gp = grid::gpar(fontsize = 30),
+                                  hjust = 0.45)
 
 
-    margin <- grid::unit(0.5, "line")
+  margin <- grid::unit(0.5, "line")
 
-    bptitle <- gridExtra::arrangeGrob(report_subtitle, report_title,
-                                      heights = grid::unit.c(grid::grobHeight(report_title) + 1.2 * margin,
-                                                             grid::unit(1,"null"),
-                                                             grid::grobHeight(report_subtitle) + margin)
-                                      )
+  bptitle <- gridExtra::arrangeGrob(report_title, report_subtitle,
+                                    heights = grid::unit.c(grid::grobHeight(report_title) + 1.2 * margin,
+                                                           grid::unit(1,"null"),
+                                                           grid::grobHeight(report_title) + margin)
+                                    )
 
-    # Run functions once to save time
-    dow_tod_plots_all <- dow_tod_plots(data) # requires SBP, DBP, Weekday, Time_of_Day, SBP_Category, DBP_Category
-    scat_all <- bp_scatter(data) # requires SBP, DBP, possibly VISIT
-    hist_all <- bp_hist(data) # requires SBP, DBP, SBP_Category, DBP_Category
-
-    # Right-side plots
-    all_1 <- gridExtra::grid.arrange( gridExtra::arrangeGrob(hist_all[[1]], nrow = 1), # side by side histogram of SBP / DBP totals
-                                   grid::linesGrob(y = grid::unit(1.5, "lines"),
-                                                   gp = grid::gpar(col = "black")),
-                                   gridExtra::arrangeGrob(dow_tod_plots_all[[1]], dow_tod_plots_all[[2]], nrow = 1), # hist of SBP and DBP freqs
-                                   nrow = 3, heights = c(1.5, 0.25, 1.5))
-
-    all_2 <- gridExtra::grid.arrange(hist_all[[2]], hist_all[[3]], hist_all[[4]], ncol = 2, nrow = 2, layout_matrix = rbind( c(3,3), c(1,2) ), heights = c(.1, .8))
-
-    all_3 <- gridExtra::grid.arrange(dow_tod_plots_all[[3]], dow_tod_plots_all[[4]], nrow = 1)
-
-    out_all <- gridExtra::grid.arrange(bptitle, grid::nullGrob(),
-                                       scat_all, all_1,
-                                       all_2, all_3,
-                                       nrow = 3, ncol = 2, heights = c(.5, 2, 1), widths = c(1, 1))
-
-    final[[1]] <- out_all
-
-    # j correspond to final output list, first element of list is overview
-    j <- 2
-
-  }else{
-
-    # J correspond to final output list, first element of list is first subject because no overview page included
-    j <- 1
-
-  }
+  # Run functions once to save time
+  dow_tod_plots_all <- dow_tod_plots(data) # requires SBP, DBP, Weekday, Time_of_Day, SBP_Category, DBP_Category
+  scat_all <- bp_scatter(data, inc_low = inc_low, inc_crisis = inc_crisis, group_var = group_var) # requires SBP, DBP, possibly VISIT
+  hist_all <- bp_hist(data) # requires SBP, DBP, SBP_Category, DBP_Category
 
 
-  ##############################################
-  # If multiple subjects, print plots for each #
-  ##############################################
+  # Scatterplot combine with legend
+  #scat_all <- gridExtra::arrangeGrob(scat_all, hist_all[[4]], nrow = 2, heights = c(2, 0.15))
 
-  # Repeat for all subjects
-  if( n > 1 ){
+  # SBP / DBP frequencies
+  all_1 <- gridExtra::arrangeGrob(hist_all[[2]], hist_all[[3]], nrow = 2)
 
+  # ToD / DoW
+  all_2 <- gridExtra::arrangeGrob(dow_tod_plots_all[[1]], dow_tod_plots_all[[2]], nrow = 1)
 
-    # If user supplies a vector corresponding to a subset of multiple subjects (multi-subject only)
-    if(!is.null(subj)){
+  # Layout of output
+  lay <- rbind( c(1,  1,1,1,1,1,1,1,1, 1,  1,1,1,1,1,1,1,1, 1),
+                c(NA, 2,2,2,2,2,2,2,2, NA, 3,3,3,3,3,3,3,3, NA),
+                c(NA, 2,2,2,2,2,2,2,2, NA, 3,3,3,3,3,3,3,3, NA),
+                c(NA, 2,2,2,2,2,2,2,2, NA, 3,3,3,3,3,3,3,3, NA),
+                c(NA, 2,2,2,2,2,2,2,2, NA, 3,3,3,3,3,3,3,3, NA),
+                c(NA, 2,2,2,2,2,2,2,2, NA, 4,4,4,4,4,4,4,4, NA),
+                c(NA, 5,5,5,5,5,5,5,5, NA, 4,4,4,4,4,4,4,4, NA),
+                c(NA, 5,5,5,5,5,5,5,5, NA, 4,4,4,4,4,4,4,4, NA),
+                c(NA, 5,5,5,5,5,5,5,5, NA, 4,4,4,4,4,4,4,4, NA),
+                c(NA, 5,5,5,5,5,5,5,5, NA, 4,4,4,4,4,4,4,4, NA),
+                c(NA, NA,NA,NA,NA,NA,NA,NA,NA, NA, NA,NA,NA,NA,NA,NA,NA,NA, NA ))
 
-      # check to ensure that supplied subject vector is compatible
-      subject_subset_check(data, subj)
-
-      if(length(subjects) > 1){
-
-        idx <- match( subj , unique(data$ID) )
-
-      }
-    }
-
-
-    for(i in idx){
-
-      # Title graphic
-      report_subtitle <- grid::textGrob(paste("Report Generated: ", lubridate::today(),
-                                              ifelse("DATE_TIME" %in% names(data),
-        paste("                                                                                                             Data range: ",
-                                                           as.Date(min(data$DATE_TIME)),
-                                                           " to ",
-                                                           as.Date(max(data$DATE_TIME)), sep = ""), ""), sep = ""),
-                                        gp = grid::gpar(fontsize = 15, fontface = 3L), hjust = 0.25)
-
-      report_title <- grid::textGrob( paste("Blood Pressure Report - Subject ID: ", subjects[i], sep = ""),
-                                      gp = grid::gpar(fontsize = 30),
-                                      hjust = -0.0)
+  # Final Report
+  final <- gridExtra::arrangeGrob(bptitle, scat_all, hist_all[[1]], all_1, all_2, layout_matrix = lay)
 
 
-
-      margin <- grid::unit(0.5, "line")
-
-      bptitle_tmp <- gridExtra::arrangeGrob(report_subtitle, report_title,
-                                        heights = grid::unit.c(grid::grobHeight(report_title) + 1.2 * margin,
-                                                               grid::unit(1,"null"),
-                                                               grid::grobHeight(report_subtitle) + margin
-                                                               ) )
-
-      # Subset Data
-      tmp_data <- data[which(data$ID == subjects[i]),]
-
-      # Run functions once to save time
-      dow_tod_plots_tmp <- dow_tod_plots(tmp_data) # requires SBP, DBP, Weekday, Time_of_Day, SBP_Category, DBP_Category
-      scat_tmp <- bp_scatter(tmp_data) # requires SBP, DBP, possibly VISIT
-      hist_tmp <- bp_hist(tmp_data) # requires SBP, DBP, SBP_Category, DBP_Category
-
-
-      # Right-side plots
-      tmp_1 <- gridExtra::grid.arrange( gridExtra::arrangeGrob(hist_tmp[[1]], nrow = 1), # side by side histogram of SBP / DBP totals
-                                        grid::linesGrob(y = grid::unit(1.5, "lines"),
-                                                        gp = grid::gpar(col = "black")),
-                                        gridExtra::arrangeGrob(dow_tod_plots_tmp[[1]], dow_tod_plots_tmp[[2]], nrow = 1), # hist of SBP and DBP freqs
-                                        nrow = 3, heights = c(1.5, 0.25, 1.5))
-
-      tmp_2 <- gridExtra::grid.arrange(hist_tmp[[2]], hist_tmp[[3]], hist_tmp[[4]],
-                                       ncol = 2, nrow = 2, layout_matrix = rbind( c(3,3), c(1,2) ), heights = c(.1, .8))
-
-      tmp_3 <- gridExtra::grid.arrange(dow_tod_plots_tmp[[3]], dow_tod_plots_tmp[[4]], nrow = 1)
-
-      out_tmp <- gridExtra::grid.arrange(bptitle_tmp, grid::nullGrob(),
-                                         scat_tmp, tmp_1,
-                                         tmp_2, tmp_3,
-                                         nrow = 3, ncol = 2, heights = c(.5, 2, 1), widths = c(1, 1))
-
-      final[[j]] <- out_tmp
-
-      j <- j + 1
-
-    }
-
-
-  }
 
   # Determine whether to save output or not
   if(save_report == 0){
 
     message('Report not saved. To save, specify save_report = 1 in function argument.')
 
-    grid::grid.draw(gridExtra::marrangeGrob(grobs = final, nrow = 1, ncol = 1))
+    gridExtra::grid.arrange(final)
 
   }else if(save_report == 1){
 
@@ -296,7 +228,7 @@ bp_report <- function(data,
     out_path <- file.path(path, out_filename)
 
     # Save final report
-    ggplot2::ggsave(out_path, gridExtra::marrangeGrob(grobs = final, nrow = 1, ncol = 1),
+    ggplot2::ggsave(out_path, gridExtra::grid.arrange(final),
            width = width,
            height = height,
            units = units,

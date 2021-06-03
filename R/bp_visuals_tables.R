@@ -18,6 +18,7 @@
 #'
 #' data("bp_hypnos")
 #' hyp_proc <- process_data(bp_hypnos,
+#'                          bp_type = 'abpm',
 #'                          sbp = "syst",
 #'                          dbp = "DIAST",
 #'                          date_time = "date.time",
@@ -32,13 +33,173 @@
 #'
 #' rm(bp_hypnos)
 #'
-#' dow_tod_plots_tmp <- dow_tod_plots(hyp_proc)
+#' dow_tod_plots_out <- dow_tod_plots(hyp_proc)
 #' grid::grid.draw(
-#'    gridExtra::grid.arrange(dow_tod_plots_tmp[[1]], dow_tod_plots_tmp[[2]],
-#'                            dow_tod_plots_tmp[[3]],dow_tod_plots_tmp[[4]],
-#'                            nrow = 2, ncol = 2)
+#'    gridExtra::grid.arrange(dow_tod_plots_out[[1]], dow_tod_plots_out[[2]], ncol = 2)
 #'                            )
 dow_tod_plots <- function(data, subj = NULL){
+
+
+  # Primary variables needed:    SBP, DBP, DAY_OF_WEEK, Time_of_Day
+  # Secondary variables needed:  SBP_Category (bp_tables), DBP_Category (bp_tables)
+
+  SBP = DBP = DAY_OF_WEEK = ID = Time_of_Day = Sun = Mon = Tue = Wed = Thu = Fri = Sat = Total = Morning = Afternoon = Evening = Night = . = NULL
+  rm(list = c("SBP", "DBP", "DAY_OF_WEEK", "ID", "Time_of_Day",
+              "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Total",
+              "Morning", "Afternoon", "Evening", "Night", "."))
+
+
+  # If user supplies a vector corresponding to a subset of multiple subjects (multi-subject only)
+  if(!is.null(subj)){
+
+    # check to ensure that supplied subject vector is compatible
+    subject_subset_check(data, subj)
+
+    if(length(unique(data$ID)) > 1){
+
+      # Filter data based on subset of subjects
+      data <- data %>%
+        dplyr::filter(ID == subj)
+
+    }
+  }
+
+    table_data <- bp_tables(data)
+
+    ft_size = 6
+
+    ## Day of Week ##
+
+    tables_dow <- table_data$CLASS_Day_of_Week
+
+    tables_dow <- tibble::rownames_to_column(table_data$CLASS_Day_of_Week, var = "BP Stage")
+    tables_dow <- tables_dow %>%
+      dplyr::bind_rows(dplyr::summarise(.,
+                                        dplyr::across(tidyselect::vars_select_helpers$where(is.numeric), sum),
+                                        dplyr::across(tidyselect::vars_select_helpers$where(is.character), ~"Total")))
+
+        dow <- gridExtra::tableGrob(tables_dow, rows = NULL, theme = gridExtra::ttheme_default(base_size = ft_size))
+        dow <- gtable::gtable_add_grob(dow,
+                                       grobs = grid::rectGrob(gp = grid::gpar(fill = NA, lwd = 2)),
+                                       t = 2, b = nrow(dow)-1, l = 1, r = ncol(dow))
+        dow <- gtable::gtable_add_grob(dow,
+                                       grobs = grid::rectGrob(gp = grid::gpar(fill = NA, lwd = 2)),
+                                       t = 1, l = 1, r = ncol(dow))
+        dow <- gtable::gtable_add_grob(dow,
+                                       grobs = grid::rectGrob(gp = grid::gpar(fill = NA, lwd = 2)),
+                                       t = nrow(dow), b = nrow(dow), l = 1, r = ncol(dow))
+        dow <- gtable::gtable_add_grob(dow,
+                                       grobs = grid::rectGrob(gp = grid::gpar(fill = NA, lwd = 2)),
+                                       t = 2, b = nrow(dow), l = ncol(dow), r = ncol(dow))
+        dow <- gtable::gtable_add_grob(dow,
+                                       grobs = grid::rectGrob(gp = grid::gpar(fill = NA, lwd = 2)),
+                                       t = 2, b = nrow(dow), l = 2, r = ncol(dow)-1)
+
+        # Add title for plot
+        title_dow <- grid::textGrob("BP by Day of Week", gp = grid::gpar(fontsize = 15))
+        padding <- unit(7, "mm")
+
+        table_dow <- gtable::gtable_add_rows(
+                                dow,
+                                heights = grid::grobHeight(title_dow) + padding,
+                                pos = 0)
+
+        dow <- gtable::gtable_add_grob(
+                                table_dow,
+                                title_dow,
+                                1, 1, 1, ncol(table_dow))
+
+    # display plot
+    dow_out <- gridExtra::grid.arrange(dow)
+
+
+
+    ## Time of Day ##
+
+    tables_tod <- table_data$CLASS_Time_of_Day
+
+    tables_tod <- tibble::rownames_to_column(tables_tod, var = "BP Stage")
+    tables_tod <- tables_tod %>%
+      dplyr::bind_rows(dplyr::summarise(.,
+                                        dplyr::across(tidyselect::vars_select_helpers$where(is.numeric), sum),
+                                        dplyr::across(tidyselect::vars_select_helpers$where(is.character), ~"Total")))
+
+        tod <- gridExtra::tableGrob(tables_tod, rows = NULL, theme = gridExtra::ttheme_default(base_size = ft_size))
+        tod <- gtable::gtable_add_grob(tod,
+                                       grobs = grid::rectGrob(gp = grid::gpar(fill = NA, lwd = 2)),
+                                       t = 2, b = nrow(tod)-1, l = 1, r = ncol(tod))
+        tod <- gtable::gtable_add_grob(tod,
+                                       grobs = grid::rectGrob(gp = grid::gpar(fill = NA, lwd = 2)),
+                                       t = 1, l = 1, r = ncol(tod))
+        tod <- gtable::gtable_add_grob(tod,
+                                       grobs = grid::rectGrob(gp = grid::gpar(fill = NA, lwd = 2)),
+                                       t = nrow(tod), b = nrow(tod), l = 1, r = ncol(tod))
+        tod <- gtable::gtable_add_grob(tod,
+                                       grobs = grid::rectGrob(gp = grid::gpar(fill = NA, lwd = 2)),
+                                       t = 2, b = nrow(tod), l = ncol(tod), r = ncol(tod))
+        tod <- gtable::gtable_add_grob(tod,
+                                       grobs = grid::rectGrob(gp = grid::gpar(fill = NA, lwd = 2)),
+                                       t = 2, b = nrow(tod), l = 2, r = ncol(tod)-1)
+
+        # Add title for plot
+        title_tod <- grid::textGrob("BP by Time of Day", gp = grid::gpar(fontsize = 15))
+        padding <- unit(7, "mm")
+
+        table_tod <- gtable::gtable_add_rows(
+                              tod,
+                              heights = grid::grobHeight(title_tod) + padding,
+                              pos = 0)
+
+        tod <- gtable::gtable_add_grob(
+                              table_tod,
+                              title_tod,
+                              1, 1, 1, ncol(table_tod))
+
+    # display plot
+    tod_out <- gridExtra::grid.arrange(tod)
+
+    return(list(dow = dow_out, tod = tod_out))
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+dow_tod_plots_old <- function(data, subj = NULL){
 
 
   # Primary variables needed:    SBP, DBP, DAY_OF_WEEK, Time_of_Day
