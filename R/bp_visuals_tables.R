@@ -36,7 +36,8 @@
 #' dow_tod_plots_out <- dow_tod_plots(hyp_proc)
 #' grid::grid.draw(
 #'    gridExtra::grid.arrange(dow_tod_plots_out[[1]], dow_tod_plots_out[[2]], ncol = 2)
-#'                            )
+#'  )
+#'
 dow_tod_plots <- function(data, subj = NULL){
 
 
@@ -110,7 +111,7 @@ dow_tod_plots <- function(data, subj = NULL){
                                 1, 1, 1, ncol(table_dow))
 
     # display plot
-    dow_out <- gridExtra::grid.arrange(dow)
+    dow_out <- gridExtra::arrangeGrob(dow)
 
 
 
@@ -156,7 +157,7 @@ dow_tod_plots <- function(data, subj = NULL){
                               1, 1, 1, ncol(table_tod))
 
     # display plot
-    tod_out <- gridExtra::grid.arrange(tod)
+    tod_out <- gridExtra::arrangeGrob(tod)
 
     return(list(dow = dow_out, tod = tod_out))
   }

@@ -14,7 +14,9 @@ bp_stages(
 )
 }
 \arguments{
-\item{data}{User-supplied data}
+\item{data}{User-supplied dataset containing blood pressure data. Must
+contain data for Systolic blood pressure and Diastolic blood pressure at a
+minimum.}
 
 \item{sbp}{column name corresponding to systolic blood pressure (SBP)}
 

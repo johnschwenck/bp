@@ -46,11 +46,16 @@ from the \code{ID} column of the supplied data set. The \code{subj} argument can
 value or a vector of elements. The input type should be character, but the function will
 comply with integers so long as they are all present in the \code{ID} column of the data.}
 
-\item{inc_low}{Optional}
+\item{inc_low}{Optional logical argument dictating whether or not to include the "Low" category for BP
+classification column (and the supplementary SBP/DBP Category columns). Default set to TRUE.}
 
-\item{inc_crisis}{Optional}
+\item{inc_crisis}{Optional logical argument dictating whether or not to include the "Crisis" category for BP
+classification column (and the supplementary SBP/DBP Category columns). Default set to TRUE.}
 
-\item{group_var}{Optional}
+\item{group_var}{A categorical column of the input data set that the individual points are to
+be grouped / separated by for a given plot. Cannot contain more than 10 levels (to avoid
+overcrowding the plot). This is different from the \code{wrap_var} argument which segments
+plots by category and cannot be used with the \code{process_data} function.}
 
 \item{save_report}{A binary indicator (1 or 0) that determines whether or not to save the output.
 The default is \code{save_report = 1} indicating that the report will be saved. Regardless of the
@@ -124,15 +129,13 @@ jhs_proc <- process_data(bp_jhs,
                          date_time = "DateTime",
                          hr = "pulse.bpm.")
 rm(bp_hypnos, bp_jhs)
+
 # Single-subject Report
 # Note: save_report set to 0 for illustrative purposes of the example, not to actually save
 bp_report(jhs_proc, filetype = 'png', save_report = 0)
 
 # Multi-subject Report
 # Note: save_report set to 0 for illustrative purposes of the example, not to actually save
-## Not Run
-\dontrun{
 bp_report(hyp_proc, group_var = 'VISIT', save_report = 0)
-}
 
 }

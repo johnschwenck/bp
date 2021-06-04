@@ -45,5 +45,6 @@ rm(bp_hypnos)
 dow_tod_plots_out <- dow_tod_plots(hyp_proc)
 grid::grid.draw(
    gridExtra::grid.arrange(dow_tod_plots_out[[1]], dow_tod_plots_out[[2]], ncol = 2)
-                           )
+ )
+
 }

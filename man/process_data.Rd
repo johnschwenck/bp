@@ -34,11 +34,17 @@ process_data(
 contain data for Systolic blood pressure and Diastolic blood pressure at a
 minimum.}
 
-\item{bp_type}{Required}
+\item{bp_type}{Required argument specifying which of the three BP data types
+("HBPM", "ABPM", or "AP") the input data is. Default \code{bp_type} set to "HBPM".
+This argument determines which processing steps are necessary to yield sensible
+output.}
 
-\item{ap}{Optional}
+\item{ap}{(For AP data only) Required column name (character string) corresponding
+to continuous Arterial Pressure (AP) (mmHg). Note that this is a required argument
+so long as bp_type = "AP". Ensure that bp_type is set accordingly.}
 
-\item{time_elap}{Optional}
+\item{time_elap}{(For AP data only) Column name corresponding to the time elapsed
+for the given AP waveform data.}
 
 \item{sbp}{Required column name (character string) corresponding to Systolic Blood
 Pressure (mmHg)}
@@ -53,7 +59,10 @@ but HIGHLY recommended to supply if available.}
 needed for data corresponding to more than one subject. For one-subject datasets, ID
 will default to 1 (if ID column not found in dataset)}
 
-\item{group}{Optional}
+\item{group}{Optional column name (character string) corresponding to an additional
+grouping variable that can be used to further break down data. NOTE that this simply
+sets the column as "GROUP" so that other functions recognize which column to use as
+the grouping variable.}
 
 \item{wake}{Optional column name (character string) corresponding to sleep status. A
 WAKE value of 1 indicates that the subject is awake and 0 implies asleep.}
@@ -84,17 +93,25 @@ For example, ToD_int = c(5, 13, 18, 23) would correspond to a period for
 Morning starting at 5:00 (until 13:00), Afternoon starting at 13:00 (until 18:00),
 Evening starting at 18:00 (until 23:00), and Night starting at 23:00 (until 5:00)}
 
-\item{eod}{Optional}
+\item{eod}{Optional argument to adjust the delineation for the end of day (eod). For individuals who
+do not go to bed early or work night-shifts, for example, this argument adjusts the end of day so
+that any readings in the early morning (i.e. past midnight but before they wake up) are not grouped with
+the next day's readings.}
 
-\item{data_screen}{Default to TRUE. Screens for extreme values in the data for both \code{SBP} and \code{DBP}
-according to Omboni, et al (1995) paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment
-from Ambulatory Blood Pressure: Methodological Aspects}
+\item{data_screen}{Optional logical argument; default set to TRUE. Screens for extreme values in the data
+for both \code{SBP} and \code{DBP} according to Omboni, et al (1995) paper - Calculation of Trough:Peak
+Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure: Methodological Aspects}
 
-\item{inc_low}{Optional}
+\item{inc_low}{Optional logical argument dictating whether or not to include the "Low" category for BP
+classification column (and the supplementary SBP/DBP Category columns). Default set to TRUE.}
 
-\item{inc_crisis}{Optional}
+\item{inc_crisis}{Optional logical argument dictating whether or not to include the "Crisis" category for BP
+classification column (and the supplementary SBP/DBP Category columns). Default set to TRUE.}
 
-\item{dt_fmt}{Optional}
+\item{dt_fmt}{Optional argument that specifies the input date/time format (dt_fmt). Default set to "ymd HMS"
+but can take on any format specified by the lubridate package.
+
+See https://lubridate.tidyverse.org/reference/parse_date_time.html for more details.}
 }
 \value{
 A processed dataframe object that cooperates with every other

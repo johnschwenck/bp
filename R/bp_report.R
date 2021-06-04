@@ -28,11 +28,16 @@
 #' value or a vector of elements. The input type should be character, but the function will
 #' comply with integers so long as they are all present in the \code{ID} column of the data.
 #'
-#' @param inc_low Optional
+#' @param inc_low Optional logical argument dictating whether or not to include the "Low" category for BP
+#' classification column (and the supplementary SBP/DBP Category columns). Default set to TRUE.
 #'
-#' @param inc_crisis Optional
+#' @param inc_crisis Optional logical argument dictating whether or not to include the "Crisis" category for BP
+#' classification column (and the supplementary SBP/DBP Category columns). Default set to TRUE.
 #'
-#' @param group_var Optional
+#' @param group_var A categorical column of the input data set that the individual points are to
+#' be grouped / separated by for a given plot. Cannot contain more than 10 levels (to avoid
+#' overcrowding the plot). This is different from the \code{wrap_var} argument which segments
+#' plots by category and cannot be used with the \code{process_data} function.
 #'
 #' @param save_report A binary indicator (1 or 0) that determines whether or not to save the output.
 #' The default is \code{save_report = 1} indicating that the report will be saved. Regardless of the
@@ -103,17 +108,14 @@
 #'                          date_time = "DateTime",
 #'                          hr = "pulse.bpm.")
 #' rm(bp_hypnos, bp_jhs)
-#
+#'
 #' # Single-subject Report
 #' # Note: save_report set to 0 for illustrative purposes of the example, not to actually save
 #' bp_report(jhs_proc, filetype = 'png', save_report = 0)
 #'
 #' # Multi-subject Report
 #' # Note: save_report set to 0 for illustrative purposes of the example, not to actually save
-#' ## Not Run
-#' \dontrun{
 #' bp_report(hyp_proc, group_var = 'VISIT', save_report = 0)
-#' }
 #'
 bp_report <- function(data,
                       subj = NULL,
@@ -180,9 +182,9 @@ bp_report <- function(data,
                                     )
 
   # Run functions once to save time
-  dow_tod_plots_all <- dow_tod_plots(data) # requires SBP, DBP, Weekday, Time_of_Day, SBP_Category, DBP_Category
-  scat_all <- bp_scatter(data, inc_low = inc_low, inc_crisis = inc_crisis, group_var = group_var) # requires SBP, DBP, possibly VISIT
-  hist_all <- bp_hist(data) # requires SBP, DBP, SBP_Category, DBP_Category
+  dow_tod_plots_all <- dow_tod_plots(data, subj = subj) # requires SBP, DBP, Weekday, Time_of_Day, SBP_Category, DBP_Category
+  scat_all <- bp_scatter(data, subj = subj, inc_low = inc_low, inc_crisis = inc_crisis, group_var = group_var) # requires SBP, DBP, possibly VISIT
+  hist_all <- bp_hist(data, subj = subj) # requires SBP, DBP, SBP_Category, DBP_Category
 
 
   # Scatterplot combine with legend
@@ -226,6 +228,9 @@ bp_report <- function(data,
     out_filename <- paste(filename,".",filetype, sep = "")
 
     out_path <- file.path(path, out_filename)
+
+    # Show Report
+    gridExtra::grid.arrange(final)
 
     # Save final report
     ggplot2::ggsave(out_path, gridExtra::grid.arrange(final),

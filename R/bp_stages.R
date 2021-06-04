@@ -4,7 +4,9 @@
 #'
 #' Supplied dataframe must adhere to the unified format using the \code{process_data} function.
 #'
-#' @param data User-supplied data
+#' @param data User-supplied dataset containing blood pressure data. Must
+#' contain data for Systolic blood pressure and Diastolic blood pressure at a
+#' minimum.
 #'
 #' @param sbp column name corresponding to systolic blood pressure (SBP)
 #'
