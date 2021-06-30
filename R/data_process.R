@@ -341,13 +341,14 @@ process_data <- function(data,
   # Create column indicating blood pressure type (bp_type)
   data$BP_TYPE <- bp_type
 
-
   # Incorporate End-of-Day argument if specified
   data <- eod_adj(data = data, eod = eod)
 
-
   # Sanity check for any future additions to this function to ensure all columns are capitalized for consistency
   colnames(data) <- toupper( colnames(data) )
+
+  # Adjust TIME_OF_DAY to be factor with fixed 4 levels
+  data$TIME_OF_DAY <- factor(data$TIME_OF_DAY, levels = c("Morning", "Afternoon", "Evening", "Night"))
 
   return(data)
 }
