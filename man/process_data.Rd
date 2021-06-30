@@ -137,10 +137,8 @@ A processed dataframe object with standardized column names and formats to use w
 }
 \description{
 A helper function to assist in pre-processing the user-supplied
-input data for use with other functions.
-Typically, this function will process the data and be stored as another
-dataframe. This function ensures that the supplied data complies with every
-function within the \code{bp} package. See Vignette for further details.
+input data in a standardized format for use with other functions in the \code{bp} package.
+See Vignette for further details.
 }
 \examples{
 # Load bp_hypnos

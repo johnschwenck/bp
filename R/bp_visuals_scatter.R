@@ -1,11 +1,60 @@
 
 #' Blood Pressure Stage Scatter Plot
 #'
-#' @description The \code{bp_scatter} function serves to display all \code{SBP} and \code{DBP}
-#' readings on a scatterplot based on which stage each recording lies, according to the 8
-#' mutually exclusive levels of Hypertension set forth by Lee et al (2020). However, original
-#' levels set by the American Heart Association (AHA) are also available for plotting for
-#' legacy purposes. There are eight total stages according to Lee et al (2020) with the options
+#' @description Display all \code{SBP} and \code{DBP}
+#' readings on a scatterplot based on which BP stage each recording lies, according to the 8
+#' mutually exclusive levels of Hypertension set forth by Lee et al (2020), or the original
+#' levels set by the American Heart Association (AHA).
+
+#'
+#'
+#' @param data A processed dataframe resulting from the \code{process_data} function that
+#' contains the \code{VISIT} (potentially, depending whether or not that information is
+#' available), \code{SBP}, and \code{DBP} columns.
+#'
+#'
+#' @param plot_type String corresponding to the particular type of plot to be displayed. Default
+#' plot (\code{"stages2020"}) sets the BP stages according to Lee et al (2020) with 8 mutually
+#' exclusive categories. The option to include or exclude either a "Low" or "Crisis" category are
+#' determined through the \code{inc_low} or \code{inc_crisis} function arguments, respectively.
+#' Setting \code{plot_type = "AHA"} will use the deprecated plot according to the guidelines
+#' set forth by the American Heart Association
+#'
+#' (reference: \url{https://www.heart.org/en/health-topics/high-blood-pressure/understanding-blood-pressure-readings})
+#'
+#'
+#' @param subj Optional argument. Allows the user to specify and subset specific subjects
+#' from the \code{ID} column of the supplied data set. The \code{subj} argument can be a single
+#' value or a vector of elements. The input type should be character, but the function will
+#' comply with integers so long as they are all present in the \code{ID} column of the data.
+#'
+#'
+#' @param group_var A categorical column of the input data set that the individual points are to
+#' be grouped / separated by for a given plot. Cannot contain more than 10 levels (to avoid
+#' overcrowding the plot). This is different from the \code{wrap_var} argument which segments
+#' plots by category.
+#'
+#'
+#' @param wrap_var A categorical column of the input data set that the plots are to be segmented
+#' by. If there are multiple levels such as time of day, or visit #, the output will include a
+#' matrix with each plot corresponding to an individual level. This differs from the \code{group_var}
+#' argument which separates data within the same plot.
+#'
+#'
+#' @param inc_low A TRUE / FALSE indicator of whether or not to include the "Low" (Hypotension)
+#' category to the scatter plot. The range for Hypotension is set from a minimum of 25 for DBP or 80
+#' for SBP, or the corresponding minimum value for either category from the data until 60 for DBP and
+#' 100 for SBP.
+#'
+#'
+#' @param inc_crisis A TRUE / FALSE indicator of whether or not to include the Hypertensive "Crisis"
+#' category to the scatter plot. The range for crisis is any value above 180 for SBP or above 120 for
+#' DBP.
+#'
+#' @return A scatter plot graphic using the ggplot2 package overlaying each reading (represented as
+#' points) onto a background that contains each stage
+#'
+#' @details There are eight total stages according to Lee et al (2020) with the options
 #' to include an additional category for "Low" (Hypotension) and Hypertensive "Crisis". The
 #' categories are as follows:
 #'
@@ -56,53 +105,6 @@
 #' \code{DBP} reading exceeding 120. This stage requires medical attention immediately.
 #' Crisis is depicted in red in the scatter plot.
 #' }
-#'
-#'
-#' @param data A processed dataframe resulting from the \code{process_data} function that
-#' contains the \code{VISIT} (potentially, depending whether or not that information is
-#' available), \code{SBP}, and \code{DBP} columns.
-#'
-#'
-#' @param plot_type String corresponding to the particular type of plot to be displayed. Default
-#' plot (\code{"stages2020"}) sets the BP stages according to Lee et al (2020) with 8 mutually
-#' exclusive categories. The option to include or exclude either a "Low" or "Crisis" category are
-#' determined through the \code{inc_low} or \code{inc_crisis} function arguments, respectively.
-#' Setting \code{plot_type = "AHA"} will use the deprecated plot according to the guidelines
-#' set forth by the American Heart Association
-#'
-#' (reference: \url{https://www.heart.org/en/health-topics/high-blood-pressure/understanding-blood-pressure-readings})
-#'
-#'
-#' @param subj Optional argument. Allows the user to specify and subset specific subjects
-#' from the \code{ID} column of the supplied data set. The \code{subj} argument can be a single
-#' value or a vector of elements. The input type should be character, but the function will
-#' comply with integers so long as they are all present in the \code{ID} column of the data.
-#'
-#'
-#' @param group_var A categorical column of the input data set that the individual points are to
-#' be grouped / separated by for a given plot. Cannot contain more than 10 levels (to avoid
-#' overcrowding the plot). This is different from the \code{wrap_var} argument which segments
-#' plots by category.
-#'
-#'
-#' @param wrap_var A categorical column of the input data set that the plots are to be segmented
-#' by. If there are multiple levels such as time of day, or visit #, the output will include a
-#' matrix with each plot corresponding to an individual level. This differs from the \code{group_var}
-#' argument which separates data within the same plot.
-#'
-#'
-#' @param inc_low A TRUE / FALSE indicator of whether or not to include the "Low" (Hypotension)
-#' category to the scatter plot. The range for Hypotension is set from a minimum of 25 for DBP or 80
-#' for SBP, or the corresponding minimum value for either category from the data until 60 for DBP and
-#' 100 for SBP.
-#'
-#'
-#' @param inc_crisis A TRUE / FALSE indicator of whether or not to include the Hypertensive "Crisis"
-#' category to the scatter plot. The range for crisis is any value above 180 for SBP or above 120 for
-#' DBP.
-#'
-#' @return A scatter plot graphic using the ggplot2 package overlaying each reading (represented as
-#' points) onto a background that contains each stage
 #'
 #' @references
 #' Lee H, Yano Y, Cho SMJ, Park JH, Park S, Lloyd-Jones DM, Kim HC. Cardiovascular risk of isolated

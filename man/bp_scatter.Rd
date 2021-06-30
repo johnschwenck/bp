@@ -57,11 +57,13 @@ A scatter plot graphic using the ggplot2 package overlaying each reading (repres
 points) onto a background that contains each stage
 }
 \description{
-The \code{bp_scatter} function serves to display all \code{SBP} and \code{DBP}
-readings on a scatterplot based on which stage each recording lies, according to the 8
-mutually exclusive levels of Hypertension set forth by Lee et al (2020). However, original
-levels set by the American Heart Association (AHA) are also available for plotting for
-legacy purposes. There are eight total stages according to Lee et al (2020) with the options
+Display all \code{SBP} and \code{DBP}
+readings on a scatterplot based on which BP stage each recording lies, according to the 8
+mutually exclusive levels of Hypertension set forth by Lee et al (2020), or the original
+levels set by the American Heart Association (AHA).
+}
+\details{
+There are eight total stages according to Lee et al (2020) with the options
 to include an additional category for "Low" (Hypotension) and Hypertensive "Crisis". The
 categories are as follows:
 
