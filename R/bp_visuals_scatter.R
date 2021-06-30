@@ -2,25 +2,20 @@
 #' Blood Pressure Stage Scatter Plot
 #'
 #' @description Display all \code{SBP} and \code{DBP}
-#' readings on a scatterplot based on which BP stage each recording lies, according to the 8
-#' mutually exclusive levels of Hypertension set forth by Lee et al (2020), or the original
+#' readings on a scatterplot with deliniation of BP according to the 8
+#' mutually exclusive levels of Hypertension as in Lee et al (2020) (the default), or the
 #' levels set by the American Heart Association (AHA).
-
 #'
 #'
 #' @param data A processed dataframe resulting from the \code{process_data} function that
-#' contains the \code{VISIT} (potentially, depending whether or not that information is
-#' available), \code{SBP}, and \code{DBP} columns.
-#'
+#' contains the \code{SBP}, and \code{DBP} columns, as well as (potentially) other information that can be used for grouping.
 #'
 #' @param plot_type String corresponding to the particular type of plot to be displayed. Default
 #' plot (\code{"stages2020"}) sets the BP stages according to Lee et al (2020) with 8 mutually
-#' exclusive categories. The option to include or exclude either a "Low" or "Crisis" category are
-#' determined through the \code{inc_low} or \code{inc_crisis} function arguments, respectively.
-#' Setting \code{plot_type = "AHA"} will use the deprecated plot according to the guidelines
-#' set forth by the American Heart Association
-#'
-#' (reference: \url{https://www.heart.org/en/health-topics/high-blood-pressure/understanding-blood-pressure-readings})
+#' exclusive categories. Two additional categories, "Low" or "Crisis", can be determined
+#' through the \code{inc_low} or \code{inc_crisis} function arguments, respectively.
+#' Setting \code{plot_type = "AHA"} will use the stages according to the guidelines
+#' set forth by the American Heart Association (reference: \url{https://www.heart.org/en/health-topics/high-blood-pressure/understanding-blood-pressure-readings})
 #'
 #'
 #' @param subj Optional argument. Allows the user to specify and subset specific subjects
@@ -28,83 +23,73 @@
 #' value or a vector of elements. The input type should be character, but the function will
 #' comply with integers so long as they are all present in the \code{ID} column of the data.
 #'
-#'
 #' @param group_var A categorical column of the input data set that the individual points are to
 #' be grouped / separated by for a given plot. Cannot contain more than 10 levels (to avoid
 #' overcrowding the plot). This is different from the \code{wrap_var} argument which segments
-#' plots by category.
-#'
+#' plots by category. The default value is NULL (no grouping).
 #'
 #' @param wrap_var A categorical column of the input data set that the plots are to be segmented
-#' by. If there are multiple levels such as time of day, or visit #, the output will include a
+#' by. If there are multiple levels such as time of day, or visit number, the output will include a
 #' matrix with each plot corresponding to an individual level. This differs from the \code{group_var}
-#' argument which separates data within the same plot.
-#'
+#' argument which separates data within the same plot. The default value is NULL (no wrapping).
 #'
 #' @param inc_low A TRUE / FALSE indicator of whether or not to include the "Low" (Hypotension)
-#' category to the scatter plot. The range for Hypotension is set from a minimum of 25 for DBP or 80
-#' for SBP, or the corresponding minimum value for either category from the data until 60 for DBP and
-#' 100 for SBP.
+#' category to the scatter plot. This is only activated in conjunction with \code{"stages2020"} plot type, and if TRUE is defined as SBP < 100 and DBP > 60. If FALSE, those values are displayed as "Normal". This argument is ignored with plot type \code{"AHA"}, where the "Low" stage (SBP < 100 and DBP < 60) is always displayed.
 #'
-#'
-#' @param inc_crisis A TRUE / FALSE indicator of whether or not to include the Hypertensive "Crisis"
-#' category to the scatter plot. The range for crisis is any value above 180 for SBP or above 120 for
-#' DBP.
+#' @param inc_crisis A TRUE / FALSE indicator of whether or not to include the "Crisis" (Hypertensive)
+#' category to the scatter plot. This is only activated in conjunction with \code{"stages2020"} plot type, and if TRUE is defined as SBP > 180 or DBP > 120. If FALSE, those values are displayed as either "ISH - S2", "S2" or "IDH - S2" stages (see details). This argument is ignored with plot type \code{"AHA"}, where the "Crisis" stage (SBP > 180 or DBP > 120) is always displayed.
 #'
 #' @return A scatter plot graphic using the ggplot2 package overlaying each reading (represented as
 #' points) onto a background that contains each stage
 #'
 #' @details There are eight total stages according to Lee et al (2020) with the options
-#' to include an additional category for "Low" (Hypotension) and Hypertensive "Crisis". The
+#' to include two additional categories for "Low" (Hypotension) and Hypertensive "Crisis". The
 #' categories are as follows:
 #'
-#' \itemize{
+#'\itemize{
 #'
-#' \item \code{Low} - While low readings do not necessarily imply Hypotension, they are worth being
-#' alert for. According to the AHA, low blood pressure is any \code{SBP} reading below 100 or
-#' \code{DBP} reading below 60 and is depicted in light blue in the scatter plot. This is indicated
-#' on the plot by setting \code{inc_low = TRUE}
+#' \item \code{Low} - (Optional) Legacy category for consistency with AHA stages. According to the AHA, low blood pressure is any reading with SBP < 100 and DBP < 60, and is depicted in light blue in the scatter plot. This is always displayed in \code{"AHA"} plot, and can be displayed in \code{"stages2020"} plot by setting \code{inc_low = TRUE}.
 #'
-#' \item \code{Normal} - (Optional) Consistent \code{SBP} readings less than 120 and \code{DBP} readings
-#' less than 80. This is the ideal stage where blood pressure is to be maintained at.
-#' Normal BP is depicted in green in the scatter plot.
+#' \item \code{Normal} -  \code{SBP} readings less than 120 and \code{DBP} readings
+#' less than 80. Reading within this range that either have SBP > 100 or DBP > 60 are also considered Normal by AHA. Normal BP is depicted in green in the scatter plot.
 #'
-#' \item \code{Elevated} - Consistent \code{SBP} readings between 120 - 129 and \code{DBP}
-#' readings less than 80. Without intervention to control the condition, individuals are
-#' likely to develop Hypertension. Elevated BP is depicted in yellow in the scatter plot.
+#' \item \code{Elevated} - \code{SBP} readings between 120 - 129 and \code{DBP}
+#' readings less than 80. Coincides with Elevated stage as defined by AHA. Without intervention to control the condition, individuals are likely to develop Hypertension. Elevated BP is depicted in yellow in the scatter plot.
 #'
-#' \item \code{Stage 1 - All (SDH)} - Consistent \code{SBP} readings between 130 - 139 and \code{DBP}
+#' \item \code{Stage 1 - All (SDH)} - \code{SBP} readings between 130 - 139 and \code{DBP}
 #' readings between 80 - 89. Stage 1 Hypertension will typically result in doctors prescribing
-#' medication or lifestyle changes. Stage 1 BP is depicted in dark orange in the scatter plot.
+#' medication or lifestyle changes.  Stage 1 BP is depicted in dark orange in the scatter plot. These readings correspond to Stage 1 as defined by AHA.
 #'
-#' \item \code{Stage 1 - Isolated Diastolic Hypertension (IDH)} - Consistent \code{SBP} readings
+#' \item \code{Stage 1 - Isolated Diastolic Hypertension (IDH)} - \code{SBP} readings
 #' less than 130, but \code{DBP} readings between 80 - 89. This alternative stage 1 level accounts
 #' for unusually high diastolic readings, but fairly normal systolic readings and is depicted in
-#' orange in the plot.
+#' orange in the plot. These readings correspond to Stage 1 as defined by AHA.
 #'
-#' \item \code{Stage 1 - Isolated Systolic Hypertension (ISH)} - Consistent \code{SBP} readings
+#' \item \code{Stage 1 - Isolated Systolic Hypertension (ISH)} - \code{SBP} readings
 #' between 130 - 139, but \code{DBP} readings less than 80. This alternative stage 1 level accounts
 #' for unusually high systolic readings, but fairly normal diastolic readings and is depicted in
-#' orange in the plot.
+#' orange in the plot. These readings correspond to Stage 1 as defined by AHA.
 #'
-#' \item \code{Stage 2 - All (SDH)} - Consistent \code{SBP} readings between 140 - 180 and \code{DBP} readings
+#' \item \code{Stage 2 - All (SDH)} - \code{SBP} readings between 140 - 180 and \code{DBP} readings
 #' between 90 - 120. Stage 2 Hypertension will typically result in doctors prescribing both
-#' medication and lifestyle changes. Stage 2 BP is depicted in bright red in the scatter plot.
+#' medication and lifestyle changes. Stage 2 BP is depicted in bright red in the scatter plot. These readings correspond to Stage 2 as defined by AHA.
 #'
-#' \item \code{Stage 2 - Isolated Diastolic Hypertension (IDH)} - Consistent \code{SBP} readings
+#' \item \code{Stage 2 - Isolated Diastolic Hypertension (IDH)} - \code{SBP} readings
 #' less than or equal to 140, but \code{DBP} readings greater than or equal to 90. This alternative
 #' stage 2 level accounts for unusually high diastolic readings, but fairly normal systolic readings
-#' and is depicted in red.
+#' and is depicted in red. These readings correspond to Stage 2 as defined by AHA.
 #'
-#' \item \code{Stage 2 - Isolated Systolic Hypertension (IDH)} - Consistent \code{SBP} readings
+#' \item \code{Stage 2 - Isolated Systolic Hypertension (IDH)} - \code{SBP} readings
 #' greater than or equal to 140, but \code{DBP} readings less or equal to 90. This alternative
 #' stage 2 level accounts for unusually high systolic readings, but fairly normal diastolic readings
-#' and is depicted in red.
+#' and is depicted in red. These readings correspond to Stage 2 as defined by AHA.
 #'
-#' \item \code{Crisis} - (Optional) A Hypertensive crisis is defined as a \code{SBP} reading exceeding 180 or a
+#' \item \code{Crisis} - (Optional) Legacy category for consistency with AHA stages. According to the AHA, hypertensive crisis is defined as a \code{SBP} reading exceeding 180 or a
 #' \code{DBP} reading exceeding 120. This stage requires medical attention immediately.
-#' Crisis is depicted in red in the scatter plot.
+#' Crisis is depicted in red in the scatter plot. This is always displayed in \code{"AHA"} plot, and can be displayed in \code{"stages2020"} plot by setting \code{inc_crisis = TRUE}.
+#'
 #' }
+#'
 #'
 #' @references
 #' Lee H, Yano Y, Cho SMJ, Park JH, Park S, Lloyd-Jones DM, Kim HC. Cardiovascular risk of isolated
@@ -174,12 +159,11 @@ bp_scatter <- function(data,
   data <- as.data.frame(data)
 
   # Upper case all column names
-  colnames(data) <- toupper( colnames(data) )
+  colnames(data) <- toupper(colnames(data))
 
   # Coerce user input to upper case and match with either 8 stage thresholds or the AHA guidelines
   #plot_type = toupper(plot_type)
   plot_type = match.arg(plot_type)
-
 
   # If user supplies a vector corresponding to a subset of multiple subjects (multi-subject only)
   if(!is.null(subj)){
@@ -196,7 +180,6 @@ bp_scatter <- function(data,
     }
 
   }
-
 
   # Grouping Variable for WITHIN plots
   if(!is.null(group_var)){
@@ -215,7 +198,6 @@ bp_scatter <- function(data,
 
   }
 
-
   # Wrap variable for facet_wrap plots (multi-plots by group)
   if(!is.null(wrap_var)){
 
@@ -228,14 +210,10 @@ bp_scatter <- function(data,
     #print("Wrapping Variable: ", wrap_var, sep = "")
   }
 
-
   # Ensure that the necessary columns exist in data set
   if( all(c("SBP", "DBP") %in% names(data)) == FALSE){
-
     stop('One or more of the required variables are missing. \nEnsure that you have run the process_data() function first.')
-
   }
-
 
   # Initialize IDH - S1, Elevated, and ISH - S1 as they never change
   xlim_breaks <- c(80, 90)
