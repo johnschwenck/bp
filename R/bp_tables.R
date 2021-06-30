@@ -12,12 +12,12 @@
 #'
 #' @param bp_perc_margin An optional argument that determines which of the marginal totals
 #' to include in the raw count tables expressed as percentages. The argument can take on
-#' values either 0 (both SBP and DBP), 1 (SBP only), or 2 (DBP only).
+#' values either NULL (default, both SBP and DBP), 1 (SBP only), or 2 (DBP only).
 #'
 #' @param wake_perc_margin An optional argument that determines which of the marginal totals
 #' to include in the tables pertaining to the percentages of awake / asleep readings if
 #' applicable (i.e. if the WAKE column is present). The argument can take on values either
-#' 0 (both SBP and DBP), 1 (SBP only), or 2 (DBP only).
+#' NULL (both SBP and DBP), 1 (SBP only), or 2 (DBP only).
 #'
 #' @param subj Optional argument. Allows the user to specify and subset specific subjects
 #' from the \code{ID} column of the supplied data set. The \code{subj} argument can be a single
@@ -62,6 +62,8 @@ bp_tables <- function(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin
   SBP_CATEGORY = DBP_CATEGORY = BP_CLASS = ID = Perc = NULL
   rm(list = c('SBP_CATEGORY', 'DBP_CATEGORY', 'BP_CLASS', 'ID', 'Perc'))
 
+  # Check that bp_type, bp_perc_margin and wake_perc_margin have acceptable input
+  ###############################################################################3
   if(!(bp_type %in% c(0, 1, 2)) ){
     stop('bp_type can only take on numeric values of either 0 (both SBP and DBP), 1 (SBP only), or 2 (DBP only).')
   }
@@ -79,20 +81,18 @@ bp_tables <- function(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin
   }
 
 
-  # If user supplies a vector corresponding to a subset of multiple subjects (multi-subject only)
+  # Check if user supplies a vector corresponding to a subset of multiple subjects (multi-subject only)
+  ######################################################################################
   if(!is.null(subj)){
 
     # check to ensure that supplied subject vector is compatible
     subject_subset_check(data, subj)
 
     if(length(unique(data$ID)) > 1){
-
       # Filter data based on subset of subjects
       data <- data %>%
         dplyr::filter(ID == subj)
-
     }
-
   }
 
 
@@ -102,19 +102,22 @@ bp_tables <- function(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin
   # 3) Contingency table of each bp type (SBP / DBP) and Weekday
   # 4) Contingency table of each bp type (SBP / DBP) and Time of Day
 
-  # Number of Recordings in each stage and their respective percentages
+  # Number of Recordings in each BP stage and their respective percentages
   stages_SBP <- data %>% dplyr::count(SBP_CATEGORY) %>% dplyr::mutate(Perc = prop.table((data %>% dplyr::count(SBP_CATEGORY))$n), bp_type = "SBP")
   stages_DBP <- data %>% dplyr::count(DBP_CATEGORY) %>% dplyr::mutate(Perc = prop.table((data %>% dplyr::count(DBP_CATEGORY))$n), bp_type = "DBP")
   stages_CLASS <- data %>% dplyr::count(BP_CLASS) %>% dplyr::mutate(Perc = prop.table((data %>% dplyr::count(BP_CLASS))$n), bp_type = "CLASS")
 
+  # Rename the first column of each data frame to the same Category
   names(stages_SBP)[1] <- "Category"
   names(stages_DBP)[1] <- "Category"
   names(stages_CLASS)[1] <- "Category"
 
+  # Reorder columns so that first is type (SBP, DBP or class), then Category, then n and then Perc
   stages_SBP <- stages_SBP[,c(4,1,2,3)]
   stages_DBP <- stages_DBP[,c(4,1,2,3)]
   stages_CLASS <- stages_CLASS[,c(4,1,2,3)]
 
+  # Combine all three in one data frame row-wise
   stages_all <- rbind(stages_SBP, stages_DBP, stages_CLASS) # may be able to comment this line out
 
   # Counts for each combination of SBP and DBP for each stage
@@ -126,6 +129,7 @@ bp_tables <- function(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin
   # Alternate: Contingency table of SBP vs DBP (Percentages)
   bp_perc <- prop.table(bp_count, margin = bp_perc_margin)
 
+  # Add marginal sums to count table
   bp_count <- as.data.frame.matrix( stats::addmargins( bp_count ) ) # Add marginal sums
 
 
