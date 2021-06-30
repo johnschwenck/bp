@@ -90,8 +90,26 @@
 #'
 #' See https://lubridate.tidyverse.org/reference/parse_date_time.html for more details.
 #'
-#' @return A processed dataframe object that cooperates with every other
-#' function within the bp package - all column names and formats comply.
+#' @return A processed dataframe object with standardized column names and formats to use with the rest of bp package functions. The following standardized column names are used throughout
+#' \item{BP_TYPE}{One of AP, HBPM or ABPM}
+#' \item{ID}{Subject ID}
+#' \item{SBP}{Systolic Blood Pressure}
+#' \item{DBP}{Diastolic Blood Pressure}
+#' \item{SBP_CATEGORY}{Ordinal, SBP characterization into "Normal"<"Elevated"<"Stage 1"< "Stage 2"}
+#' \item{DBP_CATEGORY}{Ordinal, DBP characterization into "Normal"<"Elevated"<"Stage 1"< "Stage 2"}
+#' \item{BP_CLASS}{Blood pressure categorization based on paired values (SBP, DBP) into one of the stages}
+#' \item{HR}{Heart Rate}
+#' \item{MAP}{Mean Arterial Pressure}
+#' \item{PP}{Pulse Pressure, SBP-DBP}
+#' \item{DATE_TIME}{Date and time in POSIXct format}
+#' \item{DATE}{Date only in Date format}
+#' \item{MONTH}{Month, integer from 1 to 12}
+#' \item{DAY}{Day, integer from 1 to 31}
+#' \item{YEAR}{Four digit year}
+#' \item{DAY_OF_WEEK}{Ordinal, with "Sun"<"Mon"<"Tue"<"Wed"<"Thu"<"Fri"<"Sat"}
+#' \item{TIME}{Time in character format}
+#' \item{HOUR}{Integer, from 0 to 23}
+#' \item{TIME_OF_DAY}{One of "Morning", "Afternoon", "Evening" or "Night"}
 #'
 #' @export
 #'
