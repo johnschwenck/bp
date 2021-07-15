@@ -175,7 +175,7 @@ bp_scatter <- function(data,
 
       # Filter data based on subset of subjects
       data <- data %>%
-        dplyr::filter(ID == subj)
+        dplyr::filter(ID %in% subj)
 
     }
 
@@ -219,11 +219,14 @@ bp_scatter <- function(data,
   xlim_breaks <- c(80, 90)
   ylim_breaks <- c(120, 130, 140)
 
+  minDBP = min(data$DBP, na.rm = TRUE)
+  minSBP = min(data$SBP, na.rm = TRUE)
+
     # Check whether user wants to include a 'Low (Hypotension)' category
     if( inc_low == TRUE ){
 
-      low_x_lim <- c( floor(min(25, min(data$DBP, na.rm = TRUE) - 10)), 60)
-      low_y_lim <- c( floor(min(80, min(data$SBP, na.rm = TRUE) - 10)), 100)
+      low_x_lim <- c( floor(min(25, minDBP - 10)), 60)
+      low_y_lim <- c( floor(min(80, minSBP - 10)), 100)
 
       norm_x_lim <- c(60, 80)
       norm_y_lim <- c(100, 120)
@@ -233,11 +236,11 @@ bp_scatter <- function(data,
 
     }else{
 
-      xlim_breaks <- c( floor(min(25, min(data$DBP, na.rm = TRUE) - 10)), xlim_breaks )
-      ylim_breaks <- c( floor(min(80, min(data$SBP, na.rm = TRUE) - 10)), ylim_breaks )
+      xlim_breaks <- c( floor(min(25, minDBP - 10)), xlim_breaks )
+      ylim_breaks <- c( floor(min(80, minSBP - 10)), ylim_breaks )
 
-      norm_x_lim <- c( floor(min(25, min(data$DBP, na.rm = TRUE) - 10)) , 80)
-      norm_y_lim <- c( floor(min(80, min(data$SBP, na.rm = TRUE) - 10)) , 120)
+      norm_x_lim <- c( floor(min(25, minDBP - 10)) , 80)
+      norm_y_lim <- c( floor(min(80, minSBP - 10)) , 120)
 
     }
 
