@@ -133,28 +133,49 @@ bp_tables <- function(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin
   bp_count <- as.data.frame.matrix( stats::addmargins( bp_count ) ) # Add marginal sums
 
 
-  # Day of Week
-  SBP_DoW <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ SBP_CATEGORY + DAY_OF_WEEK, data = data), margin = 2 ) )
-  names(SBP_DoW)[ length(names(SBP_DoW)) ] <- "Total"
+  if( ("DAY_OF_WEEK" %in% names(data)) == TRUE ){
 
-  DBP_DoW <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ DBP_CATEGORY + DAY_OF_WEEK, data = data), margin = 2 ) )
-  names(DBP_DoW)[ length(names(DBP_DoW)) ] <- "Total"
+    # Day of Week
+    SBP_DoW <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ SBP_CATEGORY + DAY_OF_WEEK, data = data), margin = 2 ) )
+    names(SBP_DoW)[ length(names(SBP_DoW)) ] <- "Total"
 
-  CLASS_DoW <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ BP_CLASS + DAY_OF_WEEK, data = data), margin = 2 ) )
-  names(CLASS_DoW)[ length(names(CLASS_DoW)) ] <- "Total"
+    DBP_DoW <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ DBP_CATEGORY + DAY_OF_WEEK, data = data), margin = 2 ) )
+    names(DBP_DoW)[ length(names(DBP_DoW)) ] <- "Total"
 
-  # Time of Day
-  SBP_ToD <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ SBP_CATEGORY + TIME_OF_DAY, data = data), margin = 2 ) )
-  DBP_ToD <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ DBP_CATEGORY + TIME_OF_DAY, data = data), margin = 2 ) )
-  CLASS_ToD <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ BP_CLASS + TIME_OF_DAY, data = data), margin = 2 ) )
+    CLASS_DoW <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ BP_CLASS + DAY_OF_WEEK, data = data), margin = 2 ) )
+    names(CLASS_DoW)[ length(names(CLASS_DoW)) ] <- "Total"
 
-  SBP_ToD <- SBP_ToD[,c(3,1,2,4,5)]
-  DBP_ToD <- DBP_ToD[,c(3,1,2,4,5)]
-  CLASS_ToD <- CLASS_ToD[,c(3,1,2,4,5)]
+  }else{
 
-  names(SBP_ToD)[ length(names(SBP_ToD)) ] <- "Total"
-  names(DBP_ToD)[ length(names(DBP_ToD)) ] <- "Total"
-  names(CLASS_ToD)[ length(names(CLASS_ToD)) ] <- "Total"
+    SBP_DoW <-   "N/A - DAY_OF_WEEK column not available"
+    DBP_DoW <-   "N/A - DAY_OF_WEEK column not available"
+    CLASS_DoW <- "N/A - DAY_OF_WEEK column not available"
+  }
+
+
+  if( ("TIME_OF_DAY" %in% names(data)) == TRUE ){
+
+    # Time of Day
+    SBP_ToD <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ SBP_CATEGORY + TIME_OF_DAY, data = data), margin = 2 ) )
+    DBP_ToD <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ DBP_CATEGORY + TIME_OF_DAY, data = data), margin = 2 ) )
+    CLASS_ToD <- as.data.frame.matrix( stats::addmargins( stats::xtabs(~ BP_CLASS + TIME_OF_DAY, data = data), margin = 2 ) )
+
+    SBP_ToD <- SBP_ToD[,c(3,1,2,4,5)]
+    DBP_ToD <- DBP_ToD[,c(3,1,2,4,5)]
+    CLASS_ToD <- CLASS_ToD[,c(3,1,2,4,5)]
+
+    names(SBP_ToD)[ length(names(SBP_ToD)) ] <- "Total"
+    names(DBP_ToD)[ length(names(DBP_ToD)) ] <- "Total"
+    names(CLASS_ToD)[ length(names(CLASS_ToD)) ] <- "Total"
+
+
+  }else{
+
+    SBP_ToD <-   "N/A - TIME_OF_DAY column not available"
+    DBP_ToD <-   "N/A - TIME_OF_DAY column not available"
+    CLASS_ToD <- "N/A - TIME_OF_DAY column not available"
+  }
+
 
   # Awake Status (if applicable)
   if("WAKE" %in% names(data)){
