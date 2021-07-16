@@ -541,7 +541,7 @@ date_time_adj <- function(data, date_time = NULL, dt_fmt = "ymd HMS", ToD_int = 
 
             #data <- data[order(data$DATE_TIME, decreasing = FALSE),] # old code
 
-              data <- data %>%
+            #data <- data %>%
                 dplyr::group_by_at(dplyr::vars(grps) ) %>%
                 dplyr::arrange(DATE_TIME, .by_group = TRUE)
 
@@ -550,7 +550,7 @@ date_time_adj <- function(data, date_time = NULL, dt_fmt = "ymd HMS", ToD_int = 
 
             #data <- data[order(data$DATE_TIME, decreasing = TRUE),] # old code
 
-              data <- data %>%
+            #data <- data %>%
                 dplyr::group_by_at(dplyr::vars(grps) ) %>%
                 dplyr::arrange(dplyr::desc(DATE_TIME), .by_group = TRUE)
           }
