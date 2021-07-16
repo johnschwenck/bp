@@ -326,11 +326,6 @@ bp_stages <- function(data, sbp, dbp, inc_low = TRUE, inc_crisis = TRUE, data_sc
 
     data$DBP_CATEGORY <- factor(data$DBP_CATEGORY, ordered = TRUE, levels = all_stage_options[which(all_stage_options %in% unique(data$DBP_CATEGORY) == TRUE)] )
 
-    # data <- data %>%
-    #   dplyr::relocate(SBP_Category, .after = SBP) %>%
-    #   dplyr::relocate(DBP_Category, .after = DBP) %>%
-    #   dplyr::relocate(BP_class)
-    #
 
   return(data)
 }
