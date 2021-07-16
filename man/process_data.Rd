@@ -119,9 +119,9 @@ A processed dataframe object with standardized column names and formats to use w
 \item{ID}{Subject ID}
 \item{SBP}{Systolic Blood Pressure}
 \item{DBP}{Diastolic Blood Pressure}
-\item{SBP_CATEGORY}{Ordinal, SBP characterization into "Normal"<"Elevated"<"Stage 1"< "Stage 2"}
-\item{DBP_CATEGORY}{Ordinal, DBP characterization into "Normal"<"Elevated"<"Stage 1"< "Stage 2"}
-\item{BP_CLASS}{Blood pressure categorization based on paired values (SBP, DBP) into one of the stages}
+\item{SBP_CATEGORY}{Ordinal, SBP characterization into "Low" < "Normal"<"Elevated"<"Stage 1"< "Stage 2" < "Crisis". "Low" is not included if \code{inc_low = FALSE}. "Crisis" is not included if \code{inc_crisis = FALSE}.}
+\item{DBP_CATEGORY}{Ordinal, DBP characterization into "Low" < "Normal"<"Elevated"<"Stage 1"< "Stage 2" < "Crisis". "Low" is not included if \code{inc_low = FALSE}. "Crisis" is not included if \code{inc_crisis = FALSE}.}
+\item{BP_CLASS}{Blood pressure categorization based on paired values (SBP, DBP) into one of the 8 stages according to Lee et al. 2020. See \code{\link{bp_scatter}}}
 \item{HR}{Heart Rate}
 \item{MAP}{Mean Arterial Pressure}
 \item{PP}{Pulse Pressure, SBP-DBP}
@@ -175,4 +175,14 @@ jhs_proc <- process_data(bp_jhs,
 
 jhs_proc
 
+}
+\references{
+Lee H, Yano Y, Cho SMJ, Park JH, Park S, Lloyd-Jones DM, Kim HC. Cardiovascular risk of isolated
+systolic or diastolic hypertension in young adults. \emph{Circulation}. 2020; 141:1778–1786.
+\doi{10.1161/CIRCULATIONAHA.119.044838}
+
+Unger, T., Borghi, C., Charchar, F., Khan, N. A., Poulter, N. R., Prabhakaran, D., ... & Schutte,
+A. E. (2020). 2020 International Society of Hypertension global hypertension practice guidelines.
+\emph{Hypertension}, 75(6), 1334-1357.
+\doi{10.1161/HYPERTENSIONAHA.120.15026}
 }
