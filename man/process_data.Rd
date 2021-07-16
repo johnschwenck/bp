@@ -26,7 +26,10 @@ process_data(
   data_screen = TRUE,
   inc_low = TRUE,
   inc_crisis = TRUE,
-  dt_fmt = "ymd HMS"
+  agg = FALSE,
+  agg_thresh = 3,
+  dt_fmt = "ymd HMS",
+  chron_order = FALSE
 )
 }
 \arguments{
@@ -108,8 +111,22 @@ classification column (and the supplementary SBP/DBP Category columns). Default 
 \item{inc_crisis}{Optional logical argument dictating whether or not to include the "Crisis" category for BP
 classification column (and the supplementary SBP/DBP Category columns). Default set to TRUE.}
 
+\item{agg}{Optional argument specifying whether or not to aggregate the data based on the amount of time
+between observations. If \code{agg = TRUE} then any two (or more) observations within the amount of
+time alloted by the agg_thresh argument will be averaged together.}
+
+\item{agg_thresh}{Optional argument specifying the threshold of how many minutes can pass between readings
+(observations) and still be considered part of the same sitting. The default is set to 3 minutes. This implies
+that if two or more readings are within 3 minutes of each other, they will be averaged together (if agg is
+set to TRUE).}
+
 \item{dt_fmt}{Optional argument that specifies the input date/time format (dt_fmt). Default set to "ymd HMS"
-but can take on any format specified by the lubridate package.
+but can take on any format specified by the lubridate package.}
+
+\item{chron_order}{Optional argument that specifies whether to order the data in chronological (Oldest
+dates & times at the top / first) or reverse chronological order (Most recent dates & times at the top / first).
+TRUE refers to chronological order; FALSE refers to reverse chronological order. The default is set to
+FALSE (i.e. most recent observations listed first in the dataframe).
 
 See https://lubridate.tidyverse.org/reference/parse_date_time.html for more details.}
 }
@@ -119,9 +136,9 @@ A processed dataframe object with standardized column names and formats to use w
 \item{ID}{Subject ID}
 \item{SBP}{Systolic Blood Pressure}
 \item{DBP}{Diastolic Blood Pressure}
-\item{SBP_CATEGORY}{Ordinal, SBP characterization into "Normal"<"Elevated"<"Stage 1"< "Stage 2"}
-\item{DBP_CATEGORY}{Ordinal, DBP characterization into "Normal"<"Elevated"<"Stage 1"< "Stage 2"}
-\item{BP_CLASS}{Blood pressure categorization based on paired values (SBP, DBP) into one of the stages}
+\item{SBP_CATEGORY}{Ordinal, SBP characterization into "Low" < "Normal"<"Elevated"<"Stage 1"< "Stage 2" < "Crisis". "Low" is not included if \code{inc_low = FALSE}. "Crisis" is not included if \code{inc_crisis = FALSE}.}
+\item{DBP_CATEGORY}{Ordinal, DBP characterization into "Low" < "Normal"<"Elevated"<"Stage 1"< "Stage 2" < "Crisis". "Low" is not included if \code{inc_low = FALSE}. "Crisis" is not included if \code{inc_crisis = FALSE}.}
+\item{BP_CLASS}{Blood pressure categorization based on paired values (SBP, DBP) into one of the 8 stages according to Lee et al. 2020. See \code{\link{bp_scatter}}}
 \item{HR}{Heart Rate}
 \item{MAP}{Mean Arterial Pressure}
 \item{PP}{Pulse Pressure, SBP-DBP}
@@ -175,4 +192,14 @@ jhs_proc <- process_data(bp_jhs,
 
 jhs_proc
 
+}
+\references{
+Lee H, Yano Y, Cho SMJ, Park JH, Park S, Lloyd-Jones DM, Kim HC. Cardiovascular risk of isolated
+systolic or diastolic hypertension in young adults. \emph{Circulation}. 2020; 141:1778–1786.
+\doi{10.1161/CIRCULATIONAHA.119.044838}
+
+Unger, T., Borghi, C., Charchar, F., Khan, N. A., Poulter, N. R., Prabhakaran, D., ... & Schutte,
+A. E. (2020). 2020 International Society of Hypertension global hypertension practice guidelines.
+\emph{Hypertension}, 75(6), 1334-1357.
+\doi{10.1161/HYPERTENSIONAHA.120.15026}
 }
