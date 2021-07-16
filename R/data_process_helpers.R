@@ -189,8 +189,11 @@ pp_adj <- function(data, pp = NULL){
 
             col_idx <- grep(paste("\\bPP\\b", sep = ""), names(data))
             colnames(data)[col_idx] <- "PP"
-            data <- data[ , c(1:2, col_idx, (3:(ncol(data)))[-col_idx + 2])]
 
+            # Relocate to after DBP column
+            data <- data %>% dplyr::relocate(PP, .after = DBP)
+
+            # Convert to numeric
             data$PP <- as.numeric(data$PP)
 
       }else if(is.character(pp)){ # if character (i.e. by name)
@@ -203,7 +206,9 @@ pp_adj <- function(data, pp = NULL){
 
                 col_idx <- grep(paste("\\b",toupper(pp),"\\b", sep = ""), names(data))
                 colnames(data)[col_idx] <- "PP"
-                data <- data[, c(1:2, col_idx, (3:ncol(data))[-col_idx+2])]
+
+                # Relocate to after DBP column
+                data <- data %>% dplyr::relocate(PP, .after = DBP)
 
                 data$PP <- as.numeric(data$PP)
             }
@@ -260,7 +265,11 @@ hr_adj <- function(data, hr = NULL, data_screen){
 
           col_idx <- grep(paste("\\b",toupper(hr),"\\b", sep = ""), names(data))
           colnames(data)[col_idx] <- "HR"
-          data <- data[, c(1:3, col_idx, (4:ncol(data))[-col_idx+3])]
+
+          # Relocate to after DBP column
+          data <- data %>% dplyr::relocate(HR, .after = DBP)
+
+          # Convert to numeric
           data$HR <- as.numeric(data$HR)
 
           # Screen for extreme values
@@ -309,9 +318,15 @@ rpp_adj <- function(data, rpp = NULL){
 
           hr_idx <- grep(paste("\\bHR\\b", sep = ""), names(data))
           rpp_idx <- grep(paste("\\bRPP\\b", sep = ""), names(data))
-          data <- data[, c(1:hr_idx, rpp_idx, ((hr_idx+1):ncol(data))[-rpp_idx+hr_idx])]
+
+          # Relocate to after DBP column
+          data <- data %>% dplyr::relocate(RPP, .after = DBP)
 
           message('No RPP column found. Automatically generated from SBP and HR columns.\n')
+        }else if( (length(grep(paste("\\bRPP\\b", sep = ""), names(data))) == 0) & (length(grep(paste("\\bHR\\b", sep = ""), names(data))) == 0)){
+
+          warning('No RPP column found and no HR column to calculate from')
+
         }
 
       }else if( (toupper(rpp) %in% colnames(data)) == FALSE){
@@ -322,13 +337,17 @@ rpp_adj <- function(data, rpp = NULL){
 
         col_idx <- grep(paste("\\b",toupper(rpp),"\\b", sep = ""), names(data))
         colnames(data)[col_idx] <- "RPP"
-        data <- data[, c(1:4, col_idx, (5:ncol(data))[-col_idx+4])]
+
+        # Relocate to after DBP column
+        data <- data %>% dplyr::relocate(RPP, .after = DBP)
 
       }else if( (length(grep(paste("\\bHR\\b", sep = ""), names(data))) == 0) & (toupper(rpp) %in% colnames(data)) ){ # HR column is NOT present
 
         col_idx <- grep(paste("\\b",toupper(rpp),"\\b", sep = ""), names(data))
         colnames(data)[col_idx] <- "RPP"
-        data <- data[, c(1:3, col_idx, (4:ncol(data))[-col_idx+3])]
+
+        # Relocate to after DBP column
+        data <- data %>% dplyr::relocate(RPP, .after = DBP)
 
       }
 
@@ -359,8 +378,11 @@ map_adj <- function(data, map = NULL){
 
           col_idx <- grep(paste("\\bMAP\\b", sep = ""), names(data))
           colnames(data)[col_idx] <- "MAP"
-          data <- data[, c(1:2, col_idx, (3:ncol(data))[-col_idx+2])]
 
+          # Relocate to after DBP column
+          data <- data %>% dplyr::relocate(MAP, .after = DBP)
+
+          # Convert to numeric
           data$MAP <- as.numeric(data$MAP)
 
         }else if(length(grep(paste("\\bMAP\\b", sep = ""), names(data))) == 1){
@@ -376,7 +398,12 @@ map_adj <- function(data, map = NULL){
 
         col_idx <- grep(paste("\\b",toupper(map),"\\b", sep = ""), names(data))
         colnames(data)[col_idx] <- "MAP"
-        data <- data[, c(1:2, col_idx, (3:ncol(data))[-col_idx+2])]
+
+        # Relocate to after DBP column
+        data <- data %>% dplyr::relocate(MAP, .after = DBP)
+
+        # Convert to numeric
+        data$MAP <- as.numeric(data$MAP)
 
       }
 
@@ -417,8 +444,8 @@ wake_adj <- function(data, wake = NULL){
 
       data$WAKE <- as.integer(data$WAKE) # coerce to integers
 
-      # Assuming there are only two unique values, move column to beginning of df
-      data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
+      # Relocate to after DBP column
+      data <- data %>% dplyr::relocate(WAKE, .after = DBP)
 
     }
 
@@ -457,7 +484,9 @@ visit_adj <- function(data, visit = NULL){
             colnames(data)[col_idx] <- "VISIT"
 
             data$VISIT <- as.integer(data$VISIT)
-            data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
+
+            # Relocate to after DBP column
+            data <- data %>% dplyr::relocate(VISIT, .after = DBP)
 
           }
 
@@ -645,7 +674,8 @@ date_time_adj <- function(data, date_time = NULL, dt_fmt = "ymd HMS", ToD_int = 
         # Adjust TIME_OF_DAY to be factor with fixed 4 levels
         data$TIME_OF_DAY <- factor(data$TIME_OF_DAY, levels = c("Morning", "Afternoon", "Evening", "Night"))
 
-        data <- data %>% dplyr::relocate(YEAR, MONTH, DAY, HOUR, TIME_OF_DAY, .after = DATE_TIME)
+        # Rearrange columns for consistency
+        data <- data %>% dplyr::relocate(ID, GROUP, DATE_TIME, YEAR, MONTH, DAY, HOUR, TIME_OF_DAY, SBP, DBP)
 
       }
     }
@@ -666,242 +696,121 @@ date_time_adj <- function(data, date_time = NULL, dt_fmt = "ymd HMS", ToD_int = 
 #                       AGGREGATION of Values by Date/Time Threshold (minutes)                         #
 #                                                                                                      #
 ########################################################################################################
-#
-# agg_adj <- function(data, agg = TRUE, agg_thresh = 3, collap = FALSE){
-#
-#   # Ensure that there is a DATE_TIME column
-#   if(!"DATE_TIME" %in% colnames(data)){
-#     stop('Cannot aggregate data. No DATE_TIME column found. Make sure to specify in process_data function.')
-#   }
-#
-#   # This function cannot currently support Arterial Pressure data
-#   if(bp_type == "AP"){
-#     stop('The aggregation feature does not currently support Arterial Pressure (AP) data')
-#   }
-#
-#
-#   # Fix
-#   #grps <- "ID"
-#
-#   # Determine whether GROUP corresponds to an actual group or is just a placeholder from the group_adj function
-#   # if(length(levels(as.factor(data$GROUP))) != 1){
-#   #   grps = c("ID", "VISIT", "GROUP")
-#   # }else{
-#   grps = c("ID", "VISIT")
-#   # }
-#
-#   grps = grps[which(grps %in% colnames(data) == TRUE)]
-#
-#
-#   ###### delete
-#                         data2 <- bp::bp_jhs
-#
-#                         # jhs
-#                         sbp = 'sys.mmhg.'
-#                         dbp = 'dias.mmhg.'
-#                         date_time = 'datetime'
-#                         wake = NULL
-#                         visit = NULL
-#                         id = NULL
-#                         hr = 'pulse.bpm.'
-#                         pp = NULL
-#                         rpp = NULL
-#                         map = NULL
-#
-#
-#                         # hypnos
-#                         sbp = 'syst'
-#                         dbp = 'diast'
-#                         date_time = 'date.time'
-#                         wake = 'wake'
-#                         visit = 'visit'
-#                         id = 'id'
-#                         hr = 'hr'
-#                         pp = 'pp'
-#                         rpp = 'rpp'
-#                         map = 'map'
-#
-#
-#                         data <- data2
-#                         data <- date_time_adj(data, date_time = 'datetime') # JHS
-#                         #data <- date_time_adj(data, date_time = 'date_time') # HYPNOS
-#                         colnames(data) <- toupper(colnames(data))
-#
-#                         # Adjust Systolic Blood Pressure (SBP)
-#                         data <- sbp_adj(data = data, sbp = sbp, data_screen = data_screen)
-#                         sbp_tmp <- names(data)[1] # For bp_stages function
-#
-#                         # Adjust Diastolic Blood Pressure (DBP)
-#                         data <- dbp_adj(data = data, dbp = dbp, data_screen = data_screen)
-#                         dbp_tmp <- names(data)[2] # For bp_stages function
-#
-#                         # ID
-#                         data <- id_adj(data = data, id = id)
-#
-#                         # Visit
-#                         data <- visit_adj(data = data, visit = visit)
-#
-#                         # Group
-#                         data <- group_adj(data = data, group = group)
-#
-#                         # Date/Time values
-#                         data <- date_time_adj(data = data, date_time = date_time, dt_fmt = dt_fmt, ToD_int = ToD_int, chron_order = TRUE)
-#
-#                         # Incorporate End-of-Day argument if specified
-#                         data <- eod_adj(data = data, eod = eod)
-#
-#                         # Dates
-#                         data <- dates_adj(data = data)
-#
-#                         # Day of Week
-#                         data <- dow_adj(data = data, DoW = DoW)
-#
-#                         # WAKE indicator
-#                         data <- wake_adj(data = data, wake = wake)
-#
-#
-#
-#
-#
-#
-#
-#                         # Heart Rate (HR)
-#                         data <- hr_adj(data = data, hr = hr, data_screen = data_screen)
-#
-#                         #******+++++++++++++++++++++++*******#  --> these must go after agg!!!!!!!!!!!!
-#
-#                         # Pulse Pressure (PP)
-#                         data <- pp_adj(data = data, pp = pp)
-#
-#                         # Rate Pressure Product (RPP)
-#                         data <- rpp_adj(data = data, rpp = rpp)
-#
-#                         # Mean Arterial Pressure (MAP)
-#                         data <- map_adj(data = data, map = map)
-#
-#                         # BP Stages --> this must go after agg!!!!!!!!!!!!
-#                         data <- bp_stages(data = data,
-#                                           sbp = sbp_tmp,
-#                                           dbp = dbp_tmp,
-#                                           inc_low = inc_low,
-#                                           inc_crisis = inc_crisis,
-#                                           data_screen = data_screen)
-#
-#   ######
-#
-#
-#   # Inclusion variables --> there may be other variables in a user-supplied dataset that the user does not wish to aggregate
-#   inc_vars <- c("SBP", "DBP", "MAP", "RPP", "HR", "PP", "AP")
-#
-#   datatmp <- data %>%
-#
-#     #dplyr::group_by(ID) %>%
-#     dplyr::group_by_at(dplyr::vars(grps) ) %>%
-#
-#     # Create a TIME_DIFF column that takes difference in minutes between rows starting with 1 (last row is 0)
-#     dplyr::mutate(TIME_DIFF = abs(DATE_TIME - dplyr::lead(DATE_TIME)) ) %>%
-#     dplyr::relocate(TIME_DIFF, .after = DATE_TIME) %>%
-#
-#     # Use zero for last row as there is no differencing
-#     dplyr::mutate(TIME_DIFF = ifelse(row_number() == n(), 0, TIME_DIFF) ) %>%
-#
-#     # Create three placeholder columns to properly indicate whether rows should be aggregated together or not
-#     dplyr::mutate(collap = ifelse(TIME_DIFF < agg_thresh, 1, 0),
-#                   collap2 = ifelse(dplyr::lag(collap) == 1, 1, 0),
-#                   collap3 = ifelse(collap == 0 & collap2 == 1, 1, 0) ) %>%
-#     dplyr::relocate(collap, collap2, collap3, .after = TIME_DIFF) %>%
-#
-#     dplyr::group_by(DATE, HOUR) %>%
-#
-#     # Create new column that relies on three placeholder columns to create one final indicator column
-#     dplyr::mutate(collap_fin = ifelse(collap == 1 | collap2 == 1 | collap3 == 1, 1, 0) ) %>%
-#     dplyr::ungroup() %>%
-#
-#     # Create a unique number for any row that has a zero
-#     dplyr::mutate(collap_fin = ifelse(collap_fin == 0, row_number(), collap_fin) ) %>%
-#     dplyr::group_by(DATE, HOUR, collap_fin) %>%
-#
-#     # Create unique grouping by DATE by collap_fin column to indicate which consecutive readings to average over
-#     dplyr::mutate(agg = dplyr::cur_group_id() ) %>%
-#     dplyr::relocate(collap_fin, agg, .after = collap3) %>%
-#     dplyr::ungroup() %>%
-#
-#     # Identify first value in each agg group
-#     dplyr::group_by(agg) %>%
-#     dplyr::mutate(date_first = first(DATE),
-#                   date_time_first = first(DATE_TIME)) %>%
-#     #dplyr::relocate(date_first, date_time_first, .after = DATE_TIME) %>%
-#
-#
-#     # Remove placeholder columns
-#     dplyr::select(-c("collap", "collap2", "collap3", "collap_fin")) %>%
-#     #dplyr::group_by(agg) %>%
-#
-#     # Average all numeric columns over all consecutive readings --> fix to only include processed columns, whichever exist
-#     #dplyr::mutate(across(where(is.numeric) & !c(TIME_DIFF), mean)) %>%
-#     #dplyr::mutate(across(where(is.numeric) & !c(TIME_DIFF) & inc_vars[inc_vars %in% colnames(data)], as.integer))
-#     dplyr::mutate(across(!c(TIME_DIFF) & inc_vars[inc_vars %in% colnames(data)], mean)) %>%
-#     dplyr::mutate(across(!c(TIME_DIFF) & inc_vars[inc_vars %in% colnames(data)], as.integer)) %>%
-#
-#     # Rearrange columns for consistency
-#     dplyr::relocate(ID, GROUP, DATE_TIME, TIME_DIFF, DATE, DAY_OF_WEEK, YEAR, MONTH, DAY, HOUR, TIME_OF_DAY, SBP, DBP)
-#
-#    # do bp_stages after
-#
-#
-#   # Collapse repeating rows
-#   if(collap == TRUE){
-#
-#         ## Temporarily put first instances of DATE and DATE_TIME values into new columns to late bind with the collapsed dataframe
-#         #     Date, Date_time, Time of Day, and Day of Week all come from DATE_TIME and thus will always be available to extract
-#         #     GROUP defaults to 1 and will always be available to extract
-#         dt_bind_char <- data[which(data$DATE_TIME %in% data$date_time_first), c("DATE", "DATE_TIME", "TIME_OF_DAY", "DAY_OF_WEEK", "GROUP", grps)]
-#
-#         dt_bind_num <- data %>% group_by(agg) %>% summarise_if(is.numeric, mean, na.rm = TRUE)
-#
-#         fin <- cbind(dt_bind_char, dt_bind_num)
-#
-#         str(fin[, unlist(lapply(fin, is.numeric))])
-#
-#
-#
-#
-#
-#
-#         cbind(dt_bind, data %>% group_by(agg) %>% summarise_if(is.numeric, mean, na.rm = TRUE))
-#
-#
-#         nums <- unlist(lapply(data, is.numeric))
-#
-#         #not_numer <- data[, !nums]
-#
-#         tmp_num <- data[, nums]
-#         tmp_num <- aggregate(. ~ agg, data = tmp_num, FUN = mean)
-#
-#         fin <- cbind(dt_bind, tmp_num)
-#
-#         # Re-calculate PP, RPP, MAP
-#         #data$PP <- data$SBP - data$DBP
-#
-#
-#   }
-#
-#
-#   # Remove intermediate helper columns
-#   data <- data %>%
-#             dplyr::ungroup() %>%
-#             dplyr::select(-c(agg, date_first, date_time_first)) %>%
-#
-#
-#
-#
-#   return(data)
-#
-# }
-#
-#
-#
-#
+
+agg_adj <- function(data, agg = TRUE, agg_thresh = 3, collap = FALSE, collapse_df = FALSE){
+
+  # Ensure that there is a DATE_TIME column
+  if(!"DATE_TIME" %in% colnames(data)){
+    stop('Cannot aggregate data. No DATE_TIME column found. Make sure to specify in process_data function.')
+  }
+
+  # This function cannot currently support Arterial Pressure data
+  if(bp_type == "AP"){
+    stop('The aggregation feature does not currently support Arterial Pressure (AP) data')
+  }
+
+
+  # Possible groupings for dplyr
+  grps = c("ID", "VISIT", "GROUP")
+
+  grps = grps[which(grps %in% colnames(data) == TRUE)]
+
+
+  # Inclusion variables --> there may be other variables in a user-supplied dataset that the user does not wish to aggregate
+  inc_vars <- c("SBP", "DBP", "MAP", "RPP", "HR", "PP", "AP")
+
+  # Aggregation steps
+  data <- data %>%
+
+    #dplyr::group_by(ID) %>%
+    dplyr::group_by_at(dplyr::vars(grps) ) %>%
+
+    # Create a TIME_DIFF column that takes difference in minutes between rows starting with 1 (last row is 0)
+    dplyr::mutate(TIME_DIFF = abs(DATE_TIME - dplyr::lead(DATE_TIME)) ) %>%
+    dplyr::relocate(TIME_DIFF, .after = DATE_TIME) %>%
+
+    # Use zero for last row as there is no differencing
+    dplyr::mutate(TIME_DIFF = ifelse(row_number() == n(), 0, TIME_DIFF) ) %>%
+
+    # Create three placeholder columns to properly indicate whether rows should be aggregated together or not
+    dplyr::mutate(collap = ifelse(TIME_DIFF < agg_thresh, 1, 0),
+                  collap2 = ifelse(dplyr::lag(collap) == 1, 1, 0),
+                  collap3 = ifelse(collap == 0 & collap2 == 1, 1, 0) ) %>%
+    dplyr::relocate(collap, collap2, collap3, .after = TIME_DIFF) %>%
+
+    dplyr::group_by(DATE, HOUR) %>%
+
+    # Create new column that relies on three placeholder columns to create one final indicator column
+    dplyr::mutate(collap_fin = ifelse(collap == 1 | collap2 == 1 | collap3 == 1, 1, 0) ) %>%
+    dplyr::ungroup() %>%
+
+    # Create a unique number for any row that has a zero
+    dplyr::mutate(collap_fin = ifelse(collap_fin == 0, row_number(), collap_fin) ) %>%
+    dplyr::group_by(DATE, HOUR, collap_fin) %>%
+
+    # Create unique grouping by DATE by collap_fin column to indicate which consecutive readings to average over
+    dplyr::mutate(agg = dplyr::cur_group_id() ) %>%
+    dplyr::relocate(collap_fin, agg, .after = collap3) %>%
+    dplyr::ungroup() %>%
+
+    # Identify first value in each agg group
+    dplyr::group_by(agg) %>%
+    dplyr::mutate(date_first = first(DATE),
+                  date_time_first = first(DATE_TIME)) %>%
+    #dplyr::relocate(date_first, date_time_first, .after = DATE_TIME) %>%
+
+
+    # Remove placeholder columns
+    dplyr::select(-c("collap", "collap2", "collap3", "collap_fin")) %>%
+    #dplyr::group_by(agg) %>%
+
+    # Average all numeric columns over all consecutive readings --> fix to only include processed columns, whichever exist
+    # old code --> averages ALL numeric columns not just the ones in process function
+    #dplyr::mutate(across(where(is.numeric) & !c(TIME_DIFF), mean)) %>%
+    #dplyr::mutate(across(where(is.numeric) & !c(TIME_DIFF) & inc_vars[inc_vars %in% colnames(data)], as.integer))
+    dplyr::mutate(across(!c(TIME_DIFF) & inc_vars[inc_vars %in% colnames(data)], mean)) %>%
+    dplyr::mutate(across(!c(TIME_DIFF) & inc_vars[inc_vars %in% colnames(data)], as.integer)) %>%
+
+    # Rearrange columns for consistency
+    dplyr::relocate(ID, GROUP, DATE_TIME, TIME_DIFF, DATE, DAY_OF_WEEK, YEAR, MONTH, DAY, HOUR, TIME_OF_DAY, SBP, DBP)
+
+
+  # Collapse repeating rows
+  if(collapse_df == TRUE){
+
+        # data <- data[which(data$DATE_TIME %in% data$date_time_first), c(grps,
+        #                                                                         "DATE_TIME",
+        #                                                                         "TIME_DIFF",
+        #                                                                         "DATE",
+        #                                                                         "DAY_OF_WEEK",
+        #                                                                         "YEAR",
+        #                                                                         "MONTH",
+        #                                                                         "DAY",
+        #                                                                         "HOUR",
+        #                                                                         "TIME_OF_DAY",
+        #                                                                         "agg",
+        #                                                                         inc_vars[inc_vars %in% colnames(data)])]
+
+
+        data <- data[which(data$DATE_TIME %in% data$date_time_first),]
+
+
+  }
+
+
+  # Remove intermediate helper columns
+  data <- data %>%
+            dplyr::ungroup() %>%
+            dplyr::select(-c(agg, date_first, date_time_first)) %>%
+
+
+  return(data)
+
+}
+
+
+
+
 
 
 
@@ -949,7 +858,7 @@ dates_adj <- function(data){
 
         col_idx <- grep("^DATE$", names(data))
         colnames(data)[col_idx] <- "DATE"
-        data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
+        data <- data %>% dplyr::relocate(DATE, .after = DBP) # No DATE_TIME so place after DBP
 
 
         # DATE column NOT identified in dataset
@@ -964,13 +873,117 @@ dates_adj <- function(data){
 
         col_idx <- grep("^DATE$", names(data))
         colnames(data)[col_idx] <- "DATE"
-        data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
+        data <- data %>% dplyr::relocate(DATE, .after = DATE_TIME) # Place after DATE_TIME
 
       }
 
   return(data)
 }
 
+
+
+
+
+
+
+
+
+
+########################################################################################################
+#                                                                                                      #
+#                                       End-of-Day Adjustment (EOD)                                    #
+#                                                                                                      #
+########################################################################################################
+
+eod_adj <- function(data, eod = NULL){
+
+
+  # Clean global variables
+  DATE = DATE_TIME = NULL
+  rm(list = c("DATE", "DATE_TIME"))
+
+
+  if(!is.null(eod)){
+
+    # count of digits - 3 : am | 4 : pm)
+    if( floor(log10(abs(eod))) + 1 > 4 ){
+      stop('eod argument can only take on either 3 or 4 digits that represent 24-hour time format. \n\ni.e. 130 implies 1:30 AM and 2230 imples 10:30 PM')
+    }
+
+    # Check whether user only entered hours (i.e. 22 for 10 PM instead of 2200)
+    if(floor(log10(abs(eod))) + 1 <= 2){
+
+      hour_input <- eod
+      min_input <- 0
+      warning('eod argument should be either 3 or 4 digits that correspond to 24-hour time. Coerced minutes to zero. If only supplying an hour, it is best to add zeros to the end. \n\ni.e. 22 should be represented as 2200 for 10:00 PM')
+
+    }else{
+
+      # Extract hour from eod argument
+      hour_input <- ifelse( floor(log10(abs(eod))) + 1 == 3, as.numeric( substr(eod, 1, 1) ),
+                            ifelse( floor(log10(abs(eod))) + 1 == 4, as.numeric( substr(eod, 1, 2) ), 0 ) )
+      # Extract minute from eod argument
+      min_input <- eod %% 100
+
+    }
+
+    # Check for correct hour input
+    if(hour_input > 23 | hour_input < 0){
+      stop('eod hour argument cannot be less than 0 or greater than 23. Hours of the day range from 0 to 23 where 0 denotes midnight.')
+    }
+
+    # Check for correct minute input
+    if(min_input > 59 | min_input < 0){
+      stop('eod minute argument cannot be less than 0 or exceed 59. Minutes range from 0 to 59.')
+    }
+
+    # Ensure that DATE_TIME column is present
+    if( "DATE_TIME" %in% toupper(colnames(data)) == FALSE){
+      stop('DATE_TIME column not present in supplied dataset\n')
+    }
+
+    # Set time zone to UTC --> check ymd_hms format in process helpers to ensure posixct format
+    data$DATE_TIME <- lubridate::ymd_hms(data$DATE_TIME, tz = "UTC")
+
+
+    # Adjust dates according to eod argument
+    data <- data %>%
+      dplyr::mutate(DATE = dplyr::case_when(
+
+        hour_input < 12 ~ {dplyr::case_when(
+
+          # less than minutes only (i.e. 0023 < 0030 if eod = 0030) & hour is midnight
+          lubridate::hour(DATE_TIME) == 0 & lubridate::minute(DATE_TIME) <= min_input ~ as.Date( DATE_TIME - lubridate::days(1) ),
+
+          lubridate::hour(DATE_TIME) == hour_input & lubridate::minute(DATE_TIME) <= min_input ~ as.Date( DATE_TIME - lubridate::days(1) ),
+
+          lubridate::hour(DATE_TIME) < hour_input ~ as.Date( DATE_TIME - lubridate::days(1) ),
+
+          TRUE ~ as.Date(DATE_TIME)
+
+        )},
+
+        hour_input >= 12 ~ {dplyr::case_when(
+
+          lubridate::hour(DATE_TIME) == hour_input & lubridate::minute(DATE_TIME) >= min_input ~ as.Date( DATE_TIME + lubridate::days(1) ),
+
+          lubridate::hour(DATE_TIME) > hour_input ~ as.Date( DATE_TIME + lubridate::days(1) ),
+
+          TRUE ~ as.Date(DATE_TIME)
+
+        )},
+
+        TRUE ~ as.Date(DATE_TIME)
+
+      )) %>%
+      dplyr::relocate(DATE, .after = DATE_TIME)
+
+
+  }
+
+  return(data)
+
+}
 
 
 
@@ -1040,18 +1053,29 @@ dow_adj <- function(data, DoW = NULL){
         # DoW argument NOT supplied by user
       }else{
 
-          # First check if datetime supplied then check for date otherwise nothing
-          if( "DATE_TIME" %in% colnames(data) ){
+        # First check if DATE supplied (so that DAY_OF_WEEK can go after it),
+        # then check for DATE_TIME (if no DATE),
+        # otherwise do nothing
 
-            # Day of Week from DATE_TIME column
-            data$DAY_OF_WEEK <- ordered(weekdays(as.Date(data$DATE_TIME), abbreviate = TRUE),
-                                        levels = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"))
+        if( "DATE" %in% colnames(data) ){
 
-          }else if( "DATE" %in% colnames(data) ){
+                # Day of Week from DATE column
+                data$DAY_OF_WEEK <- ordered(weekdays(as.Date(data$DATE), abbreviate = TRUE),
+                                            levels = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"))
 
-            # Day of Week from DATE column
-            data$DAY_OF_WEEK <- ordered(weekdays(as.Date(data$DATE), abbreviate = TRUE),
-                                        levels = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"))
+                # Relocate to after DATE column
+                data <- data %>% dplyr::relocate(DAY_OF_WEEK, .after = DATE)
+
+
+        }else if( "DATE_TIME" %in% colnames(data) ){
+
+                # Day of Week from DATE_TIME column
+                data$DAY_OF_WEEK <- ordered(weekdays(as.Date(data$DATE_TIME), abbreviate = TRUE),
+                                            levels = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"))
+
+                # Relocate to after DATE_TIME column
+                data <- data %>% dplyr::relocate(DAY_OF_WEEK, .after = DATE_TIME)
+
 
           }
 
@@ -1110,108 +1134,6 @@ time_adj <- function(data, time_elap = NULL){
 
 ########################################################################################################
 #                                                                                                      #
-#                                       End-of-Day Adjustment (EOD)                                    #
-#                                                                                                      #
-########################################################################################################
-
-eod_adj <- function(data, eod = NULL){
-
-
-  # Clean global variables
-  DATE = DATE_TIME = NULL
-  rm(list = c("DATE", "DATE_TIME"))
-
-
-  if(!is.null(eod)){
-
-      # count of digits - 3 : am | 4 : pm)
-      if( floor(log10(abs(eod))) + 1 > 4 ){
-        stop('eod argument can only take on either 3 or 4 digits that represent 24-hour time format. \n\ni.e. 130 implies 1:30 AM and 2230 imples 10:30 PM')
-      }
-
-      # Check whether user only entered hours (i.e. 22 for 10 PM instead of 2200)
-      if(floor(log10(abs(eod))) + 1 <= 2){
-
-        hour_input <- eod
-        min_input <- 0
-        warning('eod argument should be either 3 or 4 digits that correspond to 24-hour time. Coerced minutes to zero. If only supplying an hour, it is best to add zeros to the end. \n\ni.e. 22 should be represented as 2200 for 10:00 PM')
-
-      }else{
-
-        # Extract hour from eod argument
-        hour_input <- ifelse( floor(log10(abs(eod))) + 1 == 3, as.numeric( substr(eod, 1, 1) ),
-                              ifelse( floor(log10(abs(eod))) + 1 == 4, as.numeric( substr(eod, 1, 2) ), 0 ) )
-        # Extract minute from eod argument
-        min_input <- eod %% 100
-
-      }
-
-      # Check for correct hour input
-      if(hour_input > 23 | hour_input < 0){
-        stop('eod hour argument cannot be less than 0 or greater than 23. Hours of the day range from 0 to 23 where 0 denotes midnight.')
-      }
-
-      # Check for correct minute input
-      if(min_input > 59 | min_input < 0){
-        stop('eod minute argument cannot be less than 0 or exceed 59. Minutes range from 0 to 59.')
-      }
-
-      # Ensure that DATE_TIME column is present
-      if( "DATE_TIME" %in% toupper(colnames(data)) == FALSE){
-        stop('DATE_TIME column not present in supplied dataset\n')
-      }
-
-      # Set time zone to UTC --> check ymd_hms format in process helpers to ensure posixct format
-      data$DATE_TIME <- lubridate::ymd_hms(data$DATE_TIME, tz = "UTC")
-
-
-      # Adjust dates according to eod argument
-      data <- data %>%
-        dplyr::mutate(DATE = dplyr::case_when(
-
-          hour_input < 12 ~ {dplyr::case_when(
-
-            # less than minutes only (i.e. 0023 < 0030 if eod = 0030) & hour is midnight
-            lubridate::hour(DATE_TIME) == 0 & lubridate::minute(DATE_TIME) <= min_input ~ as.Date( DATE_TIME - lubridate::days(1) ),
-
-            lubridate::hour(DATE_TIME) == hour_input & lubridate::minute(DATE_TIME) <= min_input ~ as.Date( DATE_TIME - lubridate::days(1) ),
-
-            lubridate::hour(DATE_TIME) < hour_input ~ as.Date( DATE_TIME - lubridate::days(1) ),
-
-            TRUE ~ as.Date(DATE_TIME)
-
-          )},
-
-          hour_input >= 12 ~ {dplyr::case_when(
-
-            lubridate::hour(DATE_TIME) == hour_input & lubridate::minute(DATE_TIME) >= min_input ~ as.Date( DATE_TIME + lubridate::days(1) ),
-
-            lubridate::hour(DATE_TIME) > hour_input ~ as.Date( DATE_TIME + lubridate::days(1) ),
-
-            TRUE ~ as.Date(DATE_TIME)
-
-          )},
-
-          TRUE ~ as.Date(DATE_TIME)
-
-        )) %>%
-        dplyr::relocate(DATE, .after = DATE_TIME)
-
-
-  }
-
-  return(data)
-
-}
-
-
-
-
-
-
-
-########################################################################################################
-#                                                                                                      #
 #                                                Group                                                 #
 #                                                                                                      #
 ########################################################################################################
@@ -1236,8 +1158,6 @@ group_adj <- function(data, group = NULL){
 
       col_idx <- grep(paste("\\b",toupper(group),"\\b", sep = ""), toupper( names(data) ) )
       colnames(data)[col_idx] <- "GROUP"
-      data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
-
     }
 
   }else{
@@ -1248,6 +1168,9 @@ group_adj <- function(data, group = NULL){
     }
 
   }
+
+  # Relocate to after ID column --> Make sure this function (group_adj) comes after id_adj in process_data
+  data <- data %>% dplyr::relocate(GROUP, .after = ID)
 
   data$GROUP <- as.factor(data$GROUP)
 
@@ -1281,7 +1204,6 @@ id_adj <- function(data, id = NULL){
 
         col_idx <- grep(paste("\\b",toupper(id),"\\b", sep = ""), toupper( names(data) ) )
         colnames(data)[col_idx] <- "ID"
-        data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
 
       }
 
@@ -1294,6 +1216,10 @@ id_adj <- function(data, id = NULL){
 
   }
 
+  # Relocate to first column
+  data <- data %>% dplyr::relocate(ID)
+
+  # Convert to factor
   data$ID <- as.factor(data$ID)
 
   return(data)

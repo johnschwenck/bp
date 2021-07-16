@@ -91,6 +91,9 @@
 #' that if two or more readings are within 3 minutes of each other, they will be averaged together (if agg is
 #' set to TRUE).
 #'
+#' @param collapse_df Optional argument that collapses the dataframe to eliminate repeating rows after
+#' aggregation.
+#'
 #' @param dt_fmt Optional argument that specifies the input date/time format (dt_fmt). Default set to "ymd HMS"
 #' but can take on any format specified by the lubridate package.
 #'
@@ -201,6 +204,7 @@ process_data <- function(data,
                              inc_crisis = TRUE,
                              agg = FALSE,
                              agg_thresh = 3,
+                             collapse_df = FALSE,
                              dt_fmt = "ymd HMS",
                              chron_order = FALSE){
 
@@ -329,6 +333,9 @@ process_data <- function(data,
         # KEEP THIS ORDER: RPP, PP, MAP, HR #
         #+++++++++++++++++++++++++++++++++++#
 
+        # Adjust Heart Rate (HR)
+        data <- hr_adj(data = data, hr = hr, data_screen = data_screen)
+
         # Adjust Rate Pressure Product (RPP)
         data <- rpp_adj(data = data, rpp = rpp)
 
@@ -338,15 +345,13 @@ process_data <- function(data,
         # Adjust Mean Arterial Pressure (MAP)
         data <- map_adj(data = data, map = map)
 
-        # Adjust Heart Rate (HR)
-        data <- hr_adj(data = data, hr = hr, data_screen = data_screen)
 
         # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
 
         # Aggregate data if selected
         if(agg == TRUE){
 
-          data <- agg_adj(data = data, agg_thresh = agg_thresh)
+          data <- agg_adj(data = data, agg_thresh = agg_thresh, collapse_df = collapse_df)
 
         }
 

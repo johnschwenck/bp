@@ -28,6 +28,7 @@ process_data(
   inc_crisis = TRUE,
   agg = FALSE,
   agg_thresh = 3,
+  collapse_df = FALSE,
   dt_fmt = "ymd HMS",
   chron_order = FALSE
 )
@@ -119,6 +120,9 @@ time alloted by the agg_thresh argument will be averaged together.}
 (observations) and still be considered part of the same sitting. The default is set to 3 minutes. This implies
 that if two or more readings are within 3 minutes of each other, they will be averaged together (if agg is
 set to TRUE).}
+
+\item{collapse_df}{Optional argument that collapses the dataframe to eliminate repeating rows after
+aggregation.}
 
 \item{dt_fmt}{Optional argument that specifies the input date/time format (dt_fmt). Default set to "ymd HMS"
 but can take on any format specified by the lubridate package.}
