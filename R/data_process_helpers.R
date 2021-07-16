@@ -176,6 +176,9 @@ dbp_adj <- function(data, dbp = NULL, data_screen){
 pp_adj <- function(data, pp = NULL){
 
 
+      PP = DBP = NULL
+      rm(list = c("PP", "DBP"))
+
       # Pulse Pressure
       if(is.null(pp)){
 
@@ -232,8 +235,8 @@ pp_adj <- function(data, pp = NULL){
 
 hr_adj <- function(data, hr = NULL, data_screen){
 
-  HR = NULL
-  rm(list = c("HR"))
+  HR = DBP = NULL
+  rm(list = c("HR", "DBP"))
 
       # Heart Rate
       if(is.null(hr)){
@@ -303,6 +306,9 @@ hr_adj <- function(data, hr = NULL, data_screen){
 
 rpp_adj <- function(data, rpp = NULL){
 
+    DBP = RPP = NULL
+    rm(list = c("DBP", "RPP"))
+
     # Rate Pulse Product
     if(is.null(rpp)){
 
@@ -368,6 +374,9 @@ rpp_adj <- function(data, rpp = NULL){
 
 map_adj <- function(data, map = NULL){
 
+    MAP = DBP = NULL
+    rm(list = c("MAP", "DBP"))
+
     # Mean Arterial Pressure
     if(is.null(map)){
 
@@ -424,6 +433,9 @@ map_adj <- function(data, map = NULL){
 
 wake_adj <- function(data, wake = NULL){
 
+  WAKE = DBP = NULL
+  rm(list = c("WAKE", "DBP"))
+
   # Wake (1: Awake | 0: Asleep)
   if(!is.null(wake)){
 
@@ -470,6 +482,9 @@ wake_adj <- function(data, wake = NULL){
 ########################################################################################################
 
 visit_adj <- function(data, visit = NULL){
+
+    VISIT = DBP = NULL
+    rm(list = c("VISIT", "DBP"))
 
     # Visit
     if(!is.null(visit)){
@@ -528,11 +543,15 @@ visit_adj <- function(data, visit = NULL){
 
 date_time_adj <- function(data, date_time = NULL, dt_fmt = "ymd HMS", ToD_int = NULL, chron_order = FALSE){
 
-  TIME_OF_DAY = HOUR = DATE_TIME = NULL
-  rm(list = c("TIME_OF_DAY", "HOUR", "DATE_TIME"))
+  TIME_OF_DAY = HOUR = DATE_TIME = ID = GROUP = YEAR = MONTH = DAY = HOUR = SBP = DBP = NULL
+  rm(list = c("TIME_OF_DAY", "HOUR", "DATE_TIME", "ID", "GROUP", "YEAR", "MONTH", "DAY", "HOUR", "SBP", "DBP"))
 
   colnames(data) <- toupper( colnames(data) )
 
+  # Possible groupings for dplyr
+  grps = c("ID", "VISIT", "GROUP")
+
+  grps = grps[which(grps %in% colnames(data) == TRUE)]
 
     # Date & Time (DateTime object)
     if(!is.null(date_time)){
@@ -680,6 +699,9 @@ date_time_adj <- function(data, date_time = NULL, dt_fmt = "ymd HMS", ToD_int = 
       }
     }
 
+  # Convert tibble back to dataframe
+  data <- as.data.frame(data)
+
   return(data)
 
 }
@@ -698,6 +720,10 @@ date_time_adj <- function(data, date_time = NULL, dt_fmt = "ymd HMS", ToD_int = 
 ########################################################################################################
 
 agg_adj <- function(data, agg = TRUE, agg_thresh = 3, collap = FALSE, collapse_df = FALSE){
+
+
+  bp_type = DATE_TIME = TIME_DIFF = collap2 = collap3 = DATE = HOUR = collap_fin = ID = GROUP = DAY_OF_WEEK = YEAR = MONTH = DAY = TIME_OF_DAY = SBP = DBP = date_first = date_time_first = NULL
+  rm(list = c('bp_type', 'DATE_TIME', 'TIME_DIFF', 'collap2', 'collap3', 'DATE', 'HOUR', 'collap_fin', 'ID', 'GROUP', 'DAY_OF_WEEK', 'YEAR', 'MONTH', 'DAY', 'TIME_OF_DAY', 'SBP', 'DBP', 'date_first', 'date_time_first'))
 
   # Ensure that there is a DATE_TIME column
   if(!"DATE_TIME" %in% colnames(data)){
@@ -730,7 +756,7 @@ agg_adj <- function(data, agg = TRUE, agg_thresh = 3, collap = FALSE, collapse_d
     dplyr::relocate(TIME_DIFF, .after = DATE_TIME) %>%
 
     # Use zero for last row as there is no differencing
-    dplyr::mutate(TIME_DIFF = ifelse(row_number() == n(), 0, TIME_DIFF) ) %>%
+    dplyr::mutate(TIME_DIFF = ifelse(dplyr::row_number() == dplyr::n(), 0, TIME_DIFF) ) %>%
 
     # Create three placeholder columns to properly indicate whether rows should be aggregated together or not
     dplyr::mutate(collap = ifelse(TIME_DIFF < agg_thresh, 1, 0),
@@ -745,7 +771,7 @@ agg_adj <- function(data, agg = TRUE, agg_thresh = 3, collap = FALSE, collapse_d
     dplyr::ungroup() %>%
 
     # Create a unique number for any row that has a zero
-    dplyr::mutate(collap_fin = ifelse(collap_fin == 0, row_number(), collap_fin) ) %>%
+    dplyr::mutate(collap_fin = ifelse(collap_fin == 0, dplyr::row_number(), collap_fin) ) %>%
     dplyr::group_by(DATE, HOUR, collap_fin) %>%
 
     # Create unique grouping by DATE by collap_fin column to indicate which consecutive readings to average over
@@ -755,8 +781,8 @@ agg_adj <- function(data, agg = TRUE, agg_thresh = 3, collap = FALSE, collapse_d
 
     # Identify first value in each agg group
     dplyr::group_by(agg) %>%
-    dplyr::mutate(date_first = first(DATE),
-                  date_time_first = first(DATE_TIME)) %>%
+    dplyr::mutate(date_first = dplyr::first(DATE),
+                  date_time_first = dplyr::first(DATE_TIME)) %>%
     #dplyr::relocate(date_first, date_time_first, .after = DATE_TIME) %>%
 
 
@@ -768,8 +794,8 @@ agg_adj <- function(data, agg = TRUE, agg_thresh = 3, collap = FALSE, collapse_d
     # old code --> averages ALL numeric columns not just the ones in process function
     #dplyr::mutate(across(where(is.numeric) & !c(TIME_DIFF), mean)) %>%
     #dplyr::mutate(across(where(is.numeric) & !c(TIME_DIFF) & inc_vars[inc_vars %in% colnames(data)], as.integer))
-    dplyr::mutate(across(!c(TIME_DIFF) & inc_vars[inc_vars %in% colnames(data)], mean)) %>%
-    dplyr::mutate(across(!c(TIME_DIFF) & inc_vars[inc_vars %in% colnames(data)], as.integer)) %>%
+    dplyr::mutate(dplyr::across(!c(TIME_DIFF) & inc_vars[inc_vars %in% colnames(data)], mean)) %>%
+    dplyr::mutate(dplyr::across(!c(TIME_DIFF) & inc_vars[inc_vars %in% colnames(data)], as.integer)) %>%
 
     # Rearrange columns for consistency
     dplyr::relocate(ID, GROUP, DATE_TIME, TIME_DIFF, DATE, DAY_OF_WEEK, YEAR, MONTH, DAY, HOUR, TIME_OF_DAY, SBP, DBP)
@@ -830,24 +856,33 @@ agg_adj <- function(data, agg = TRUE, agg_thresh = 3, collap = FALSE, collapse_d
 
 dates_adj <- function(data){
 
+      DATE = SBP = DBP = DATE_TIME = NULL
+      rm(list = c("DATE", "SBP", "DBP", "DATE_TIME"))
+
       # DATE column identified in dataset
       if(length(grep("^DATE$", names(data))) == 1){
 
         # If DATE column found
 
-        # Coerce to Date type
-        if( inherits(data[,grep("^DATE$", names(data))], "Date") == FALSE ){
+        # # Coerce to Date type
+        # if( inherits(data[,grep("^DATE$", names(data))], "Date") == FALSE ){
+        #
+        #   message('NOTE: DATE column found in data and coerced to as.Date() format.\n')
+        #   data[,grep("^DATE$", names(data))] <- as.Date(data[,grep("^DATE$", names(data))])
+        #
+        # }
 
-          message('NOTE: DATE column found in data and coerced to as.Date() format.\n')
-          data[,grep("^DATE$", names(data))] <- as.Date(data[,grep("^DATE$", names(data))])
-
-        }
 
         # DATE_TIME column AND identified DATE column present
         if(length(grep("^DATE_TIME$", names(data))) == 1){
 
+          message('NOTE: DATE column found in data and coerced to as.Date() format.\n')
+
+          # Coerce to Date type
+          data$DATE <- as.Date(data$DATE)
+
           # If applicable, Check that all date values of the identified date column match the date_time values in as.Date format
-          if( !all(data[,grep("^DATE$", names(data))] == as.Date(data[,grep("^DATE_TIME$", names(data))])) ){
+          if( !all(data$DATE == as.Date(data$DATE_TIME)) ){
             data$DATE_OLD <- data$DATE
             data$DATE <- as.Date( lubridate::ymd_hms(data$DATE_TIME, tz = "UTC") )
             warning('User-supplied DATE column does not align with DATE_TIME values.\nCreated additional column DATE_OLD in place of DATE.\nMismatches between rows among DATE_OLD and DATE_TIME columns\n')
@@ -999,6 +1034,9 @@ eod_adj <- function(data, eod = NULL){
 
 dow_adj <- function(data, DoW = NULL){
 
+      DAY_OF_WEEK = DATE = DATE_TIME = NULL
+      rm(list = c("DAY_OF_WEEK", "DATE", "DATE_TIME"))
+
       # Coerce all column names are all upper case
       colnames(data) <- toupper( colnames(data) )
 
@@ -1144,8 +1182,8 @@ time_adj <- function(data, time_elap = NULL){
 
 group_adj <- function(data, group = NULL){
 
-  GROUP = NULL
-  rm(list = c("GROUP"))
+  GROUP = ID = NULL
+  rm(list = c("GROUP", "ID"))
 
   # Group
   if(!is.null(group)){

@@ -210,8 +210,8 @@ process_data <- function(data,
 
 
   # Prepare all variables used via dplyr
-  SBP = DBP = HR = SBP_Category = DBP_Category = TIME_OF_DAY = NULL
-  rm(list = c("SBP", "DBP", "HR", "SBP_Category", "DBP_Category", "TIME_OF_DAY"))
+  SBP = DBP = HR = SBP_Category = DBP_Category = TIME_OF_DAY = BP_CLASS = NULL
+  rm(list = c("SBP", "DBP", "HR", "SBP_Category", "DBP_Category", "TIME_OF_DAY", "BP_CLASS"))
 
 
 
