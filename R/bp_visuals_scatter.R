@@ -215,15 +215,22 @@ bp_scatter <- function(data,
     stop('One or more of the required variables are missing. \nEnsure that you have run the process_data() function first.')
   }
 
-  # Initialize IDH - S1, Elevated, and ISH - S1 as they never change
-  xlim_breaks <- c(80, 90)
-  ylim_breaks <- c(120, 130, 140)
+  # 8 stage thresholds according to Lee et al 2020
+  if(plot_type == "stages2020"){
+
+    # Initialize IDH - S1, Elevated, and ISH - S1 as they never change
+    xlim_breaks <- c(80, 90)
+    ylim_breaks <- c(120, 130, 140)
+
+    # precalculate minDBP and minSBP values
+    minDBP = min(data$DBP, na.rm = TRUE)
+    minSBP = min(data$SBP, na.rm = TRUE)
 
     # Check whether user wants to include a 'Low (Hypotension)' category
     if( inc_low == TRUE ){
 
-      low_x_lim <- c( floor(min(25, min(data$DBP, na.rm = TRUE) - 10)), 60)
-      low_y_lim <- c( floor(min(80, min(data$SBP, na.rm = TRUE) - 10)), 100)
+      low_x_lim <- c( floor(min(25, minDBP - 10)), 60)
+      low_y_lim <- c( floor(min(80, minSBP - 10)), 100)
 
       norm_x_lim <- c(60, 80)
       norm_y_lim <- c(100, 120)
@@ -233,11 +240,11 @@ bp_scatter <- function(data,
 
     }else{
 
-      xlim_breaks <- c( floor(min(25, min(data$DBP, na.rm = TRUE) - 10)), xlim_breaks )
-      ylim_breaks <- c( floor(min(80, min(data$SBP, na.rm = TRUE) - 10)), ylim_breaks )
+      xlim_breaks <- c( floor(min(25, minDBP - 10)), xlim_breaks )
+      ylim_breaks <- c( floor(min(80, minSBP - 10)), ylim_breaks )
 
-      norm_x_lim <- c( floor(min(25, min(data$DBP, na.rm = TRUE) - 10)) , 80)
-      norm_y_lim <- c( floor(min(80, min(data$SBP, na.rm = TRUE) - 10)) , 120)
+      norm_x_lim <- c( floor(min(25, minDBP - 10)) , 80)
+      norm_y_lim <- c( floor(min(80, minSBP - 10)) , 120)
 
     }
 
@@ -271,8 +278,9 @@ bp_scatter <- function(data,
     }
 
 
-  # 8 stage thresholds according to Lee et al 2020
-  if(plot_type == "stages2020"){
+    # Calculate length of breaks to prestore
+    xlim_breaks_length = length(xlim_breaks)
+    ylim_breaks_length = length(ylim_breaks)
 
     scat <- ggplot(data, aes(DBP, SBP)) +
 
@@ -326,49 +334,49 @@ bp_scatter <- function(data,
 
             # Crisis - All
             {if( inc_crisis == TRUE )
-              annotate("rect", xmin = xlim_breaks[length(xlim_breaks) - 1],
-                               xmax = xlim_breaks[length(xlim_breaks)],
-                               ymin = ylim_breaks[length(ylim_breaks) - 1],
-                               ymax = ylim_breaks[length(ylim_breaks)],
+              annotate("rect", xmin = xlim_breaks[xlim_breaks_length - 1],
+                               xmax = xlim_breaks[xlim_breaks_length],
+                               ymin = ylim_breaks[ylim_breaks_length - 1],
+                               ymax = ylim_breaks[ylim_breaks_length],
                                fill = 'darkred',    alpha = .5) }+
 
             # Crisis - Dias
             {if( inc_crisis == TRUE )
-              annotate("rect", xmin = xlim_breaks[length(xlim_breaks) - 1],
-                               xmax = xlim_breaks[length(xlim_breaks)],
+              annotate("rect", xmin = xlim_breaks[xlim_breaks_length - 1],
+                               xmax = xlim_breaks[xlim_breaks_length],
                                ymin = ylim_breaks[1],
-                               ymax = ylim_breaks[length(ylim_breaks) - 1],
+                               ymax = ylim_breaks[ylim_breaks_length - 1],
                                fill = 'darkred',    alpha = .5) }+
 
             # Crisis - Sys
             {if( inc_crisis == TRUE )
               annotate("rect", xmin = xlim_breaks[1],
-                               xmax = xlim_breaks[length(xlim_breaks) - 1],
-                               ymin = ylim_breaks[length(ylim_breaks) - 1],
-                               ymax = ylim_breaks[length(ylim_breaks)],
+                               xmax = xlim_breaks[xlim_breaks_length - 1],
+                               ymin = ylim_breaks[ylim_breaks_length - 1],
+                               ymax = ylim_breaks[ylim_breaks_length],
                                fill = 'darkred',    alpha = .5) }+
 
             # Stage 2 - All
             {if( inc_crisis == TRUE )
-              annotate("rect", xmin = xlim_breaks[length(xlim_breaks) - 2],
-                               xmax = xlim_breaks[length(xlim_breaks) - 1],
-                               ymin = ylim_breaks[length(ylim_breaks) - 2],
-                               ymax = ylim_breaks[length(ylim_breaks) - 1],
+              annotate("rect", xmin = xlim_breaks[xlim_breaks_length - 2],
+                               xmax = xlim_breaks[xlim_breaks_length - 1],
+                               ymin = ylim_breaks[ylim_breaks_length - 2],
+                               ymax = ylim_breaks[ylim_breaks_length - 1],
                                fill = 'red',    alpha = .5)} +
 
             # Stage 2 - Isolated Diatolic
             {if( inc_crisis == TRUE )
-              annotate("rect", xmin = xlim_breaks[length(xlim_breaks) - 2],
-                               xmax = xlim_breaks[length(xlim_breaks) - 1],
+              annotate("rect", xmin = xlim_breaks[xlim_breaks_length - 2],
+                               xmax = xlim_breaks[xlim_breaks_length - 1],
                                ymin = ylim_breaks[1],
-                               ymax = ylim_breaks[length(ylim_breaks) - 2],
+                               ymax = ylim_breaks[ylim_breaks_length - 2],
                                fill = 'red3',    alpha = .55)} +
             # Stage 2 - Isolated Systolic
             {if( inc_crisis == TRUE )
               annotate("rect", xmin = xlim_breaks[1],
-                               xmax = xlim_breaks[length(xlim_breaks) - 2],
-                               ymin = ylim_breaks[length(ylim_breaks) - 2],
-                               ymax = ylim_breaks[length(ylim_breaks) - 1],
+                               xmax = xlim_breaks[xlim_breaks_length - 2],
+                               ymin = ylim_breaks[ylim_breaks_length - 2],
+                               ymax = ylim_breaks[ylim_breaks_length - 1],
                                fill = 'red3',    alpha = .55)} +
 
 
@@ -378,26 +386,26 @@ bp_scatter <- function(data,
 
               # Stage 2 - All
               {if( inc_crisis == FALSE )
-                annotate("rect", xmin = xlim_breaks[length(xlim_breaks) - 1],
-                                 xmax = xlim_breaks[length(xlim_breaks)],
-                                 ymin = ylim_breaks[length(ylim_breaks) - 1],
-                                 ymax = ylim_breaks[length(ylim_breaks)],
+                annotate("rect", xmin = xlim_breaks[xlim_breaks_length- 1],
+                                 xmax = xlim_breaks[xlim_breaks_length],
+                                 ymin = ylim_breaks[ylim_breaks_length - 1],
+                                 ymax = ylim_breaks[ylim_breaks_length],
                                  fill = 'red3',    alpha = .55)} +
 
               # Stage 2 - Isolated Diastolic
               {if( inc_crisis == FALSE )
-                annotate("rect", xmin = xlim_breaks[length(xlim_breaks) - 1],
-                                 xmax = xlim_breaks[length(xlim_breaks)],
+                annotate("rect", xmin = xlim_breaks[xlim_breaks_length - 1],
+                                 xmax = xlim_breaks[xlim_breaks_length],
                                  ymin = ylim_breaks[1],
-                                 ymax = ylim_breaks[length(ylim_breaks) - 1],
+                                 ymax = ylim_breaks[ylim_breaks_length - 1],
                                  fill = 'red',    alpha = .45)} +
 
               # Stage 2 - Isolated Systolic
               {if( inc_crisis == FALSE )
                 annotate("rect", xmin = xlim_breaks[1],
-                                 xmax = xlim_breaks[length(xlim_breaks) - 1],
-                                 ymin = ylim_breaks[length(ylim_breaks) - 1],
-                                 ymax = ylim_breaks[length(ylim_breaks)],
+                                 xmax = xlim_breaks[xlim_breaks_length - 1],
+                                 ymin = ylim_breaks[ylim_breaks_length - 1],
+                                 ymax = ylim_breaks[ylim_breaks_length],
                                  fill = 'red',    alpha = .45)} +
 
 
@@ -447,7 +455,7 @@ bp_scatter <- function(data,
       geom_text(aes(x = s2_x_lim[2] - 5, y = 90, label = 'IDH\n S2'), color = 'black', hjust = 1.25, size = 3) +
 
       # Crisis
-      {if(inc_crisis == TRUE) geom_text(aes(x = xlim_breaks[length(xlim_breaks)], y = ylim_breaks[length(ylim_breaks)], label = 'Crisis'), color = 'black', hjust = 1.25, vjust = 1.5, size = 3) }+
+      {if(inc_crisis == TRUE) geom_text(aes(x = xlim_breaks[xlim_breaks_length], y = ylim_breaks[ylim_breaks_length], label = 'Crisis'), color = 'black', hjust = 1.25, vjust = 1.5, size = 3) }+
 
       # Main Title & Subtitle
       ggtitle('Scatterplot of BP Values', subtitle = 'Source: Lee et al (2020)')
