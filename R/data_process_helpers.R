@@ -543,8 +543,8 @@ visit_adj <- function(data, visit = NULL){
 
 date_time_adj <- function(data, date_time = NULL, dt_fmt = "ymd HMS", ToD_int = NULL, chron_order = FALSE){
 
-  TIME_OF_DAY = HOUR = DATE_TIME = ID = GROUP = YEAR = MONTH = DAY = HOUR = SBP = DBP = NULL
-  rm(list = c("TIME_OF_DAY", "HOUR", "DATE_TIME", "ID", "GROUP", "YEAR", "MONTH", "DAY", "HOUR", "SBP", "DBP"))
+  TIME_OF_DAY = HOUR = DATE_TIME = ID = GROUP = YEAR = MONTH = DAY = SBP = DBP = NULL
+  rm(list = c("TIME_OF_DAY", "HOUR", "DATE_TIME", "ID", "GROUP", "YEAR", "MONTH", "DAY", "SBP", "DBP"))
 
   colnames(data) <- toupper( colnames(data) )
 
