@@ -91,7 +91,7 @@ bp_tables <- function(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin
     if(length(unique(data$ID)) > 1){
       # Filter data based on subset of subjects
       data <- data %>%
-        dplyr::filter(ID == subj)
+        dplyr::filter(ID %in% subj)
     }
   }
 
