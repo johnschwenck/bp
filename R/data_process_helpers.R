@@ -1264,8 +1264,3 @@ id_adj <- function(data, id = NULL){
 
 }
 
-
-
-
-
-
