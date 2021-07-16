@@ -176,12 +176,13 @@ process_data <- function(data,
                              data_screen = TRUE,
                              inc_low = TRUE,
                              inc_crisis = TRUE,
-                             dt_fmt = "ymd HMS"){
+                             dt_fmt = "ymd HMS",
+                             chron_order = FALSE){
 
 
   # Prepare all variables used via dplyr
-  SBP = DBP = HR = SBP_Category = DBP_Category = Time_of_Day = NULL
-  rm(list = c("SBP", "DBP", "HR", "SBP_Category", "DBP_Category", "Time_of_Day"))
+  SBP = DBP = HR = SBP_Category = DBP_Category = TIME_OF_DAY = NULL
+  rm(list = c("SBP", "DBP", "HR", "SBP_Category", "DBP_Category", "TIME_OF_DAY"))
 
 
 
@@ -245,7 +246,7 @@ process_data <- function(data,
   # ************************************************************************************************************ #
 
 
-  if(bp_type == "ABPM" | bp_type == "HBPM"){
+  if(toupper(bp_type) == "ABPM" | toupper(bp_type) == "HBPM"){
 
 
     # Throw error if SBP and DBP columns aren't specified
@@ -256,10 +257,6 @@ process_data <- function(data,
     }
 
 
-    # ******************************************************** #
-    #                   Physical Variables                     #
-    # ******************************************************** #
-
     # Adjust Systolic Blood Pressure (SBP)
     data <- sbp_adj(data = data, sbp = sbp, data_screen = data_screen)
     sbp_tmp <- names(data)[1] # For bp_stages function
@@ -268,9 +265,44 @@ process_data <- function(data,
     data <- dbp_adj(data = data, dbp = dbp, data_screen = data_screen)
     dbp_tmp <- names(data)[2] # For bp_stages function
 
+    # ID
+    data <- id_adj(data = data, id = id)
+
+    # Group
+    data <- group_adj(data = data, group = group)
+
+    # Adjust WAKE indicator
+    data <- wake_adj(data = data, wake = wake)
+
+    # Adjust Visit
+    data <- visit_adj(data = data, visit = visit)
+
+    # Adjust Date/Time values
+    data <- date_time_adj(data = data, date_time = date_time, dt_fmt = dt_fmt, ToD_int = ToD_int, chron_order = chron_order)
+
+
+    # Adjust eod / dates
+    if(!is.null(eod)){
+
+          # Incorporate End-of-Day argument and calibrate dates
+          data <- eod_adj(data = data, eod = eod)
+
+      # No adjustment needed for dates / eod
+    }else{
+
+          # Adjust Dates, no eod specified
+          data <- dates_adj(data = data)
+
+    }
+
+    # Adjust Day of Week
+    data <- dow_adj(data = data, DoW = DoW)
+
+    # Adjust Heart Rate (HR)
+    data <- hr_adj(data = data, hr = hr, data_screen = data_screen)
+
     # Adjust Pulse Pressure (PP)
     data <- pp_adj(data = data, pp = pp)
-
 
     # Adjust Rate Pressure Product (RPP)
     data <- rpp_adj(data = data, rpp = rpp)
@@ -288,67 +320,17 @@ process_data <- function(data,
                       data_screen = data_screen)
 
 
-    # ******************************************************** #
-    #                      Subject-Specific                    #
-    # ******************************************************** #
-
-    # ID
-    data <- id_adj(data = data, id = id)
-
-    # Group
-    data <- group_adj(data = data, group = group)
 
   }
 
 
-  # ************************************************************************************************************ #
-
-
-  ##
-  ## Run these regardless of bp_type
-  ##
-
-  # ******************************************************** #
-  #                     Clinical Variables                   #
-  # ******************************************************** #
-
-  # Adjust Heart Rate (HR)
-  data <- hr_adj(data = data, hr = hr, data_screen = data_screen)
-
-  # Adjust WAKE indicator
-  data <- wake_adj(data = data, wake = wake)
-
-  # Adjust Visit
-  data <- visit_adj(data = data, visit = visit)
-
-
-  # ******************************************************** #
-  #                     Dates & Date/Time                    #
-  # ******************************************************** #
-
-  # Adjust Date/Time values
-  data <- date_time_adj(data = data, date_time = date_time, dt_fmt = dt_fmt, ToD_int = ToD_int)
-
-  # Adjust Dates
-  data <- dates_adj(data = data)
-
-  # Adjust Day of Week
-  data <- dow_adj(data = data, DoW = DoW)
-
-
-  # ************************************************************************************************************ #
-
   # Create column indicating blood pressure type (bp_type)
   data$BP_TYPE <- bp_type
-
-  # Incorporate End-of-Day argument if specified
-  data <- eod_adj(data = data, eod = eod)
 
   # Sanity check for any future additions to this function to ensure all columns are capitalized for consistency
   colnames(data) <- toupper( colnames(data) )
 
-  # Adjust TIME_OF_DAY to be factor with fixed 4 levels
-  data$TIME_OF_DAY <- factor(data$TIME_OF_DAY, levels = c("Morning", "Afternoon", "Evening", "Night"))
+
 
   return(data)
 }
