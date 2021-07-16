@@ -175,7 +175,7 @@ bp_scatter <- function(data,
 
       # Filter data based on subset of subjects
       data <- data %>%
-        dplyr::filter(ID == subj)
+        dplyr::filter(ID %in% subj)
 
     }
 

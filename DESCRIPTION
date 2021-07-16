@@ -1,8 +1,11 @@
 Package: bp
 Type: Package
 Title: Blood Pressure Analysis in R
-Version: 1.0.1
-Authors@R: person("John","Schwenck", email = "jschwenck12@gmail.com", role = c("aut", "cre"))
+Version: 1.0.2
+Authors@R: c(person("John","Schwenck", email = "jschwenck12@gmail.com", role = c("aut", "cre")),
+            person("Irina", "Gaynanova",
+            email = "irinag@stat.tamu.edu", role = c("ctb"),
+            comment = c(ORCID = "0000-0002-4116-0268")))
 Maintainer: John Schwenck <jschwenck12@gmail.com>
 Description: A comprehensive package to aid in the analysis of blood pressure data of all forms by providing both descriptive and visualization tools for researchers.
 License: GPL-3

@@ -65,7 +65,7 @@ bp_hist <- function(data, subj = NULL){
 
       # Filter data based on subset of subjects
       data <- data %>%
-        dplyr::filter(ID == subj)
+        dplyr::filter(ID %in% subj)
 
     }
 
