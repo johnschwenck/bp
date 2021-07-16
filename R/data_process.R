@@ -82,8 +82,22 @@
 #' @param inc_crisis Optional logical argument dictating whether or not to include the "Crisis" category for BP
 #' classification column (and the supplementary SBP/DBP Category columns). Default set to TRUE.
 #'
+#' @param agg Optional argument specifying whether or not to aggregate the data based on the amount of time
+#' between observations. If \code{agg = TRUE} then any two (or more) observations within the amount of
+#' time alloted by the agg_thresh argument will be averaged together.
+#'
+#' @param agg_thresh Optional argument specifying the threshold of how many minutes can pass between readings
+#' (observations) and still be considered part of the same sitting. The default is set to 3 minutes. This implies
+#' that if two or more readings are within 3 minutes of each other, they will be averaged together (if agg is
+#' set to TRUE).
+#'
 #' @param dt_fmt Optional argument that specifies the input date/time format (dt_fmt). Default set to "ymd HMS"
 #' but can take on any format specified by the lubridate package.
+#'
+#' @param chron_order Optional argument that specifies whether to order the data in chronological (Oldest
+#' dates & times at the top / first) or reverse chronological order (Most recent dates & times at the top / first).
+#' TRUE refers to chronological order; FALSE refers to reverse chronological order. The default is set to
+#' FALSE (i.e. most recent observations listed first in the dataframe).
 #'
 #' See https://lubridate.tidyverse.org/reference/parse_date_time.html for more details.
 #'
@@ -185,6 +199,8 @@ process_data <- function(data,
                              data_screen = TRUE,
                              inc_low = TRUE,
                              inc_crisis = TRUE,
+                             agg = FALSE,
+                             agg_thresh = 3,
                              dt_fmt = "ymd HMS",
                              chron_order = FALSE){
 
@@ -258,75 +274,97 @@ process_data <- function(data,
   if(toupper(bp_type) == "ABPM" | toupper(bp_type) == "HBPM"){
 
 
-    # Throw error if SBP and DBP columns aren't specified
-    if(is.null(sbp) | is.null(dbp)){
+        # Throw error if SBP and DBP columns aren't specified
+        if(is.null(sbp) | is.null(dbp)){
 
-      stop('Both "SBP" and "DBP" column names must be specified.\n')
+          stop('Both "SBP" and "DBP" column names must be specified.\n')
 
-    }
-
-
-    # Adjust Systolic Blood Pressure (SBP)
-    data <- sbp_adj(data = data, sbp = sbp, data_screen = data_screen)
-    sbp_tmp <- names(data)[1] # For bp_stages function
-
-    # Adjust Diastolic Blood Pressure (DBP)
-    data <- dbp_adj(data = data, dbp = dbp, data_screen = data_screen)
-    dbp_tmp <- names(data)[2] # For bp_stages function
-
-    # ID
-    data <- id_adj(data = data, id = id)
-
-    # Group
-    data <- group_adj(data = data, group = group)
-
-    # Adjust WAKE indicator
-    data <- wake_adj(data = data, wake = wake)
-
-    # Adjust Visit
-    data <- visit_adj(data = data, visit = visit)
-
-    # Adjust Date/Time values
-    data <- date_time_adj(data = data, date_time = date_time, dt_fmt = dt_fmt, ToD_int = ToD_int, chron_order = chron_order)
+        }
 
 
-    # Adjust eod / dates
-    if(!is.null(eod)){
+        # Adjust Systolic Blood Pressure (SBP)
+        data <- sbp_adj(data = data, sbp = sbp, data_screen = data_screen)
+        sbp_tmp <- names(data)[1] # For bp_stages function
 
-          # Incorporate End-of-Day argument and calibrate dates
-          data <- eod_adj(data = data, eod = eod)
+        # Adjust Diastolic Blood Pressure (DBP)
+        data <- dbp_adj(data = data, dbp = dbp, data_screen = data_screen)
+        dbp_tmp <- names(data)[2] # For bp_stages function
 
-      # No adjustment needed for dates / eod
-    }else{
+        # Adjust ID
+        data <- id_adj(data = data, id = id)
 
-          # Adjust Dates, no eod specified
-          data <- dates_adj(data = data)
+        # Adjust Group
+        data <- group_adj(data = data, group = group)
 
-    }
+        # Adjust WAKE indicator
+        data <- wake_adj(data = data, wake = wake)
 
-    # Adjust Day of Week
-    data <- dow_adj(data = data, DoW = DoW)
+        # Adjust Visit
+        data <- visit_adj(data = data, visit = visit)
 
-    # Adjust Heart Rate (HR)
-    data <- hr_adj(data = data, hr = hr, data_screen = data_screen)
+        # Adjust Date/Time values
+        data <- date_time_adj(data = data, date_time = date_time, dt_fmt = dt_fmt, ToD_int = ToD_int, chron_order = chron_order)
 
-    # Adjust Pulse Pressure (PP)
-    data <- pp_adj(data = data, pp = pp)
 
-    # Adjust Rate Pressure Product (RPP)
-    data <- rpp_adj(data = data, rpp = rpp)
+        # Adjust eod / dates
+        if(!is.null(eod)){
 
-    # Adjust Mean Arterial Pressure (MAP)
-    data <- map_adj(data = data, map = map)
+              # Incorporate End-of-Day argument and calibrate dates
+              data <- eod_adj(data = data, eod = eod)
 
-    # BP Stages
-    #sbp_new <- names(data)[(names(data) %in% "SBP")]
-    data <- bp_stages(data = data,
-                      sbp = sbp_tmp,
-                      dbp = dbp_tmp,
-                      inc_low = inc_low,
-                      inc_crisis = inc_crisis,
-                      data_screen = data_screen)
+          # No adjustment needed for dates / eod
+        }else{
+
+              # Adjust Dates, no eod specified
+              data <- dates_adj(data = data)
+
+        }
+
+        # Adjust Day of Week
+        data <- dow_adj(data = data, DoW = DoW)
+
+        # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
+
+        #+++++++++++++++++++++++++++++++++++#
+        # KEEP THIS ORDER: RPP, PP, MAP, HR #
+        #+++++++++++++++++++++++++++++++++++#
+
+        # Adjust Rate Pressure Product (RPP)
+        data <- rpp_adj(data = data, rpp = rpp)
+
+        # Adjust Pulse Pressure (PP)
+        data <- pp_adj(data = data, pp = pp)
+
+        # Adjust Mean Arterial Pressure (MAP)
+        data <- map_adj(data = data, map = map)
+
+        # Adjust Heart Rate (HR)
+        data <- hr_adj(data = data, hr = hr, data_screen = data_screen)
+
+        # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
+
+        # Aggregate data if selected
+        if(agg == TRUE){
+
+          data <- agg_adj(data = data, agg_thresh = agg_thresh)
+
+        }
+
+
+        # BP Stages
+        data <- bp_stages(data = data,
+                          sbp = sbp_tmp,
+                          dbp = dbp_tmp,
+                          inc_low = inc_low,
+                          inc_crisis = inc_crisis,
+                          data_screen = data_screen)
+
+
+        # Move Classification columns to correct positions
+        data <- data %>%
+                  dplyr::relocate(BP_CLASS, .after = DBP) #%>%
+                  #dplyr::relocate(SBP_CATEGORY, .after = BP_CLASS) %>%
+                  #dplyr::relocate(DBP_CATEGORY, .after = SBP_CATEGORY)
 
 
 
