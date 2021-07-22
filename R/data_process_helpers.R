@@ -719,11 +719,11 @@ date_time_adj <- function(data, date_time = NULL, dt_fmt = "ymd HMS", ToD_int = 
 #                                                                                                      #
 ########################################################################################################
 
-agg_adj <- function(data, agg = TRUE, agg_thresh = 3, collap = FALSE, collapse_df = FALSE){
+agg_adj <- function(data, bp_type, agg = TRUE, agg_thresh = 3, collap = FALSE, collapse_df = FALSE){
 
 
-  bp_type = DATE_TIME = TIME_DIFF = collap2 = collap3 = DATE = HOUR = collap_fin = ID = GROUP = DAY_OF_WEEK = YEAR = MONTH = DAY = TIME_OF_DAY = SBP = DBP = date_first = date_time_first = NULL
-  rm(list = c('bp_type', 'DATE_TIME', 'TIME_DIFF', 'collap2', 'collap3', 'DATE', 'HOUR', 'collap_fin', 'ID', 'GROUP', 'DAY_OF_WEEK', 'YEAR', 'MONTH', 'DAY', 'TIME_OF_DAY', 'SBP', 'DBP', 'date_first', 'date_time_first'))
+  DATE_TIME = TIME_DIFF = collap2 = collap3 = DATE = HOUR = collap_fin = ID = GROUP = DAY_OF_WEEK = YEAR = MONTH = DAY = TIME_OF_DAY = SBP = DBP = date_first = date_time_first = NULL
+  rm(list = c('DATE_TIME', 'TIME_DIFF', 'collap2', 'collap3', 'DATE', 'HOUR', 'collap_fin', 'ID', 'GROUP', 'DAY_OF_WEEK', 'YEAR', 'MONTH', 'DAY', 'TIME_OF_DAY', 'SBP', 'DBP', 'date_first', 'date_time_first'))
 
   # Ensure that there is a DATE_TIME column
   if(!"DATE_TIME" %in% colnames(data)){

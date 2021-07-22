@@ -351,7 +351,7 @@ process_data <- function(data,
         # Aggregate data if selected
         if(agg == TRUE){
 
-          data <- agg_adj(data = data, agg_thresh = agg_thresh, collapse_df = collapse_df)
+          data <- agg_adj(data = data, bp_type = bp_type, agg_thresh = agg_thresh, collapse_df = collapse_df)
 
         }
 
@@ -382,6 +382,8 @@ process_data <- function(data,
   # Sanity check for any future additions to this function to ensure all columns are capitalized for consistency
   colnames(data) <- toupper( colnames(data) )
 
+  # Convert back to data frame
+  data <- as.data.frame(data)
 
 
   return(data)
