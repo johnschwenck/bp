@@ -65,7 +65,6 @@ show repeated measurements by HOUR.
 Blood Pressure Time Series Plots
 }
 \examples{
-
 # Pregnancy Data Set
 
 # bp_preg requires the use of the index argument since there are no DATE or
@@ -74,7 +73,7 @@ data_preg <- bp::bp_preg
 data_preg$Time_Elapsed <- factor(data_preg$Time_Elapsed,
      levels = c("Booking", "0", "30", "60", "90", "120", "150", "180", "210", "240"))
 
-bp_ts_plots(data_preg, index = 'time_elapsed', subj = 1:3)
+bp::bp_ts_plots(data_preg, index = 'time_elapsed', subj = 1:3)
 
 
 # JHS Data Set
@@ -87,7 +86,7 @@ data_jhs <- bp::process_data(bp::bp_jhs,
                                      hr = 'pulse.bpm.',
                               date_time = 'datetime')
 
-bp_ts_plots(data_jhs)
+bp::bp_ts_plots(data_jhs)
 
 
 # HYPNOS Data Set
@@ -99,5 +98,5 @@ data_hypnos <- bp::process_data(bp::bp_hypnos,
                                           dbp = 'diast',
                                     date_time = 'date.time')
 
-bp_ts_plots(data_hypnos, wrap_var = 'visit')
+bp::bp_ts_plots(data_hypnos, wrap_var = 'visit')
 }
