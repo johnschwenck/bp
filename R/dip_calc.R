@@ -116,7 +116,7 @@ dip_calc <- function(data, sleep_start_end = NULL, dip_thresh = 0.10, extreme_th
 
       # Filter data based on subset of subjects
       data <- data %>%
-        dplyr::filter(ID == subj)
+        dplyr::filter(ID %in% subj)
 
     }
 
