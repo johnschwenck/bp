@@ -487,6 +487,10 @@ bp_ts_plots <- function(data, index = NULL, subj = NULL, first_hour = 0, rotate_
 
         return(date_plots = p)
 
+  }else{
+
+    stop('Could not generate time series plots. Check that all input is correct and that the data has been processed using process_data()')
+
   }
 
 
