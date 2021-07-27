@@ -245,8 +245,8 @@ bp_sleep_metrics <- function(data, subj = NULL){
     # Function requires: SBP, DBP, DATE_TIME, WAKE, ID
 
     # Initialize variables for dplyr
-    ID = SBP = DBP = wake_ind = eve_ind = morn_ind = prewake_ind = lowest_SBP = lowest_DBP = evening_SBP = evening_DBP = morning_SBP = morning_DBP = NULL
-    rm(list = c("ID", "SBP", "DBP", "wake_ind", "eve_ind", "morn_ind", "prewake_ind", "lowest_SBP", "lowest_DBP", "evening_SBP", "evening_DBP", "morning_SBP", "morning_DBP"))
+    ID = SBP = DBP = WAKE = wake_ind = eve_ind = morn_ind = prewake_ind = lowest_SBP = lowest_DBP = evening_SBP = evening_DBP = morning_SBP = morning_DBP = NULL
+    rm(list = c("ID", "SBP", "DBP", "WAKE", "wake_ind", "eve_ind", "morn_ind", "prewake_ind", "lowest_SBP", "lowest_DBP", "evening_SBP", "evening_DBP", "morning_SBP", "morning_DBP"))
 
 
       # Uppercase all column names
@@ -316,17 +316,23 @@ bp_sleep_metrics <- function(data, subj = NULL){
 
       # Grouping variables
 
-      grps = c("ID", "VISIT", "GROUP", "DATE_TIME")
+      grps = c("ID", "VISIT", "GROUP")
       grps = grps[which( grps %in% colnames(data) == TRUE)]
 
       #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+      # Update calculation of sleep counts table
 
+      sleep_counts = data %>%
+        dplyr::group_by_at(dplyr::vars(grps)) %>%
+        dplyr::summarize(N_total = dplyr::n(), N_awake = sum(WAKE == 1), N_sleep = sum(WAKE == 0), .groups = 'drop')
+
+      # Add back DATE_TIME as may be used for other things
+      if ("DATE_TIME" %in% colnames(data)){
+        grps = c(grps, "DATE_TIME")
+      }
 
       # Calculate sleep stage indicator columns using sleep_stages() helper function from above
       data <- sleep_stages(data, grps = grps)
-
-
-
 
 
       # ******************************************************************************************************************************* #
@@ -349,22 +355,22 @@ bp_sleep_metrics <- function(data, subj = NULL){
       ##        Counts       ##
       #########################
 
-      # Total Readings for Period
-      readings <- data %>%
-        dplyr::group_by_at(dplyr::vars( c(grps, "date_grp") ) ) %>%
-        dplyr::summarise(N_total = dplyr::n(), .groups = 'drop')
-
-      # Total Awake Readings for Period
-      awake_readings <- data %>%
-        dplyr::group_by_at(dplyr::vars( c(grps, "date_grp") ) ) %>%
-        dplyr::filter(wake_ind == 1 | wake_ind == 11) %>%
-        dplyr::summarise(N_awake = dplyr::n(), .groups = 'drop')
-
-      # Total Sleep Readings for Period
-      sleep_readings <- data %>%
-        dplyr::group_by_at(dplyr::vars( c(grps, "date_grp") ) ) %>%
-        dplyr::filter(wake_ind == 0 | wake_ind == 22) %>%
-        dplyr::summarise(N_sleep = dplyr::n(), .groups = 'drop')
+      # # Total Readings for Period
+      # readings <- data %>%
+      #   dplyr::group_by_at(dplyr::vars( c(grps, "date_grp") ) ) %>%
+      #   dplyr::summarise(N_total = dplyr::n(), .groups = 'drop')
+      #
+      # # Total Awake Readings for Period
+      # awake_readings <- data %>%
+      #   dplyr::group_by_at(dplyr::vars( c(grps, "date_grp") ) ) %>%
+      #   dplyr::filter(wake_ind == 1 | wake_ind == 11) %>%
+      #   dplyr::summarise(N_awake = dplyr::n(), .groups = 'drop')
+      #
+      # # Total Sleep Readings for Period
+      # sleep_readings <- data %>%
+      #   dplyr::group_by_at(dplyr::vars( c(grps, "date_grp") ) ) %>%
+      #   dplyr::filter(wake_ind == 0 | wake_ind == 22) %>%
+      #   dplyr::summarise(N_sleep = dplyr::n(), .groups = 'drop')
 
 
 
@@ -511,8 +517,8 @@ bp_sleep_metrics <- function(data, subj = NULL){
 
 
       # Count data summary
-      sleep_counts <- dplyr::left_join(readings, awake_readings, by = c(grps, "date_grp"))
-      sleep_counts <- dplyr::left_join(sleep_counts, sleep_readings, by = c(grps, "date_grp"))
+      # sleep_counts <- dplyr::left_join(readings, awake_readings, by = c(grps, "date_grp"))
+      # sleep_counts <- dplyr::left_join(sleep_counts, sleep_readings, by = c(grps, "date_grp"))
 
       # SBP Metrics
       sleep_summary_SBP <- dplyr::left_join(sleep_SBP, awake_SBP, by = c(grps, "date_grp"))
