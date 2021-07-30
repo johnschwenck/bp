@@ -59,7 +59,7 @@
 #' If not supplied, but DATE or DATE_TIME columns available, then DoW will be created
 #' automatically. DoW values must be abbreviated as such \code{c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")}
 #'
-#' @param ToD_int Optional vector of length 4, acceptable values are from 0 to 23 in a sorted order (corresponding to hour for Morning, Afternoon, Evening, Night). This vector allows to override the default interval for the Time-of-Day periods: if NULL, the Morning, Afternoon, Evening, and Night periods are set at 6, 12, 18, 0 respectively,
+#' @param ToD_int Optional vector of length 4, acceptable values are from 0 to 23 in a an order corresponding to hour for Morning, Afternoon, Evening, Night). This vector allows to override the default interval for the Time-of-Day periods: if NULL, the Morning, Afternoon, Evening, and Night periods are set at 6, 12, 18, 0 respectively,
 #' where 0 corresponds to the 24th hour of the day (i.e. Midnight).
 #' For example, ToD_int = c(5, 13, 18, 23) would correspond to a period for
 #' Morning starting at 5:00 (until 13:00), Afternoon starting at 13:00 (until 18:00),
