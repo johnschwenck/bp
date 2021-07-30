@@ -547,6 +547,52 @@ visit_adj <- function(data, visit = NULL){
 #                                                                                                      #
 ########################################################################################################
 
+# Helper function to check the correctness of supplied ToD_int
+# Want this to be a vector of length 4 of integer values between 0 and 23 corresponding to breaks between night/morning, morning/afternoon, afternoon/evening, and evening/night
+ToD_int_check <- function(ToD_int){
+  if (!is.numeric(ToD_int)){
+    stop("ToD_int must be an integer vector of length 4.")
+  }
+
+  if(!is.vector(ToD_int)){
+    warning('ToD_int must be a vector, coerced input to vector.')
+    ToD_int <- as.vector(ToD_int)
+  }
+
+  if(length(ToD_int) != 4){
+    stop('ToD_int must be an integer vector of length 4.')
+  }
+
+  # Check that integers are all 0 to 24
+  if (any(!(ToD_int %in% c(0:24)))){
+    stop('ToD_int must contain integer values corresponding to hours of the day from 0 to 23.')
+  }
+
+  # Check that in case 24 is supplied, it is changed to 0
+  if (any(ToD_int == 24)){
+    warning('One of the supplied hours is 24, which is treated as midnight and coerced to 0.')
+    ToD_int[ToD_int == 24] = 0
+  }
+
+  # Check for duplicates
+  if( any( duplicated( ToD_int ) ) == TRUE ){
+    stop('Cannot have overlapping / duplicate values within the ToD interval.')
+  }
+
+  # Check if the last one is midnight, bring it back to 24 for internal use ease of sorting
+  if (ToD_int[4] == 0){
+    ToD_int[4] = 24
+  }
+
+  # Check for the right sorting
+  if ( any(ToD_int != sort(ToD_int))){
+    warning('The supplied ToD_int hours are not in chronological order, and are automatically resorted')
+    ToD_int = sort(ToD_int)
+  }
+
+  ToD_int
+}
+
 # dt_fmt = date/time format corresponding to valid lubridate order. Default set to "ymd HMS" but can be
 # adjusted based on user's supplied data
 # See documentation here: https://lubridate.tidyverse.org/reference/parse_date_time.html
@@ -559,158 +605,90 @@ date_time_adj <- function(data, date_time = NULL, dt_fmt = "ymd HMS", ToD_int = 
   TIME_OF_DAY = HOUR = DATE_TIME = ID = GROUP = YEAR = MONTH = DAY = SBP = DBP = NULL
   rm(list = c("TIME_OF_DAY", "HOUR", "DATE_TIME", "ID", "GROUP", "YEAR", "MONTH", "DAY", "SBP", "DBP"))
 
-  #colnames(data) <- toupper( colnames(data) )
-
-  # Possible groupings for dplyr
-  grps = c("ID", "VISIT", "GROUP")
-
-  grps = grps[which(grps %in% colnames(data) == TRUE)]
-
   # Date & Time (DateTime object)
   if(!is.null(date_time)){
 
-          if(toupper(date_time) %in% colnames(data) == FALSE){
+    if(toupper(date_time) %in% colnames(data) == FALSE){
 
-            stop('User-defined date_time name does not match column name within supplied dataset\n')
+      stop('User-defined date_time name does not match column name within supplied dataset\n')
 
-          } else {
+    }
 
-              col_idx <- grep(paste("\\b",toupper(date_time),"\\b", sep = ""), names(data))
-              colnames(data)[col_idx] <- "DATE_TIME"
-              data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
+    # Find the column corresponding to date_time and rename it DATE_TIME
+    col_idx <- grep(paste("\\b",toupper(date_time),"\\b", sep = ""), names(data))
+    colnames(data)[col_idx] <- "DATE_TIME"
 
-              #data$DATE_TIME <- as.POSIXct(data$DATE_TIME, tz = "UTC") # coerce to proper time format
-              data$DATE_TIME <- lubridate::parse_date_time(data$DATE_TIME, orders = dt_fmt, tz = "UTC")
+    # Make that column go first
+    data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
 
-              # Year
-              data$YEAR <- lubridate::year(data$DATE_TIME)
+    #data$DATE_TIME <- as.POSIXct(data$DATE_TIME, tz = "UTC") # coerce to proper time format
+    data$DATE_TIME <- lubridate::parse_date_time(data$DATE_TIME, orders = dt_fmt, tz = "UTC")
 
-              # Month
-              data$MONTH <- lubridate::month(data$DATE_TIME)
+    # Year
+    data$YEAR <- lubridate::year(data$DATE_TIME)
 
-              # Day
-              data$DAY <- lubridate::day(data$DATE_TIME)
+    # Month
+    data$MONTH <- lubridate::month(data$DATE_TIME)
 
-              # Hour
-              data$HOUR <- lubridate::hour(data$DATE_TIME)
+    # Day
+    data$DAY <- lubridate::day(data$DATE_TIME)
 
+    # Hour
+    data$HOUR <- lubridate::hour(data$DATE_TIME)
 
-          # Ordering of date time values
+    # Ordering of date time values
+    # Possible groupings for dplyr
+    grps = c("ID", "VISIT", "GROUP")
 
-          ### Chronological Order: Oldest date/times at the top / first ###
-          if(chron_order == TRUE){
+    grps = grps[which(grps %in% colnames(data) == TRUE)]
 
-            #data <- data[order(data$DATE_TIME, decreasing = FALSE),] # old code
+    ### Chronological Order: Oldest date/times at the top / first ###
+    if(chron_order == TRUE){
 
-              data <- data %>%
+        #data <- data[order(data$DATE_TIME, decreasing = FALSE),] # old code
+
+        data <- data %>%
                 dplyr::group_by_at(dplyr::vars(grps) ) %>%
                 dplyr::arrange(DATE_TIME, .by_group = TRUE)
 
             ### Reverse Chronological Order: Most recent date/times at the top / first ###
-          }else{
+    }else{
 
-            #data <- data[order(data$DATE_TIME, decreasing = TRUE),] # old code
+      #data <- data[order(data$DATE_TIME, decreasing = TRUE),] # old code
 
-              data <- data %>%
+      data <- data %>%
                 dplyr::group_by_at(dplyr::vars(grps) ) %>%
                 dplyr::arrange(dplyr::desc(DATE_TIME), .by_group = TRUE)
-          }
+    }
 
-
-            ## Time of Day ##
-
-              # No ToD_int supplied
-            if(is.null(ToD_int)){
-
-                  # Assume --> Night: 0 - 6, Morning: 6 - 12, Afternoon: 12 - 18, Evening: 18 - 24
-                  data <- data %>% dplyr::mutate(TIME_OF_DAY =
+    ## Time of Day ##
+    if(is.null(ToD_int)){
+      # No ToD_int supplied
+      # Assume --> Night: 0 - 6, Morning: 6 - 12, Afternoon: 12 - 18, Evening: 18 - 24
+      data <- data %>% dplyr::mutate(TIME_OF_DAY =
                                                    dplyr::case_when(HOUR >= 0  & HOUR < 6  ~ "Night",
                                                                     HOUR >= 6  & HOUR < 12 ~ "Morning",
                                                                     HOUR >= 12 & HOUR < 18 ~ "Afternoon",
                                                                     HOUR >= 18 & HOUR < 24 ~ "Evening",))
 
-            # ToD_int should be a vector that contains the starting hour for Morning, Afternoon, Evening, Night in that order
-            }else {
+    }else {
+      # Call automated checks on time of day and adjustments,  ToD_int should be a vector that contains the starting hour for Morning, Afternoon, Evening, Night in that order
+      ToD_int = ToD_int_check(ToD_int)
 
-                  if(!is.vector(ToD_int)){
-
-                    warning('ToD_int must be of type vector. Coerced input to vector.')
-                    ToD_int <- as.vector(ToD_int)
-
-                  }else if( length(ToD_int) != 4 ){
-
-                    stop('Time of Day Interval (ToD_int) must only contain 4 numbers corresponding to the start of the Morning, Afternoon, Evening, and Night periods.')
-
-                  }else if( any(ToD_int > 24) == TRUE ){
-
-                    stop('Time of Day Interval (ToD_int) must only lie within the 0 - 24 hour interval. Use 24-hour time.')
-
-                  }else if( any( duplicated( ToD_int ) ) == TRUE ){
-
-                    stop('Cannot have overlapping / duplicate values within the ToD interval.')
-
-                  }else if( ToD_int[1] == 24 ){
-
-                    ToD_int[1] <- 0
-
-                  }else if( ToD_int[length(ToD_int)] == 24 ){
-
-                    ToD_int[length(ToD_int)] <- 0
-
-                  }else if( utils::head(ToD_int, 1) == utils::tail(ToD_int, 1) ){
-
-                    stop('Same starting and ending Time of Day interval values. Coerced ending value to next hour.')
-
-                  }else if( all(ToD_int[2:3] == cummax(ToD_int[2:3])) == FALSE ){
-
-                    stop('values within interval must be increasing for the Morning and Afternoon periods (the second and third values in the interval).')
-
-                  }
-
-                  tmp <- c(ToD_int, ToD_int[1])
-                  difftmp <- diff(tmp)
-                  difftmp[which(difftmp < 0)] <- (24 - tmp[which(difftmp < 0)]) + tmp[which(difftmp < 0) + 1]
-                  testval <- sum(difftmp)
-
-                  if(testval > 24){
-                    stop('Invalid interval for Time of Day. Ensure that hours do not overlap each other and are consistent within a 24 hour period.')
-                  }
-
-                  if( (ToD_int[1] < ToD_int[2]) & (ToD_int[3] < ToD_int[4]) ){
-
-                    data <- data %>% dplyr::mutate(TIME_OF_DAY =
+      data <- data %>% dplyr::mutate(TIME_OF_DAY =
                                                      dplyr::case_when(HOUR >= ToD_int[4] | HOUR < ToD_int[1]  ~ "Night",
                                                                       HOUR >= ToD_int[1] & HOUR < ToD_int[2] ~ "Morning",
                                                                       HOUR >= ToD_int[2] & HOUR < ToD_int[3] ~ "Afternoon",
                                                                       HOUR >= ToD_int[3] & HOUR < ToD_int[4] ~ "Evening"))
-
-                  }else if( (ToD_int[1] > ToD_int[2]) & (ToD_int[3] < ToD_int[4]) ){
-
-                    data <- data %>% dplyr::mutate(TIME_OF_DAY =
-                                                     dplyr::case_when(HOUR >= ToD_int[4] & HOUR < ToD_int[1]  ~ "Night",
-                                                                    ((HOUR >= ToD_int[1] & HOUR < 24)) | (HOUR < ToD_int[2]) ~ "Morning",
-                                                                      HOUR >= ToD_int[2] & HOUR < ToD_int[3] ~ "Afternoon",
-                                                                      HOUR >= ToD_int[3] & HOUR < ToD_int[4] ~ "Evening",))
-
-                  }else if( (ToD_int[1] < ToD_int[2]) & (ToD_int[3] > ToD_int[4]) ){
-
-                    data <- data %>% dplyr::mutate(TIME_OF_DAY =
-                                                     dplyr::case_when(HOUR >= ToD_int[4]  & HOUR < ToD_int[1]  ~ "Night",
-                                                                      HOUR >= ToD_int[1]  & HOUR < ToD_int[2] ~ "Morning",
-                                                                      HOUR >= ToD_int[2]  & HOUR < ToD_int[3] ~ "Afternoon",
-                                                                    ((HOUR >= ToD_int[3]) & (HOUR < 24)) | (HOUR < ToD_int[4]) ~ "Evening"))
-
-              }
-            }
-
-        # Adjust TIME_OF_DAY to be factor with fixed 4 levels
-        data$TIME_OF_DAY <- factor(data$TIME_OF_DAY, levels = c("Morning", "Afternoon", "Evening", "Night"))
-
-        # Rearrange columns for consistency
-        data <- data %>% dplyr::relocate(ID, GROUP, DATE_TIME, YEAR, MONTH, DAY, HOUR, TIME_OF_DAY, SBP, DBP)
-
-      }
     }
+
+    # Adjust TIME_OF_DAY to be factor with fixed 4 levels
+    data$TIME_OF_DAY <- factor(data$TIME_OF_DAY, levels = c("Morning", "Afternoon", "Evening", "Night"))
+
+    # Rearrange columns for consistency
+    data <- data %>% dplyr::relocate(ID, GROUP, DATE_TIME, YEAR, MONTH, DAY, HOUR, TIME_OF_DAY, SBP, DBP)
+
+  }
 
   # Convert tibble back to dataframe
   data <- as.data.frame(data)
