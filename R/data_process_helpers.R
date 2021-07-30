@@ -17,11 +17,11 @@ ap_adj <- function(data, ap = NULL){
   # Arterial Pressure (AP)
   if(is.character(ap)){
 
-    if(toupper(ap) %in% toupper( colnames(data) ) == FALSE){
+    if(toupper(ap) %in% colnames(data) == FALSE){
 
       warning('Could not find user-defined AP argument name in dataset. \ni.e. for example, if user improperly defines ap = "art_pres" but that column name does not exist in the dataset, \nthen there will be no matches for "art_pres". \nCheck spelling of AP argument.\n')
 
-      if(length(grep(paste("\\bAP\\b", sep = ""), toupper(names(data)))) == 1){
+      if(length(grep(paste("\\bAP\\b", sep = ""), names(data))) == 1){
 
         stop('Fix user-defined argument name for AP. \nNote: A column in the dataset DOES match the name "AP": \nif this is the correct column, indicate as such in function argument. \ni.e. ap = "AP" \n ')
 
@@ -29,7 +29,7 @@ ap_adj <- function(data, ap = NULL){
 
     }else{
 
-      col_idx <- grep(paste("\\b",toupper(ap),"\\b", sep = ""), toupper(names(data)) )
+      col_idx <- grep(paste("\\b",toupper(ap),"\\b", sep = ""), names(data) )
       data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
 
       if(colnames(data)[1] != "AP"){
@@ -65,11 +65,11 @@ sbp_adj <- function(data, sbp = NULL, data_screen){
       # Systolic BP (SBP)
       if(is.character(sbp)){
 
-        if(toupper(sbp) %in% toupper( colnames(data) ) == FALSE){
+        if(toupper(sbp) %in% colnames(data)  == FALSE){
 
           warning('Could not find user-defined SBP argument name in dataset. \ni.e. for example, if user improperly defines sbp = "syst" but that column name does not exist in the dataset, \nthen there will be no matches for "syst". \nCheck spelling of SBP argument.\n')
 
-          if(length(grep(paste("\\bSBP\\b", sep = ""), toupper(names(data)))) == 1){
+          if(length(grep(paste("\\bSBP\\b", sep = ""), names(data))) == 1){
 
             stop('Fix user-defined argument name for SBP. \nNote: A column in the dataset DOES match the name "SBP": \nif this is the correct column, indicate as such in function argument. \ni.e. sbp = "SBP" \n ')
 
@@ -77,7 +77,7 @@ sbp_adj <- function(data, sbp = NULL, data_screen){
 
         }else{
 
-          col_idx <- grep(paste("\\b",toupper(sbp),"\\b", sep = ""), toupper(names(data)) )
+          col_idx <- grep(paste("\\b",toupper(sbp),"\\b", sep = ""), names(data) )
           data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
 
           if(colnames(data)[1] != "SBP"){
@@ -124,18 +124,18 @@ dbp_adj <- function(data, dbp = NULL, data_screen){
       # Diastolic BP (DBP)
       if(is.character(dbp)){
 
-        if(toupper(dbp) %in% toupper(colnames(data)) == FALSE){
+        if(toupper(dbp) %in% colnames(data) == FALSE){
 
           warning('User-defined DBP name does not match column name of supplied dataset. \ni.e. for example, if user improperly defines dbp = "diast" but there is no column name in the dataset, \nthen there will be no matches for "diast". \nCheck spelling of DBP argument.\n')
 
-          if(length(grep(paste("\\bDBP\\b", sep = ""), toupper(names(data)))) == 1){
+          if(length(grep(paste("\\bDBP\\b", sep = ""), names(data))) == 1){
 
             stop('Fix user-defined argument name for DBP. \nNote: A column in the dataset DOES match the name "DBP": \nif this is the correct column, indicate as such in function argument. \ni.e. sbp = "DBP" \n ')
 
           }
         }else{
 
-          col_idx <- grep(paste("\\b",toupper(dbp),"\\b", sep = ""), toupper(names(data)) )
+          col_idx <- grep(paste("\\b",toupper(dbp),"\\b", sep = ""), names(data) )
           data <- data[, c(1, col_idx, (2:ncol(data))[-col_idx+1])]
 
           if(colnames(data)[2] != "DBP"){
@@ -441,7 +441,7 @@ wake_adj <- function(data, wake = NULL){
 
     if(toupper(wake) %in% colnames(data) == FALSE){
 
-      stop('User-defined wake name does not match column name of supplied dataset\n')
+      stop('User-defined WAKE name does not match column name of supplied dataset\n')
 
     }
 
@@ -551,20 +551,23 @@ visit_adj <- function(data, visit = NULL){
 # adjusted based on user's supplied data
 # See documentation here: https://lubridate.tidyverse.org/reference/parse_date_time.html
 
+
+# Here date_time - column_name for column containing date and time
+# ToD_int - optional argument that changes default allocation into morning, afternoon, evening and night
 date_time_adj <- function(data, date_time = NULL, dt_fmt = "ymd HMS", ToD_int = NULL, chron_order = FALSE){
 
   TIME_OF_DAY = HOUR = DATE_TIME = ID = GROUP = YEAR = MONTH = DAY = SBP = DBP = NULL
   rm(list = c("TIME_OF_DAY", "HOUR", "DATE_TIME", "ID", "GROUP", "YEAR", "MONTH", "DAY", "SBP", "DBP"))
 
-  colnames(data) <- toupper( colnames(data) )
+  #colnames(data) <- toupper( colnames(data) )
 
   # Possible groupings for dplyr
   grps = c("ID", "VISIT", "GROUP")
 
   grps = grps[which(grps %in% colnames(data) == TRUE)]
 
-    # Date & Time (DateTime object)
-    if(!is.null(date_time)){
+  # Date & Time (DateTime object)
+  if(!is.null(date_time)){
 
           if(toupper(date_time) %in% colnames(data) == FALSE){
 
@@ -983,7 +986,7 @@ eod_adj <- function(data, eod = NULL){
     }
 
     # Ensure that DATE_TIME column is present
-    if( "DATE_TIME" %in% toupper(colnames(data)) == FALSE){
+    if( "DATE_TIME" %in% colnames(data) == FALSE){
       stop('DATE_TIME column not present in supplied dataset\n')
     }
 
@@ -1048,7 +1051,7 @@ dow_adj <- function(data, DoW = NULL){
       rm(list = c("DAY_OF_WEEK", "DATE", "DATE_TIME"))
 
       # Coerce all column names are all upper case
-      colnames(data) <- toupper( colnames(data) )
+      # colnames(data) <- toupper( colnames(data) )
 
       # DoW argument supplied by user
       if(!is.null(DoW)){
@@ -1157,13 +1160,13 @@ time_adj <- function(data, time_elap = NULL){
   # Group
   if(!is.null(time_elap)){
 
-    if(toupper(time_elap) %in% toupper( colnames(data) ) == FALSE){
+    if(toupper(time_elap) %in%  colnames(data)  == FALSE){
 
       stop('User-defined time_elap name does not match column name of supplied dataset\n')
 
     } else {
 
-      col_idx <- grep(paste("\\b",toupper(time_elap),"\\b", sep = ""), toupper( names(data)) )
+      col_idx <- grep(paste("\\b",toupper(time_elap),"\\b", sep = ""),  names(data) )
       colnames(data)[col_idx] <- "TIME_ELAPSED"
       data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
 
@@ -1198,19 +1201,19 @@ group_adj <- function(data, group = NULL){
   # Group
   if(!is.null(group)){
 
-    if(toupper(group) %in% toupper( colnames(data) ) == FALSE){
+    if(toupper(group) %in% colnames(data)  == FALSE){
 
       stop('User-defined Group name does not match column name of supplied dataset\n')
 
     } else {
 
-      col_idx <- grep(paste("\\b",toupper(group),"\\b", sep = ""), toupper( names(data) ) )
+      col_idx <- grep(paste("\\b",toupper(group),"\\b", sep = ""), names(data) )
       colnames(data)[col_idx] <- "GROUP"
     }
 
   }else{
 
-    if(!("GROUP" %in% toupper( colnames(data) ))){
+    if(!("GROUP" %in% colnames(data))){
       # Create placeholder GROUP column for use with other functions / plots
       data <- data %>% dplyr::mutate(GROUP = 1)
     }
@@ -1244,20 +1247,20 @@ id_adj <- function(data, id = NULL){
   # ID
   if(!is.null(id)){
 
-      if(toupper(id) %in% toupper( colnames(data) ) == FALSE){
+      if(toupper(id) %in% colnames(data) == FALSE){
 
         stop('User-defined ID name does not match column name of supplied dataset\n')
 
       } else {
 
-        col_idx <- grep(paste("\\b",toupper(id),"\\b", sep = ""), toupper( names(data) ) )
+        col_idx <- grep(paste("\\b",toupper(id),"\\b", sep = ""), names(data) )
         colnames(data)[col_idx] <- "ID"
 
       }
 
   }else{
 
-    if(!("ID" %in% toupper( colnames(data) ) )){
+    if(!("ID" %in%  colnames(data)  )){
       # Create placeholder ID column for use with other functions / plots
       data <- data %>% dplyr::mutate(ID = 1)
     }

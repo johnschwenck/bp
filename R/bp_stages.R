@@ -51,6 +51,9 @@ bp_stages <- function(data, sbp, dbp, inc_low = TRUE, inc_crisis = TRUE, data_sc
   SBP = DBP = BP_CLASS = HOUR = DATE_TIME = . = NULL
   rm(list = c("SBP", "DBP", "BP_CLASS", "HOUR", "DATE_TIME", "."))
 
+  # Convert all column names to upper case for consistency
+  colnames(data) <- toupper(colnames(data))
+
   # Adjust SBP
   data <- sbp_adj(data = data, sbp = sbp, data_screen = data_screen)
 
