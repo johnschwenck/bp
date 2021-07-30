@@ -89,15 +89,13 @@ RPP will be calculated automatically.}
 If not supplied, but DATE or DATE_TIME columns available, then DoW will be created
 automatically. DoW values must be abbreviated as such \code{c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")}}
 
-\item{ToD_int}{Optional vector that overrides the default interval for the Time-of-Day periods.
-By default, the Morning, Afternoon, Evening, and Night periods are set at 6, 12, 18, 0 respectively,
-where 0 corresponds to the 24th hour of the day (i.e. Midnight). By inputting a vector for the
-\code{ToD_int} function argument, the default period can be re-arranged accordingly.
+\item{ToD_int}{Optional vector of length 4, acceptable values are from 0 to 23 in a sorted order (corresponding to hour for Morning, Afternoon, Evening, Night). This vector allows to override the default interval for the Time-of-Day periods: if NULL, the Morning, Afternoon, Evening, and Night periods are set at 6, 12, 18, 0 respectively,
+where 0 corresponds to the 24th hour of the day (i.e. Midnight).
 For example, ToD_int = c(5, 13, 18, 23) would correspond to a period for
 Morning starting at 5:00 (until 13:00), Afternoon starting at 13:00 (until 18:00),
 Evening starting at 18:00 (until 23:00), and Night starting at 23:00 (until 5:00)}
 
-\item{eod}{Optional argument to adjust the delineation for the end of day (eod). For individuals who
+\item{eod}{Optional argument to adjust the delineation for the end of day (eod). The supplied value should be either a 3 or 4 digit integer corresponding to 24-hour time, e.g. For individuals who
 do not go to bed early or work night-shifts, for example, this argument adjusts the end of day so
 that any readings in the early morning (i.e. past midnight but before they wake up) are not grouped with
 the next day's readings.}

@@ -433,15 +433,15 @@ map_adj <- function(data, map = NULL){
 
 wake_adj <- function(data, wake = NULL){
 
-  WAKE = DBP = NULL
-  rm(list = c("WAKE", "DBP"))
+  WAKE = DBP = TIME_OF_DAY = NULL
+  rm(list = c("WAKE", "DBP", "TIME_OF_DAY"))
 
   # Wake (1: Awake | 0: Asleep)
   if(!is.null(wake)){
 
     if(toupper(wake) %in% colnames(data) == FALSE){
 
-      stop('User-defined ID name does not match column name of supplied dataset\n')
+      stop('User-defined wake name does not match column name of supplied dataset\n')
 
     }
 
@@ -463,6 +463,16 @@ wake_adj <- function(data, wake = NULL){
 
     data$WAKE <- as.factor(data$WAKE)
 
+  }else if ("TIME_OF_DAY" %in% colnames(data)){
+    # if there is time of day information, then assign all night to sleep and rest to wake with a message
+    message("Absent wake column. Allocating night as sleep.")
+    data <- data %>%
+      dplyr::mutate(WAKE = ifelse(TIME_OF_DAY == "Night", 0, 1))
+
+    # Relocate to after DBP column
+    data <- data %>% dplyr::relocate(WAKE, .after = DBP)
+
+    data$WAKE <- as.factor(data$WAKE)
   }
 
   return(data)
