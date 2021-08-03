@@ -378,7 +378,7 @@ bp_ts_plots <- function(data, index = NULL, subj = NULL, first_hour = 0, rotate_
                           ggplot2::geom_smooth(ggplot2::aes(group = "", y = DBP), method = "loess", col = 'red', span = 1)  +
 
                           # Rotate x axis writing if rotate_xlab = TRUE
-                          {if (rotate_xlab == TRUE) ggplot2::theme(axis.text.x = ggplot2::element_text(angle=90)) } +
+                          #{if (rotate_xlab == TRUE) ggplot2::theme(axis.text.x = ggplot2::element_text(angle=90)) } +
 
                           # X Axis Label based on whatever is selected for index
                           ggplot2::xlab(colnames(tmp)[grep("HOUR", colnames(tmp))]) +
@@ -387,10 +387,10 @@ bp_ts_plots <- function(data, index = NULL, subj = NULL, first_hour = 0, rotate_
                           ggplot2::ylab("Blood Pressure (mmHg)") +
 
                           # Plot Title - Dynamic for multiple subjects if applicable
-                          ggplot2::ggtitle( paste("BP Profile for Subject: ", i, sep = "") ) +
+                          ggplot2::ggtitle( paste("BP Profile for Subject: ", i, sep = "") ) #+
 
                           # Wrap by number of input variable
-                          {if (!is.null(wrap_var)) ggplot2::facet_wrap(as.vector(paste("~", wrap_var)), scales = "free_x", nrow = wrap_row, ncol = wrap_col)} # wrap_var, wrap_row & wrap_col
+                          #{if (!is.null(wrap_var)) ggplot2::facet_wrap(as.vector(paste("~", wrap_var)), scales = "free_x", nrow = wrap_row, ncol = wrap_col)} # wrap_var, wrap_row & wrap_col
 
 
 
