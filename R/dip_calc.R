@@ -129,12 +129,27 @@ dip_calc <- function(data, sleep_start_end = NULL, dip_thresh = 0.10, extreme_th
 
   # Check compatibility of dip_thresh and extreme_thresh if not default (user-specified)
   if(dip_thresh != 0.10 | extreme_thresh != 0.20){
-    if(dip_thresh == extreme_thresh){
-      warning('Threshold for "Dipper" status and "Extreme Dipper" status are identical')
-    }
-    if(dip_thresh > extreme_thresh){
-      stop('"dipping" threshold cannot exceed "extreme dipping" threshold')
-    }
+
+      # Identical is illogical, throw an error
+      if(dip_thresh == extreme_thresh){
+        stop('Threshold for "Dipper" status and "Extreme Dipper" status cannot be identical.
+             \nextreme_thresh must be larger than dip_thresh and both must be positive values.')
+      }
+
+      # Cannot have negative thresholds
+      if(dip_thresh < 0 | extreme_thresh < 0){
+
+            stop('Both dip_thresh and extreme_thresh must be positive values')
+
+      # Assuming positive values (i.e. not negative or zero)
+      }else{
+
+            # Ensure that extreme_thresh is larger than dip_thresh (if equal, error will be thrown from above)
+            if(dip_thresh > extreme_thresh){
+              stop('dip_thresh cannot exceed extreme_thresh and must both be positive values.')
+            }
+
+      }
   }
 
 
@@ -165,15 +180,15 @@ dip_calc <- function(data, sleep_start_end = NULL, dip_thresh = 0.10, extreme_th
 
   dip_pct <- dip %>%
 
-    dplyr::summarise( dip_sys = -(1 - pct(avg_SBP)),
-                      dip_dias = -(1 - pct(avg_DBP)) ) %>%
+    dplyr::summarise( dip_sys = (1 - pct(avg_SBP)),
+                      dip_dias = (1 - pct(avg_DBP)) ) %>%
 
-    dplyr::mutate(class_sys = ifelse(  dip_sys >= 0, "reverse",
-                                       ifelse(  dip_sys > -dip_thresh, "non-dipper",
-                                                ifelse( (dip_sys <= -dip_thresh) & (dip_sys >= -extreme_thresh), "dipper","extreme"))),
-                  class_dias = ifelse(  dip_dias >= 0, "reverse",
-                                        ifelse(  dip_dias > -dip_thresh, "non-dipper",
-                                                 ifelse( (dip_dias <= -dip_thresh) & (dip_dias >= -extreme_thresh), "dipper","extreme")))) %>%
+    dplyr::mutate(class_sys = ifelse(  dip_sys <= 0, "reverse",
+                                       ifelse(  dip_sys < dip_thresh, "non-dipper",
+                                                ifelse( (dip_sys >= dip_thresh) & (dip_sys <= extreme_thresh), "dipper","extreme"))),
+                  class_dias = ifelse(  dip_dias <= 0, "reverse",
+                                        ifelse(  dip_dias < dip_thresh, "non-dipper",
+                                                 ifelse( (dip_dias >= dip_thresh) & (dip_dias <= extreme_thresh), "dipper","extreme")))) %>%
 
     dplyr::relocate(class_sys, .after = dip_sys)
 
