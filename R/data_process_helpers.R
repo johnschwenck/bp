@@ -57,7 +57,7 @@ ap_adj <- function(data, ap = NULL){
 #                                                                                                      #
 ########################################################################################################
 
-sbp_adj <- function(data, sbp = NULL, data_screen){
+sbp_adj <- function(data, sbp = NULL, data_screen, SUL, SLL){
 
   SBP = NULL
   rm(list = c("SBP"))
@@ -94,7 +94,7 @@ sbp_adj <- function(data, sbp = NULL, data_screen){
             #   - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory
             #     Blood Pressure: Methodological Aspects
             data <- data %>%
-              dplyr::filter(SBP < 240 & SBP > 50)
+              dplyr::filter(SBP < SUL & SBP > SLL)
 
           }
 
@@ -116,7 +116,7 @@ sbp_adj <- function(data, sbp = NULL, data_screen){
 #                                                                                                      #
 ########################################################################################################
 
-dbp_adj <- function(data, dbp = NULL, data_screen){
+dbp_adj <- function(data, dbp = NULL, data_screen, DUL, DLL){
 
   DBP = NULL
   rm(list = c("DBP"))
@@ -151,7 +151,9 @@ dbp_adj <- function(data, dbp = NULL, data_screen){
             # Screening criteria: Eliminate values {DBP > 140 | DBP < 40} according to Omboni, et al (1995) paper
             #   - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure: Methodological Aspects
             data <- data %>%
-              dplyr::filter(DBP < 140 & DBP > 40)
+              # DUL: DBP Upper Limit
+              # DLL: DBP Lower Limit
+              dplyr::filter(DBP < DUL & DBP > DLL)
 
           }
 
@@ -233,7 +235,7 @@ pp_adj <- function(data, pp = NULL){
 #                                                                                                      #
 ########################################################################################################
 
-hr_adj <- function(data, hr = NULL, data_screen){
+hr_adj <- function(data, hr = NULL, data_screen, HRUL, HRLL){
 
   HR = DBP = NULL
   rm(list = c("HR", "DBP"))
@@ -252,7 +254,7 @@ hr_adj <- function(data, hr = NULL, data_screen){
             # - Lowest HR recorded: https://www.guinnessworldrecords.com/world-records/lowest-heart-rate
             # - High HR from the common {220 - age} formula
             data <- data %>%
-              dplyr::filter(HR < 220 & HR > 20)
+              dplyr::filter(HR < HRUL & HR > HRLL)
 
           }
 
@@ -282,7 +284,7 @@ hr_adj <- function(data, hr = NULL, data_screen){
             # - Lowest HR recorded: https://www.guinnessworldrecords.com/world-records/lowest-heart-rate
             # - High HR from the common {220 - age} formula
             data <- data %>%
-              dplyr::filter(HR < 220 & HR > 20)
+              dplyr::filter(HR < HRUL & HR > HRLL)
 
           }
         }

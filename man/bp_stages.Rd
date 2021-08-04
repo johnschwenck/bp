@@ -10,7 +10,11 @@ bp_stages(
   dbp,
   inc_low = TRUE,
   inc_crisis = TRUE,
-  data_screen = TRUE
+  data_screen = TRUE,
+  SUL = 240,
+  SLL = 50,
+  DUL = 140,
+  DLL = 40
 )
 }
 \arguments{
@@ -34,6 +38,26 @@ DBP.}
 \item{data_screen}{Default to TRUE. data_screens for extreme values in the data for both \code{SBP} and \code{DBP}
 according to Omboni, et al (1995) paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment
 from Ambulatory Blood Pressure: Methodological Aspects}
+
+\item{SUL}{Systolic Upper Limit (SUL). If \code{data_screen = TRUE}, then \code{SUL} sets the upper limit by which
+to exclude any \code{SBP} values that exceed this threshold. The default is set to 240 per Omboni, et al (1995)
+paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure:
+Methodological Aspects}
+
+\item{SLL}{Systolic Lower Limit (SLL). If \code{data_screen = TRUE}, then \code{SLL} sets the lower limit by which
+to exclude any \code{SBP} values that fall below this threshold. The default is set to 50 per Omboni, et al (1995)
+paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure:
+Methodological Aspects}
+
+\item{DUL}{Diastolic Upper Limit (DUL). If \code{data_screen = TRUE}, then \code{DUL} sets the upper limit by which
+to exclude any \code{DBP} values that exceed this threshold. The default is set to 140 per Omboni, et al (1995)
+paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure:
+Methodological Aspects}
+
+\item{DLL}{Diastolic Lower Limit (DLL). If \code{data_screen = TRUE}, then \code{DLL} sets the lower limit by which
+to exclude any \code{DBP} values that fall below this threshold. The default is set to 40 per Omboni, et al (1995)
+paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure:
+Methodological Aspects}
 }
 \value{
 A dataframe with additional columns corresponding to the stages of high blood pressure and the

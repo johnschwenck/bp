@@ -25,6 +25,25 @@
 #' according to Omboni, et al (1995) paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment
 #' from Ambulatory Blood Pressure: Methodological Aspects
 #'
+#' @param SUL Systolic Upper Limit (SUL). If \code{data_screen = TRUE}, then \code{SUL} sets the upper limit by which
+#' to exclude any \code{SBP} values that exceed this threshold. The default is set to 240 per Omboni, et al (1995)
+#' paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure:
+#' Methodological Aspects
+#'
+#' @param SLL Systolic Lower Limit (SLL). If \code{data_screen = TRUE}, then \code{SLL} sets the lower limit by which
+#' to exclude any \code{SBP} values that fall below this threshold. The default is set to 50 per Omboni, et al (1995)
+#' paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure:
+#' Methodological Aspects
+#'
+#' @param DUL Diastolic Upper Limit (DUL). If \code{data_screen = TRUE}, then \code{DUL} sets the upper limit by which
+#' to exclude any \code{DBP} values that exceed this threshold. The default is set to 140 per Omboni, et al (1995)
+#' paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure:
+#' Methodological Aspects
+#'
+#' @param DLL Diastolic Lower Limit (DLL). If \code{data_screen = TRUE}, then \code{DLL} sets the lower limit by which
+#' to exclude any \code{DBP} values that fall below this threshold. The default is set to 40 per Omboni, et al (1995)
+#' paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure:
+#' Methodological Aspects
 #'
 #' @return A dataframe with additional columns corresponding to the stages of high blood pressure and the
 #' supplementary SBP / DBP categories
@@ -43,7 +62,7 @@
 #'
 #' bp_stages(bp_jhs, sbp = "sys.mmhg.", dbp = "dias.mmhg.")
 #'
-bp_stages <- function(data, sbp, dbp, inc_low = TRUE, inc_crisis = TRUE, data_screen = TRUE){
+bp_stages <- function(data, sbp, dbp, inc_low = TRUE, inc_crisis = TRUE, data_screen = TRUE, SUL = 240, SLL = 50, DUL = 140, DLL = 40){
 
   # BP Categories / Stages
   # Only require SBP and DBP
@@ -55,10 +74,10 @@ bp_stages <- function(data, sbp, dbp, inc_low = TRUE, inc_crisis = TRUE, data_sc
   colnames(data) <- toupper(colnames(data))
 
   # Adjust SBP
-  data <- sbp_adj(data = data, sbp = sbp, data_screen = data_screen)
+  data <- sbp_adj(data = data, sbp = sbp, data_screen = data_screen, SUL = SUL, SLL = SLL)
 
   # Adjust DBP
-  data <- dbp_adj(data = data, dbp = dbp, data_screen = data_screen)
+  data <- dbp_adj(data = data, dbp = dbp, data_screen = data_screen, DUL = DUL, DLL = DLL)
 
   # Compatibility Check for user-supplied stages if applicable
   #sbp_stages <- stage_check(sbp_stages_alt, dbp_stages_alt)[[1]]

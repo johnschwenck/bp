@@ -74,6 +74,36 @@
 #' for both \code{SBP} and \code{DBP} according to Omboni, et al (1995) paper - Calculation of Trough:Peak
 #' Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure: Methodological Aspects
 #'
+#' @param SUL Systolic Upper Limit (SUL). If \code{data_screen = TRUE}, then \code{SUL} sets the upper limit by which
+#' to exclude any \code{SBP} values that exceed this threshold. The default is set to 240 per Omboni, et al (1995)
+#' paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure:
+#' Methodological Aspects
+#'
+#' @param SLL Systolic Lower Limit (SLL). If \code{data_screen = TRUE}, then \code{SLL} sets the lower limit by which
+#' to exclude any \code{SBP} values that fall below this threshold. The default is set to 50 per Omboni, et al (1995)
+#' paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure:
+#' Methodological Aspects
+#'
+#' @param DUL Diastolic Upper Limit (DUL). If \code{data_screen = TRUE}, then \code{DUL} sets the upper limit by which
+#' to exclude any \code{DBP} values that exceed this threshold. The default is set to 140 per Omboni, et al (1995)
+#' paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure:
+#' Methodological Aspects
+#'
+#' @param DLL Diastolic Lower Limit (DLL). If \code{data_screen = TRUE}, then \code{DLL} sets the lower limit by which
+#' to exclude any \code{DBP} values that fall below this threshold. The default is set to 40 per Omboni, et al (1995)
+#' paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure:
+#' Methodological Aspects
+#'
+#' @param HRUL Heart Rate Upper Limit (HRUL). If \code{data_screen = TRUE}, then \code{HRUL} sets the upper limit
+#' by which to exclude any \code{HR} values that exceed this threshold. The default is set to 220 per the upper limit
+#' of the common max heart rate formula: 220 - age
+#'
+#' see https://www.cdc.gov/physicalactivity/basics/measuring/heartrate.htm
+#'
+#' @param HRLL Heart Rate Upper Limit (HRUL). If \code{data_screen = TRUE}, then \code{HRUL} sets the upper limit
+#' by which to exclude any \code{HR} values that exceed this threshold. The default is set to 27 per Guinness
+#' World Records - lowest heart rate (https://www.guinnessworldrecords.com/world-records/lowest-heart-rate)
+#'
 #' @param inc_low Optional logical argument dictating whether or not to include the "Low" category for BP
 #' classification column (and the supplementary SBP/DBP Category columns). Default set to TRUE.
 #'
@@ -198,6 +228,12 @@ process_data <- function(data,
                              ToD_int = NULL,
                              eod = NULL,
                              data_screen = TRUE,
+                             SUL = 240,
+                             SLL = 50,
+                             DUL = 140,
+                             DLL = 40,
+                             HRUL = 220,
+                             HRLL = 27,
                              inc_low = TRUE,
                              inc_crisis = TRUE,
                              agg = FALSE,
@@ -285,11 +321,11 @@ process_data <- function(data,
 
 
         # Adjust Systolic Blood Pressure (SBP)
-        data <- sbp_adj(data = data, sbp = sbp, data_screen = data_screen)
+        data <- sbp_adj(data = data, sbp = sbp, data_screen = data_screen, SUL = SUL, SLL = SLL)
         sbp_tmp <- names(data)[1] # For bp_stages function
 
         # Adjust Diastolic Blood Pressure (DBP)
-        data <- dbp_adj(data = data, dbp = dbp, data_screen = data_screen)
+        data <- dbp_adj(data = data, dbp = dbp, data_screen = data_screen, DUL = DUL, DLL = DLL)
         dbp_tmp <- names(data)[2] # For bp_stages function
 
         # Adjust ID
@@ -332,7 +368,7 @@ process_data <- function(data,
         #+++++++++++++++++++++++++++++++++++#
 
         # Adjust Heart Rate (HR)
-        data <- hr_adj(data = data, hr = hr, data_screen = data_screen)
+        data <- hr_adj(data = data, hr = hr, data_screen = data_screen, HRUL = HRUL, HRLL = HRLL)
 
         # Adjust Rate Pressure Product (RPP)
         data <- rpp_adj(data = data, rpp = rpp)
@@ -360,7 +396,11 @@ process_data <- function(data,
                           dbp = dbp_tmp,
                           inc_low = inc_low,
                           inc_crisis = inc_crisis,
-                          data_screen = data_screen)
+                          data_screen = data_screen,
+                          SUL = SUL,
+                          SLL = SLL,
+                          DUL = DUL,
+                          DLL = DLL)
 
 
         # Move Classification columns to correct positions

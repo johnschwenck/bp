@@ -24,6 +24,12 @@ process_data(
   ToD_int = NULL,
   eod = NULL,
   data_screen = TRUE,
+  SUL = 240,
+  SLL = 50,
+  DUL = 140,
+  DLL = 40,
+  HRUL = 220,
+  HRLL = 27,
   inc_low = TRUE,
   inc_crisis = TRUE,
   agg = FALSE,
@@ -103,6 +109,36 @@ the next day's readings.}
 \item{data_screen}{Optional logical argument; default set to TRUE. Screens for extreme values in the data
 for both \code{SBP} and \code{DBP} according to Omboni, et al (1995) paper - Calculation of Trough:Peak
 Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure: Methodological Aspects}
+
+\item{SUL}{Systolic Upper Limit (SUL). If \code{data_screen = TRUE}, then \code{SUL} sets the upper limit by which
+to exclude any \code{SBP} values that exceed this threshold. The default is set to 240 per Omboni, et al (1995)
+paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure:
+Methodological Aspects}
+
+\item{SLL}{Systolic Lower Limit (SLL). If \code{data_screen = TRUE}, then \code{SLL} sets the lower limit by which
+to exclude any \code{SBP} values that fall below this threshold. The default is set to 50 per Omboni, et al (1995)
+paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure:
+Methodological Aspects}
+
+\item{DUL}{Diastolic Upper Limit (DUL). If \code{data_screen = TRUE}, then \code{DUL} sets the upper limit by which
+to exclude any \code{DBP} values that exceed this threshold. The default is set to 140 per Omboni, et al (1995)
+paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure:
+Methodological Aspects}
+
+\item{DLL}{Diastolic Lower Limit (DLL). If \code{data_screen = TRUE}, then \code{DLL} sets the lower limit by which
+to exclude any \code{DBP} values that fall below this threshold. The default is set to 40 per Omboni, et al (1995)
+paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure:
+Methodological Aspects}
+
+\item{HRUL}{Heart Rate Upper Limit (HRUL). If \code{data_screen = TRUE}, then \code{HRUL} sets the upper limit
+by which to exclude any \code{HR} values that exceed this threshold. The default is set to 220 per the upper limit
+of the common max heart rate formula: 220 - age
+
+see https://www.cdc.gov/physicalactivity/basics/measuring/heartrate.htm}
+
+\item{HRLL}{Heart Rate Upper Limit (HRUL). If \code{data_screen = TRUE}, then \code{HRUL} sets the upper limit
+by which to exclude any \code{HR} values that exceed this threshold. The default is set to 27 per Guinness
+World Records - lowest heart rate (https://www.guinnessworldrecords.com/world-records/lowest-heart-rate)}
 
 \item{inc_low}{Optional logical argument dictating whether or not to include the "Low" category for BP
 classification column (and the supplementary SBP/DBP Category columns). Default set to TRUE.}
