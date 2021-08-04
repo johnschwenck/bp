@@ -923,67 +923,53 @@ dates_adj <- function(data){
 #                                                                                                      #
 ########################################################################################################
 
-eod_adj <- function(data, eod = NULL){
-
+eod_adj <- function(data, eod){
 
   # Clean global variables
   DATE = DATE_TIME = NULL
   rm(list = c("DATE", "DATE_TIME"))
 
+  if ("DATE_TIME" %in% colnames(data) == FALSE){
+    warning("The supplied eod argument is ignored as no DATE_TIME column is found")
+    return(data)
+  }
 
-  if(!is.null(eod)){
+  # Check that supplied eod is a character string
+  if (!is.character(eod)){
+    stop('eod must be a character (string) with four characters that represent 24-hour time format.  \n\ni.e. 0130 implies 1:30 AM and 2230 imples 10:30 PM')
+  }
 
-    # count of digits - 3 : am | 4 : pm)
-    if( floor(log10(abs(eod))) + 1 > 4 ){
-      stop('eod argument can only take on either 3 or 4 digits that represent 24-hour time format. \n\ni.e. 130 implies 1:30 AM and 2230 imples 10:30 PM')
-    }
+  # Check that the string has exactly 4 characters
+  if (nchar(eod) != 4){
+    stop('eod must be a character (string) with four characters that represent 24-hour time format.  \n\ni.e. 0130 implies 1:30 AM and 2230 imples 10:30 PM')
+  }
 
-    # Check whether user only entered hours (i.e. 22 for 10 PM instead of 2200)
-    if(floor(log10(abs(eod))) + 1 <= 2){
+  # Extract the hour corresponding to time
+  hour_input = as.numeric(substr(eod, 1, 2))
 
-      hour_input <- eod
-      min_input <- 0
-      warning('eod argument should be either 3 or 4 digits that correspond to 24-hour time. Coerced minutes to zero. If only supplying an hour, it is best to add zeros to the end. \n\ni.e. 22 should be represented as 2200 for 10:00 PM')
+  # Extract the minutes corresponding to time
+  min_input = as.numeric(substr(eod, 3, 4))
 
-    }else{
+  # Check that both hour and minute are valid
+  if(!(hour_input %in% c(0:23)) | !(min_input %in% c(0:59))){
+    stop('eod hour argument must be an integer between 0 and 23, eod minutes argument must be an integer between 0 and 59')
+  }
 
-      # Extract hour from eod argument
-      hour_input <- ifelse( floor(log10(abs(eod))) + 1 == 3, as.numeric( substr(eod, 1, 1) ),
-                            ifelse( floor(log10(abs(eod))) + 1 == 4, as.numeric( substr(eod, 1, 2) ), 0 ) )
-      # Extract minute from eod argument
-      min_input <- eod %% 100
+  # Adjust dates according to eod argument
+  # If 00:00 - no adjustment should happen, Day 1 up to 00:00, Day 2 starting at 00:00
+  # If 00:20 - then those extra 20 minutes should count as previous day, Day is stretched up to 00:19, 00:20 and more is Day 2
+  # Up to 12:00 - all of these should count as previous day
+  # If 23:30 - the minutes from 23:30 to 00:00 should already count as next day
+  # If 12:30 - then from 12:30 to 00:00 should count as next day
+  # 12:00 - can go either way, currently does the next day
 
-    }
-
-    # Check for correct hour input
-    if(hour_input > 23 | hour_input < 0){
-      stop('eod hour argument cannot be less than 0 or greater than 23. Hours of the day range from 0 to 23 where 0 denotes midnight.')
-    }
-
-    # Check for correct minute input
-    if(min_input > 59 | min_input < 0){
-      stop('eod minute argument cannot be less than 0 or exceed 59. Minutes range from 0 to 59.')
-    }
-
-    # Ensure that DATE_TIME column is present
-    if( "DATE_TIME" %in% colnames(data) == FALSE){
-      stop('DATE_TIME column not present in supplied dataset\n')
-    }
-
-    # Set time zone to UTC --> check ymd_hms format in process helpers to ensure posixct format
-    data$DATE_TIME <- lubridate::ymd_hms(data$DATE_TIME, tz = "UTC")
-
-
-    # Adjust dates according to eod argument
+    # If hour_input < 12, then
     data <- data %>%
       dplyr::mutate(DATE = dplyr::case_when(
 
         hour_input < 12 ~ {dplyr::case_when(
 
-          # less than minutes only (i.e. 0023 < 0030 if eod = 0030) & hour is midnight
-          lubridate::hour(DATE_TIME) == 0 & lubridate::minute(DATE_TIME) <= min_input ~ as.Date( DATE_TIME - lubridate::days(1) ),
-
-          lubridate::hour(DATE_TIME) == hour_input & lubridate::minute(DATE_TIME) <= min_input ~ as.Date( DATE_TIME - lubridate::days(1) ),
+          lubridate::hour(DATE_TIME) == hour_input & lubridate::minute(DATE_TIME) < min_input ~ as.Date( DATE_TIME - lubridate::days(1) ),
 
           lubridate::hour(DATE_TIME) < hour_input ~ as.Date( DATE_TIME - lubridate::days(1) ),
 
@@ -1005,9 +991,6 @@ eod_adj <- function(data, eod = NULL){
 
       )) %>%
       dplyr::relocate(DATE, .after = DATE_TIME)
-
-
-  }
 
   return(data)
 

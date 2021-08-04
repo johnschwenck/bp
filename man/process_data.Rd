@@ -101,10 +101,8 @@ For example, ToD_int = c(5, 13, 18, 23) would correspond to a period for
 Morning starting at 5:00 (until 13:00), Afternoon starting at 13:00 (until 18:00),
 Evening starting at 18:00 (until 23:00), and Night starting at 23:00 (until 5:00)}
 
-\item{eod}{Optional argument to adjust the delineation for the end of day (eod). The supplied value should be either a 3 or 4 digit integer corresponding to 24-hour time, e.g. For individuals who
-do not go to bed early or work night-shifts, for example, this argument adjusts the end of day so
-that any readings in the early morning (i.e. past midnight but before they wake up) are not grouped with
-the next day's readings.}
+\item{eod}{Optional argument to adjust the delineation for the end of day (eod). The supplied value should be a character string with 4 characters representing the digits of 24-hour time, e.g. "1310" corresponds to 1:10pm. For individuals who
+do not go to bed early or work night-shifts, this argument adjusts the \code{DATE} column so that the days change at specified time. \code{eod = "0000"} means no change. \code{eod = "1130"} will adjust the date of the readings up to 11:30am to the previous date. \code{eod = "1230"} will adjust the date of the readings after 12:30pm to the next date.}
 
 \item{data_screen}{Optional logical argument; default set to TRUE. Screens for extreme values in the data
 for both \code{SBP} and \code{DBP} according to Omboni, et al (1995) paper - Calculation of Trough:Peak
