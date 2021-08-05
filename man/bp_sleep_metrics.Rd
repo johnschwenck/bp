@@ -18,8 +18,8 @@ comply with integers so long as they are all present in the \code{ID} column of 
 }
 \value{
 The function outputs a list containing 4 tibble objects corresponding to the following tables:
-\item{[[1]]}{Counts of how many BP measurements were observed overall (\code{N_total}), during sleep (\code{N_sleep}), and during wake (\code{N_awake}) for each subject ID and grouping variable}
-\item{[[2]]}{Summary statistics for systolic BP measurements (SBP): mean SBP value over Sleep and Wake, sd SBP value over Sleep and Wake, mean SBP value over presleep period (2 hours before sleep start, evening in Kario et al. (2003)), mean SBP value over prewake period (2 hours before wake), mean SBP value over postwake period (2 hours after wake, morning in Kario et al. (2003)), mean SBP value over 3 reading centered at the lowest SBP value during sleep}
+\item{[[1]]}{Counts of how many BP measurements were observed overall (\code{N_total}), during sleep (\code{N_sleep}), and during wake (\code{N_wake}) for each subject ID and grouping variable}
+\item{[[2]]}{Summary statistics for systolic BP measurements (SBP): mean SBP value over Sleep and Wake, sd SBP value over Sleep and Wake, mean SBP value over presleep period (evening in Kario et al. (2003)), mean SBP value over prewake period, mean SBP value over postwake period (morning in Kario et al. (2003)), mean SBP value over 3 reading centered at the lowest SBP value during sleep}
 \item{[[3]]}{Summary statistics for diastolic BP measurements (DBP), same as for SBP}
 \item{[[4]]}{BP metrics associated with sleep as defined above, separately for SBP and DBP}
 }
