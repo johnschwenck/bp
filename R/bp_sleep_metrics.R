@@ -218,11 +218,30 @@ sleep_stages <- function(data, grps){
 #' value or a vector of elements. The input type should be character, but the function will
 #' comply with integers so long as they are all present in the \code{ID} column of the data.
 #'
+#' @details
+#' The calculation of BP metrics related to sleep is based on averages of BP readings from four periods as identified in Kairo et al. (2003): presleep or evening (2 hours before sleep start), prewake (2 hours before wake), postwake or morning (2 hours after wake), lowest (3 measurements centered at the minimal BP reading over sleep). The function uses \code{WAKE} column to automatically allocate BP measurements to various periods. The following metrics are defined as a function of the period averages (separately for SBP and DBP)
+#'
+#' \code{dip_calc} = 1 - mean_sleep_BP/mean_wake_BP (dip proportion)
+#'
+#' \code{noct_fall} = mean_presleep_BP - mean_lowest_BP (nocturnal fall)
+#'
+#' \code{ST_mbps} = mean_postwake_BP - mean_lowest_BP (sleep through morning blood pressure surge)
+#'
+#' \code{PW_mbps} = mean_postwake_BP - mean_prewake_BP (prewake morning blood pressure surge)
+#'
+#' \code{ME_ave} = (mean_presleep_BP + mean_postwake_BP)/2 (morning-evening average)
+#'
+#' \code{ME_diff} = mean_postwake_BP - mean_presleep_BP (morning-evening difference)
+#'
 #' @return The function outputs a list containing 4 tibble objects corresponding to the following tables:
 #' \item{[[1]]}{Counts of how many BP measurements were observed overall (\code{N_total}), during sleep (\code{N_sleep}), and during wake (\code{N_awake}) for each subject ID and grouping variable}
-#' \item{[[2]]}{Summary statistics for systolic BP measurements (SBP):}
+#' \item{[[2]]}{Summary statistics for systolic BP measurements (SBP): mean SBP value over Sleep and Wake, sd SBP value over Sleep and Wake, mean SBP value over presleep period (2 hours before sleep start, evening in Kario et al. (2003)), mean SBP value over prewake period (2 hours before wake), mean SBP value over postwake period (2 hours after wake, morning in Kario et al. (2003)), mean SBP value over 3 reading centered at the lowest SBP value during sleep}
 #' \item{[[3]]}{Summary statistics for diastolic BP measurements (DBP), same as for SBP}
-#' \item{[[4]]}{BP metrics associated with sleep: dip percentage (\code{dip_calc}), nocturnal fall (\code{noc_fall}), morning blood pressure surge (mbps) for sleep-through (\code{ST_mbps}) and pre-wake (\code{PW_mbps})}
+#' \item{[[4]]}{BP metrics associated with sleep as defined above, separately for SBP and DBP}
+#'
+#' @references
+#' Kario, K., Pickering, T. G., Umeda, Y., Hoshide, S., Hoshide, Y., Morinari, M., ... & Shimada, K. (2003). Morning surge in blood pressure as a predictor of silent and clinical cerebrovascular disease in elderly hypertensives: a prospective study. Circulation, 107(10), 1401-1406.
+#'
 #' @export
 #'
 #' @examples
