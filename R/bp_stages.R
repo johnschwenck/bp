@@ -48,6 +48,12 @@
 #' @return A dataframe with additional columns corresponding to the stages of high blood pressure and the
 #' supplementary SBP / DBP categories
 #'
+#' @references
+#' Omboni, S., Parati, G*., Zanchetti, A., Mancia, G. Calculation of trough: peak ratio of
+#' antihypertensive treatment from ambulatory blood pressure: methodological aspects
+#' \emph{Journal of Hypertension}. October 1995 - Volume 13 - Issue 10 - p 1105-1112
+#' \doi{10.1097/00004872-199510000-00005}
+#'
 #' @export
 #'
 #' @examples

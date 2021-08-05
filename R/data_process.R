@@ -156,6 +156,11 @@
 #' systolic or diastolic hypertension in young adults. \emph{Circulation}. 2020; 141:1778–1786.
 #' \doi{10.1161/CIRCULATIONAHA.119.044838}
 #'
+#' Omboni, S., Parati, G*., Zanchetti, A., Mancia, G. Calculation of trough: peak ratio of
+#' antihypertensive treatment from ambulatory blood pressure: methodological aspects
+#' \emph{Journal of Hypertension}. October 1995 - Volume 13 - Issue 10 - p 1105-1112
+#' \doi{10.1097/00004872-199510000-00005}
+#'
 #' Unger, T., Borghi, C., Charchar, F., Khan, N. A., Poulter, N. R., Prabhakaran, D., ... & Schutte,
 #' A. E. (2020). 2020 International Society of Hypertension global hypertension practice guidelines.
 #' \emph{Hypertension}, 75(6), 1334-1357.

@@ -82,3 +82,9 @@ data(bp_jhs)
 bp_stages(bp_jhs, sbp = "sys.mmhg.", dbp = "dias.mmhg.")
 
 }
+\references{
+Omboni, S., Parati, G*., Zanchetti, A., Mancia, G. Calculation of trough: peak ratio of
+antihypertensive treatment from ambulatory blood pressure: methodological aspects
+\emph{Journal of Hypertension}. October 1995 - Volume 13 - Issue 10 - p 1105-1112
+\doi{10.1097/00004872-199510000-00005}
+}
