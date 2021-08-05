@@ -218,11 +218,11 @@ sleep_stages <- function(data, grps){
 #' value or a vector of elements. The input type should be character, but the function will
 #' comply with integers so long as they are all present in the \code{ID} column of the data.
 #'
-#' @return The function outputs a list containing: (1) a list of count data related
-#' to how many instances were observed during night / during day, (2) a list of all
-#' summary statistics for SBP, (3) a list of all summary statistics for DBP, and (4)
-#' a list of all medical literature metrics.
-#'
+#' @return The function outputs a list containing 4 tibble objects corresponding to the following tables:
+#' \item{[[1]]}{Counts of how many BP measurements were observed overall (\code{N_total}), during sleep (\code{N_sleep}), and during wake (\code{N_awake}) for each subject ID and grouping variable}
+#' \item{[[2]]}{Summary statistics for systolic BP measurements (SBP):}
+#' \item{[[3]]}{Summary statistics for diastolic BP measurements (DBP), same as for SBP}
+#' \item{[[4]]}{BP metrics associated with sleep: dip percentage (\code{dip_calc}), nocturnal fall (\code{noc_fall}), morning blood pressure surge (mbps) for sleep-through (\code{ST_mbps}) and pre-wake (\code{PW_mbps})}
 #' @export
 #'
 #' @examples
@@ -326,13 +326,9 @@ bp_sleep_metrics <- function(data, subj = NULL){
         dplyr::group_by_at(dplyr::vars(grps)) %>%
         dplyr::summarize(N_total = dplyr::n(), N_awake = sum(WAKE == 1), N_sleep = sum(WAKE == 0), .groups = 'drop')
 
-      # Add back DATE_TIME as may be used for other things
-      if ("DATE_TIME" %in% colnames(data)){
-        grps = c(grps, "DATE_TIME")
-      }
-
+      # Add back DATE_TIME for sleep stages in grps, as stays local, grps later will not have it
       # Calculate sleep stage indicator columns using sleep_stages() helper function from above
-      data <- sleep_stages(data, grps = grps)
+      data <- sleep_stages(data, grps = c(grps, "DATE_TIME"))
 
 
       # ******************************************************************************************************************************* #
@@ -346,32 +342,9 @@ bp_sleep_metrics <- function(data, subj = NULL){
       ## Make sure to include option for SBP, DBP, or BOTH
       ##
 
-      if("DATE_TIME" %in% grps){
-        grps <- grps[-which(grps %in% "DATE_TIME")]
-      }
-
-
-      #########################
-      ##        Counts       ##
-      #########################
-
-      # # Total Readings for Period
-      # readings <- data %>%
-      #   dplyr::group_by_at(dplyr::vars( c(grps, "date_grp") ) ) %>%
-      #   dplyr::summarise(N_total = dplyr::n(), .groups = 'drop')
-      #
-      # # Total Awake Readings for Period
-      # awake_readings <- data %>%
-      #   dplyr::group_by_at(dplyr::vars( c(grps, "date_grp") ) ) %>%
-      #   dplyr::filter(wake_ind == 1 | wake_ind == 11) %>%
-      #   dplyr::summarise(N_awake = dplyr::n(), .groups = 'drop')
-      #
-      # # Total Sleep Readings for Period
-      # sleep_readings <- data %>%
-      #   dplyr::group_by_at(dplyr::vars( c(grps, "date_grp") ) ) %>%
-      #   dplyr::filter(wake_ind == 0 | wake_ind == 22) %>%
-      #   dplyr::summarise(N_sleep = dplyr::n(), .groups = 'drop')
-
+      #if("DATE_TIME" %in% grps){
+      #  grps <- grps[-which(grps %in% "DATE_TIME")]
+      #}
 
 
       #########################

@@ -17,10 +17,11 @@ value or a vector of elements. The input type should be character, but the funct
 comply with integers so long as they are all present in the \code{ID} column of the data.}
 }
 \value{
-The function outputs a list containing: (1) a list of count data related
-to how many instances were observed during night / during day, (2) a list of all
-summary statistics for SBP, (3) a list of all summary statistics for DBP, and (4)
-a list of all medical literature metrics.
+The function outputs a list containing 4 tibble objects corresponding to the following tables:
+\item{[[1]]}{Counts of how many BP measurements were observed overall (\code{N_total}), during sleep (\code{N_sleep}), and during wake (\code{N_awake}) for each subject ID and grouping variable}
+\item{[[2]]}{Summary statistics for systolic BP measurements (SBP):}
+\item{[[3]]}{Summary statistics for diastolic BP measurements (DBP), same as for SBP}
+\item{[[4]]}{BP metrics associated with sleep: dip percentage (\code{dip_calc}), nocturnal fall (\code{noc_fall}), morning blood pressure surge (mbps) for sleep-through (\code{ST_mbps}) and pre-wake (\code{PW_mbps})}
 }
 \description{
 The \code{bp_sleep_metrics} function serves to calculate sleep-dependent metrics
