@@ -419,7 +419,7 @@ bp_sleep_metrics <- function(data, subj = NULL){
 
 
       ##########################
-      ##    Diastolic (SBP)   ##
+      ##    Diastolic (DBP)   ##
       ##########################
 
       # Sleep DBP
