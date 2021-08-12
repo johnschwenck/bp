@@ -602,7 +602,7 @@ ToD_int_check <- function(ToD_int){
 
 # Here date_time - column_name for column containing date and time
 # ToD_int - optional argument that changes default allocation into morning, afternoon, evening and night
-date_time_adj <- function(data, date_time = NULL, dt_fmt = "ymd HMS", ToD_int = NULL, chron_order = FALSE){
+date_time_adj <- function(data, date_time = NULL, dt_fmt = "ymd HMS", ToD_int = NULL, chron_order = FALSE, tz = "UTC"){
 
   TIME_OF_DAY = HOUR = DATE_TIME = ID = GROUP = YEAR = MONTH = DAY = SBP = DBP = NULL
   rm(list = c("TIME_OF_DAY", "HOUR", "DATE_TIME", "ID", "GROUP", "YEAR", "MONTH", "DAY", "SBP", "DBP"))
@@ -624,7 +624,7 @@ date_time_adj <- function(data, date_time = NULL, dt_fmt = "ymd HMS", ToD_int = 
     data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
 
     #data$DATE_TIME <- as.POSIXct(data$DATE_TIME, tz = "UTC") # coerce to proper time format
-    data$DATE_TIME <- lubridate::parse_date_time(data$DATE_TIME, orders = dt_fmt, tz = "UTC")
+    data$DATE_TIME <- lubridate::parse_date_time(data$DATE_TIME, orders = dt_fmt, tz = tz)
 
     # Year
     data$YEAR <- lubridate::year(data$DATE_TIME)

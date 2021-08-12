@@ -36,7 +36,8 @@ process_data(
   agg_thresh = 3,
   collapse_df = FALSE,
   dt_fmt = "ymd HMS",
-  chron_order = FALSE
+  chron_order = FALSE,
+  tz = "UTC"
 )
 }
 \arguments{
@@ -165,6 +166,10 @@ TRUE refers to chronological order; FALSE refers to reverse chronological order.
 FALSE (i.e. most recent observations listed first in the dataframe).
 
 See https://lubridate.tidyverse.org/reference/parse_date_time.html for more details.}
+
+\item{tz}{Optional argument denoting the respective time zone. Default time zone set to "UTC". See
+Use \code{OlsonNames()} for a complete listing of all available time zones that can be used in this
+argument.}
 }
 \value{
 A processed dataframe object with standardized column names and formats to use with the rest of bp package functions. The following standardized column names are used throughout
