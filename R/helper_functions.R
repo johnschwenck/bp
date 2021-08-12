@@ -8,6 +8,10 @@
 #' or not (\code{FALSE})
 subject_subset_check <- function(data, subj = NULL){
 
+  if(!"ID" %in% toupper(colnames(data))){
+    stop('No ID column found. \nEnsure that process_data is run first to identify corresponding column.')
+  }
+
   subj <- as.character(subj)
   data$ID <- as.character(data$ID)
 
