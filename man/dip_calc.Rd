@@ -38,7 +38,7 @@ data set already contains a \code{WAKE} column.}
 
 \item{dip_thresh}{Default threshold for normal "Dipping" set to 0.10 (i.e. 10\%). This value represents the maximum
 percentage that BP can fall during sleep and be characterized as "Normal" nocturnal decline (dipping).
-Specifically, this category includes all dips between 0% and this value.}
+Specifically, this category includes all dips between 0\% and this value.}
 
 \item{extreme_thresh}{Default threshold for "Extreme Dipping" set to 0.20 (i.e. 20\%). This value represents the maximum
 percentage that BP can fall during sleep and be characterized as "Extreme" nocturnal decline (dipping).
