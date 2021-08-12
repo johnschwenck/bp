@@ -130,6 +130,10 @@
 #'
 #' See https://lubridate.tidyverse.org/reference/parse_date_time.html for more details.
 #'
+#' @param tz Optional argument denoting the respective time zone. Default time zone set to "UTC". See
+#' Use \code{OlsonNames()} for a complete listing of all available time zones that can be used in this
+#' argument.
+#'
 #' @return A processed dataframe object with standardized column names and formats to use with the rest of bp package functions. The following standardized column names are used throughout
 #' \item{BP_TYPE}{One of AP, HBPM or ABPM}
 #' \item{ID}{Subject ID}
@@ -243,7 +247,8 @@ process_data <- function(data,
                              agg_thresh = 3,
                              collapse_df = FALSE,
                              dt_fmt = "ymd HMS",
-                             chron_order = FALSE){
+                             chron_order = FALSE,
+                             tz = "UTC"){
 
 
   # Prepare all variables used via dplyr
@@ -342,7 +347,7 @@ process_data <- function(data,
         data <- visit_adj(data = data, visit = visit)
 
         # Adjust Date/Time values
-        data <- date_time_adj(data = data, date_time = date_time, dt_fmt = dt_fmt, ToD_int = ToD_int, chron_order = chron_order)
+        data <- date_time_adj(data = data, date_time = date_time, dt_fmt = dt_fmt, ToD_int = ToD_int, chron_order = chron_order, tz = tz)
 
         # Adjust eod / dates
         if(!is.null(eod)){
