@@ -36,10 +36,16 @@
 #' data set already contains a \code{WAKE} column.
 #'
 #' @param dip_thresh
-#' Default threshold for normal "Dipping" set to 0.10 (i.e. 10\%)
+#' Default threshold for normal "Dipping" set to 0.10 (i.e. 10\%). This value represents the maximum
+#' percentage that BP can fall during sleep and be characterized as "Normal" nocturnal decline (dipping).
+#' Specifically, this category includes all dips between 0% and this value.
+#'
 #'
 #' @param extreme_thresh
-#' Default threshold for "Extreme Dipping" set to 0.20 (i.e. 20\%) NOTE: dip_thresh cannot exceed extreme_thresh
+#' Default threshold for "Extreme Dipping" set to 0.20 (i.e. 20\%). This value represents the maximum
+#' percentage that BP can fall during sleep and be characterized as "Extreme" nocturnal decline (dipping).
+#' Specifically, this category includes all dips between the Normal dipping threshold and this value.
+#' NOTE: dip_thresh cannot exceed extreme_thresh.
 #'
 #' @param inc_date
 #' Default to FALSE. Indicates whether or not to include the date in the grouping of
