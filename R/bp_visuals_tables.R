@@ -49,7 +49,6 @@ dow_tod_plots <- function(data, subj = NULL){
               "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Total",
               "Morning", "Afternoon", "Evening", "Night", "."))
 
-
   # If user supplies a vector corresponding to a subset of multiple subjects (multi-subject only)
   if(!is.null(subj)){
 
@@ -65,16 +64,17 @@ dow_tod_plots <- function(data, subj = NULL){
     }
   }
 
-    table_data <- bp_tables(data)
+  # This part is inefficient as don't need all tables and may not need to call at all if date is missing, but it works. Possibly come to this later
+  table_data <- bp_tables(data)
 
-    ft_size = 6
+  ft_size = 6
 
-    ## Day of Week ##
+  ## Day of Week ##
+  if( ("DAY_OF_WEEK" %in% names(data)) == TRUE ){
+      tables_dow <- table_data$CLASS_Day_of_Week
 
-    tables_dow <- table_data$CLASS_Day_of_Week
-
-    tables_dow <- tibble::rownames_to_column(table_data$CLASS_Day_of_Week, var = "BP Stage")
-    tables_dow <- tables_dow %>%
+      tables_dow <- tibble::rownames_to_column(table_data$CLASS_Day_of_Week, var = "BP Stage")
+      tables_dow <- tables_dow %>%
       dplyr::bind_rows(dplyr::summarise(.,
                                         dplyr::across(tidyselect::vars_select_helpers$where(is.numeric), sum),
                                         dplyr::across(tidyselect::vars_select_helpers$where(is.character), ~"Total")))
@@ -98,7 +98,7 @@ dow_tod_plots <- function(data, subj = NULL){
 
         # Add title for plot
         title_dow <- grid::textGrob("BP by Day of Week", gp = grid::gpar(fontsize = 15))
-        padding <- unit(7, "mm")
+        padding <- grid::unit(7, "mm")
 
         table_dow <- gtable::gtable_add_rows(
                                 dow,
@@ -112,16 +112,20 @@ dow_tod_plots <- function(data, subj = NULL){
 
     # display plot
     dow_out <- gridExtra::arrangeGrob(dow)
+  }else{
+    # Empty grob
+    dow_out <- grid::grid.rect(gp = grid::gpar(col = NA))
+  }
 
 
-
-    ## Time of Day ##
-
+  ## Time of Day ##
+  if( ("TIME_OF_DAY" %in% names(data)) == TRUE ){
     tables_tod <- table_data$CLASS_Time_of_Day
 
     tables_tod <- tibble::rownames_to_column(tables_tod, var = "BP Stage")
+
     tables_tod <- tables_tod %>%
-      dplyr::bind_rows(dplyr::summarise(.,
+        dplyr::bind_rows(dplyr::summarise(.,
                                         dplyr::across(tidyselect::vars_select_helpers$where(is.numeric), sum),
                                         dplyr::across(tidyselect::vars_select_helpers$where(is.character), ~"Total")))
 
@@ -144,7 +148,7 @@ dow_tod_plots <- function(data, subj = NULL){
 
         # Add title for plot
         title_tod <- grid::textGrob("BP by Time of Day", gp = grid::gpar(fontsize = 15))
-        padding <- unit(7, "mm")
+        padding <- grid::unit(7, "mm")
 
         table_tod <- gtable::gtable_add_rows(
                               tod,
@@ -158,9 +162,13 @@ dow_tod_plots <- function(data, subj = NULL){
 
     # display plot
     tod_out <- gridExtra::arrangeGrob(tod)
-
-    return(list(dow = dow_out, tod = tod_out))
+  }else{
+    # Empty grob
+    tod_out <- grid::grid.rect(gp = grid::gpar(col = NA))
   }
+
+  return(list(dow = dow_out, tod = tod_out))
+}
 
 
 
