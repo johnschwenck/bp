@@ -1,206 +1,184 @@
-sleep_stages <- function(data, grps){
+# Calculate summaries for SBP and DBP to use with sleep metric calculations
+# First does check on unusual sleep periods, or periods with unusually short naps
+# For each subject, visit, group, want to do the following
+# Give a time indicator that is more descriptive than sleep/wake by obeying the following
+# pre-wake - 2 last hours in the sleep period before wake
+# after-wake - 2 hours after waking up
+# pre-sleep - 2 hours before falling asleep
+# lowest SBP - average of 3 readings centered around lowest
 
-      # THE GOAL OF THIS FUNCTION IS TO CREATE INDICATORS FOR EACH OF THE 4 ABPM PERIODS FROM
-      # KARIO ET AL (2003):
-      #   - EVENING BP: AVG OF ALL BP READINGS WITHIN THE FIRST TWO HOURS PRECEDING FALLING ASLEEP
-      #   - LOWEST BP: AVG OF 3 READINGS CENTERED AROUND THE MINIMUM DURING SLEEP (1 BEFORE LOWEST, LOWEST, 1 AFTER LOWEST)
-      #   - PREWAKE BP: AVG OF ALL BP READINGS WITHIN TWO HOURS IMMEDIATELY PRECEDING WAKING UP
-      #   - MORNING BP: AVG OF ALL BP READINGS WITHIN THE FIRST TWO HOURS UPON WAKING UP
 
+# First, need to identify the sleep periods start and end. This is in general not easy because going to sleep time and BP measurement time are not going to be the same. If we use ToD as differentiation, and say measurements are 00:20, 00:50, 1:20, 1:50, 2:20, then technically the first 5 will be used rather than the first 4. Same is going to happen with sleep end.
+
+# Approximation - the first time we observe 1 is going to be treated as sleep start, the last time we observe 1 is going to be treated as sleep end? or is it 0? something to discuss.
+
+# In any case, for each subject/group/visit, we can create Diff column that takes consecutive measurements differences of Wake column, so that
+# 1 - 0 = 1 sleep end
+# 0 - 1 = -1 sleep start
+# 0 - 0 = 1 - 1 = 0 no change
+
+# Then for each 1, one can use lubridate to allocate pre-wake, post-wake
+# For each -1, one can use lubridate to allocate pre-sleep
+get_summaries_SBP_DBP <- function(data){
 
   # Initialize variables for dplyr
-  date_grp = idx = roll_idx = time_diff = roll_tmp = time_rev = wake_ind = time_elapsed = NULL
-  rm(list = c("date_grp", "idx", "roll_idx", "time_diff", "roll_tmp", "time_rev", "wake_ind", "time_elapsed"))
+  SBP = DBP = WAKE = period = NULL
+  rm(list = c("SBP", "DBP", "WAKE", "period"))
 
+  # Assume the times are in chronological order
+  # Figure out total number of measurements
+  nread = nrow(data)
 
-    # Couldn't get dplyr arrange to work with grps due to various functions deprecated, etc
-    # Using base R to order data frame based on what is supplied in grps and then by DATE_TIME
-    # 1) Order data by smallest to largest ID (factor) then VISIT (factor)
-    # 2) Order DATE_TIME in reverse chronological order for each of the above groups (earliest first within group)
-    data <- data[do.call(order, data[grps]), ]
-    #
-    #   Old Code
-    #     # Sort data according to ID then VISIT then DATE_TIME if ID, VISIT are supplied
-    #     if(auto_sort == TRUE){
-    #
-    #           data <- data %>%
-    #             # Sort by whichever variables are present in grps vector
-    #             dplyr::arrange( across(c( grps, "DATE_TIME")) )
-    #
-    #     }
+  # Create difference column (here I assume the time is already sorted, should probably check)
+  wake_binary = as.numeric(as.character(data$WAKE))
+  # 1 - 0 = 1 sleep end
+  # 0 - 1 = -1 sleep start
+  # 0 - 0 = 1 - 1 = 0 no change
+  data$diff = c(wake_binary[2:nread] - wake_binary[1:(nread - 1)], 0)
 
+  # Number of sleep period starts
+  n_starts = sum(data$diff == -1)
+  # Number of sleep period ends
+  n_ends = sum(data$diff == 1)
 
-    # Reset row names
-    row.names(data) <- NULL
+  # No sleep starts identified
+  if (n_starts == 0){
+    stop(paste("Can not detect the beginning of sleep period for subject", unique(data$ID), ". Double check the WAKE column."))
+  }
 
+  # No sleep ends identified
+  if (n_ends == 0){
+    stop(paste("Can not detect the ending of sleep period for subject", unique(data$ID), ". Double check the WAKE column."))
+  }
 
-    tmp  <- data %>%
+  # Check if there is more than one sleep period. Otherwise use sleep_start and sleep_end times based on diff
+  if ((n_starts > 1) | (n_ends > 1)){
+    message(paste("More than one sleep period detected for subject "), unique(data$ID))
+    if (n_starts != n_ends){
+      stop(paste("Incomplete sleep period for subject", unique(data$ID), ". Double check the WAKE column."))
+    }
+    # Extract the times of start and end, should have the same length now
+    wake_ends = data$DATE_TIME[which(data$diff == -1)] # This is the last time WAKE = 1
+    sleep_starts = data$DATE_TIME[which(data$diff == -1) + 1] # This is the first time WAKE = 0
+    sleep_ends = data$DATE_TIME[which(data$diff == 1)] # This is the last time WAKE = 0
+    wake_starts = data$DATE_TIME[which(data$diff == 1) + 1] # This is the first time WAKE = 1
 
-        # Identify unusally large gaps in time
-        dplyr::mutate( date_grp = dplyr::case_when(
+    # Calculate the durations
+    durations = difftime(sleep_ends, sleep_starts, units = "hours")
 
-          # First row will always be in first group
-          dplyr::row_number() == 1 ~ 1,
+    # If any duration is less than two hours, treat as nap and remove
+    no_naps = which(as.numeric(durations) > 2)
 
-          # Throw flag if next value is greater than 24 hours ahead or behind
-          TRUE ~ ifelse( (lubridate::ymd_hms(DATE_TIME) > dplyr::lag(lubridate::ymd_hms(DATE_TIME)) + lubridate::dhours(24) ) |
-                           (lubridate::ymd_hms(DATE_TIME) < dplyr::lag(lubridate::ymd_hms(DATE_TIME)) - lubridate::dhours(24) ), 1, 0)
+    # If after that filtering no periods are left or more than one period, stop and exit
+    if (length(no_naps) == 0){
+      stop(paste("Identified sleep period for subject", unique(data$ID), "is less than 2 hours. Double check the WAKE column."))
+    }
 
-        )
-        ) %>%
+    if (length(no_naps) > 1){
+      warning(paste("Current functionality only supports one sleep period per subject. Only the first sleep period is used for calculations."))
+      wake_end = wake_ends[no_naps[1]]
+      sleep_start = sleep_starts[no_naps[1]]
+      sleep_end = sleep_ends[no_naps[1]]
+      wake_start = wake_starts[no_naps[1]]
+    }else{
+      message(paste("The sleep period shorter than 2 hours is treated as nap, and not used in calculations of sleep metrics."))
+      # Only one sleep period that has no gaps
+      wake_start = wake_starts[no_naps]
+      sleep_start = sleep_starts[no_naps]
+      sleep_end = sleep_ends[no_naps]
+      wake_end = wake_ends[no_naps]
+    }
+  }else{
+    # Extract the times of start and end, should be exactly one
+    wake_end = data$DATE_TIME[which(data$diff == -1)] # last time WAKE = 1
+    sleep_start = data$DATE_TIME[which(data$diff == -1) + 1] # This is the first time WAKE = 0
+    sleep_end = data$DATE_TIME[which(data$diff == 1)] # This is the last time WAKE = 0
+    wake_start = data$DATE_TIME[which(data$diff == 1) + 1] # First time WAKE = 1
+  }
 
-        # Create cumulative count of the groups to associate each row to a particular group
-        dplyr::mutate( date_grp = cumsum(date_grp) ) %>%
+  # Allocate period to pre-sleep, post-wake, pre-wake or just regular wake/sleep depending on the hours relative to sleep start/end
+  data = data%>%
+    dplyr::mutate(period = dplyr::case_when(
+      (DATE_TIME < sleep_start) & (DATE_TIME >= sleep_start - lubridate::hours(2)) ~ "presleep",
+      (DATE_TIME > sleep_end) & (DATE_TIME <= sleep_end + lubridate::hours(2)) ~ "postwake",
+      (DATE_TIME <= sleep_end) & (DATE_TIME > sleep_end - lubridate::hours(2)) ~ "prewake",
+      TRUE ~ ifelse(WAKE == 1, "wake", "sleep")
+    ))
 
-        # Use new smoothed grouping based on date
-        dplyr::group_by(date_grp) %>%
+  # Sometimes nothing is allocated to a particular period. Can adjust definition of sleep_start/sleep_end a little to see if extra measurements could be taken. This can only be done for presleep and postwake.
+  if (sum(data$period == "presleep") == 0){
+    # Presleep was calculated as 2 hours from sleep start, where sleep_start was the 1st measurement with WAKE = 0. Try to stretch out by counting 2 hours from wake_last instead
+    data = data%>%
+      dplyr::mutate(period = dplyr::case_when(
+        (DATE_TIME <= wake_end) & (DATE_TIME > wake_end - lubridate::hours(2)) ~ "presleep",
+        TRUE ~ period
+      ))
+  }
 
-        # Process & Smooth WAKE indicator column into new column --> wake_ind
-        dplyr::mutate( wake_ind = dplyr::case_when(
+  if (sum(data$period == "postwake") == 0){
+    # Postwake was calculated as 2 hours from sleep end. Try to stretch out by counting 2 hours from wake_start
+    data = data%>%
+      dplyr::mutate(period = dplyr::case_when(
+        (DATE_TIME >= wake_start) & (DATE_TIME < wake_start + lubridate::hours(2)) ~ "postwake",
+        TRUE ~ period
+      ))
+  }
 
-          # First value in group takes value from WAKE always
-          dplyr::row_number() == 1 ~ as.integer(as.character( WAKE[dplyr::row_number() == 1] )),
+  # Create a new tibble where only 3 periods are separated, and are factors, so that NA are formed if some are absent
+  data_period = data %>%
+    dplyr::filter(period %in% c("presleep", "prewake", "postwake"))%>%
+    dplyr::mutate(period = factor(period, levels = c("presleep", "prewake", "postwake")))
 
-          # Last number in group takes value from WAKE always
-          dplyr::row_number() == dplyr::n() ~ as.integer(as.character( WAKE[dplyr::row_number() == dplyr::n()] )),
+  # SBP
+  ###########################################################################
+  # Mean and sd by WAKE
+  stat_SBP_wake = tidyr::pivot_wider(data %>%
+                                       dplyr::group_by(WAKE) %>%
+                                       dplyr::summarize(meanSBP = mean(SBP), sdSBP = sd(SBP)),
+                                     values_from = 2:3, names_from = 1)
+  names(stat_SBP_wake) = c("sleep_SBP", "wake_SBP", "sleep_SBP_sd", "wake_SBP_sd")
 
-          # Smooth Artifacts (i.e. 1 1 0 1 1 in succession) --> within a small time window --> verify method
-          dplyr::lag(WAKE) == 1 & WAKE == 0 & dplyr::lead(WAKE) == 1 &
-            lubridate::as.duration( dplyr::lag(DATE_TIME, n = 0) - dplyr::lag(DATE_TIME, n = 1) ) < 2 *
-            lubridate::as.duration( dplyr::lag(DATE_TIME, n = 1) - dplyr::lag(DATE_TIME, n = 2) ) ~ as.integer(1),
+  # Mean by period
+  stat_SBP_period = tidyr::pivot_wider(data_period %>%
+                                         dplyr::group_by(period) %>%
+                                         dplyr::summarize(SBP = mean(SBP)),
+                                       values_from = 2, names_from = 1)
 
-          dplyr::lag(WAKE) == 0 & WAKE == 1 & dplyr::lead(WAKE) == 0 &
-            lubridate::as.duration( dplyr::lag(DATE_TIME, n = 0) - dplyr::lag(DATE_TIME, n = 1) ) < 2 *
-            lubridate::as.duration( dplyr::lag(DATE_TIME, n = 1) - dplyr::lag(DATE_TIME, n = 2) ) ~ as.integer(0),
+  names(stat_SBP_period) = c( "presleep_SBP", "prewake_SBP", "postwake_SBP")
 
-          TRUE ~ as.integer(as.character( WAKE ))
+  # Combine the two
+  summary_SBP = dplyr::bind_cols(stat_SBP_wake, stat_SBP_period)
 
-        )) %>%
+  # Mean over lowest BP reading during sleep, and two surrounding it
+  lowest_id = which((data$SBP == min(data$SBP[data$WAKE == 0]))&(data$WAKE == 0))
+  summary_SBP$lowest_SBP = mean(data$SBP[c(lowest_id - 1, lowest_id, lowest_id + 1)])
 
-        dplyr::mutate( wake_ind = dplyr::case_when(
+  # DBP
+  ###########################################################################
+  # Mean and sd by WAKE
+  stat_DBP_wake = tidyr::pivot_wider(data %>%
+                                       dplyr::group_by(WAKE) %>%
+                                       dplyr::summarize(meanDBP = mean(DBP), sdDBP = sd(DBP)),
+                                     values_from = 2:3, names_from = 1)
+  names(stat_DBP_wake) = c("sleep_DBP", "wake_DBP", "sleep_DBP_sd", "wake_DBP_sd")
 
-          # First Sleep instance
-          dplyr::lag(wake_ind) == 1 & wake_ind == 0 & dplyr::lead(wake_ind) == 0  ~ as.integer(022), # originally 0
+  # Mean by period
+  stat_DBP_period = tidyr::pivot_wider(data_period %>%
+                                         dplyr::group_by(period) %>%
+                                         dplyr::summarize(DBP = mean(DBP)),
+                                       values_from = 2, names_from = 1)
+  names(stat_DBP_period) = c("presleep_DBP", "prewake_DBP", "postwake_DBP")
 
-          # First Wake instance
-          dplyr::lag(wake_ind) == 0 & wake_ind == 1 & dplyr::lead(wake_ind) == 1 ~ as.integer(11), # originally 1
+  # Combine the two
+  summary_DBP = dplyr::bind_cols(stat_DBP_wake, stat_DBP_period)
 
-          # All else
-          TRUE ~ as.integer(wake_ind)
+  # Mean over lowest BP reading during sleep, and two surrounding it
+  lowest_id = which((data$DBP == min(data$DBP[data$WAKE == 0]))&(data$WAKE == 0))
+  summary_DBP$lowest_DBP = mean(data$DBP[c(lowest_id - 1, lowest_id, lowest_id + 1)])
 
-          # At this point there are just 4 possible values that wake_ind can take:
-          # 11 - which is the first instance of being awake
-          #  1 - which is a regular indicator for awake
-          # 22 - which is the first instance of falling asleep
-          #  0 - which is a regular indicator for asleep
-
-        )) %>%
-
-        # Since wake_ind does not distinguish between groups, idx is created to differentiate them
-        dplyr::mutate(idx = dplyr::case_when(
-
-          # First in the group
-          dplyr::row_number() == 1 ~ as.integer(wake_ind),
-
-          # Last in the group
-          dplyr::row_number() == dplyr::n() ~ as.integer(10),
-
-          # First sleep instance (22) and the next value is asleep --> re-code from 22 to 2
-          wake_ind == 22 & dplyr::lead(wake_ind) == 0 ~ as.integer(2),
-
-          # First awake instance (11) and the next value is awake --> re-code from 11 to 3
-          wake_ind == 11 & dplyr::lead(wake_ind) == 1 ~ as.integer(3),
-
-          # All else
-          TRUE ~ as.integer(10)
-
-
-        )) %>%
-
-        # Isolate 1, 2, 3 values from above
-        dplyr::mutate(idx = ifelse(idx == 10, NA, idx)) %>%
-
-        # fill (repeat value) from one value to the next
-        tidyr::fill(idx) %>%
-
-        dplyr::group_by(date_grp, idx) %>%
-
-        # Calculate time differences of successive values after grouping by date_grp then idx
-        dplyr::mutate(time_diff = dplyr::case_when(
-
-          dplyr::row_number() == 1 ~ lubridate::as.duration(0),
-
-          TRUE ~ lubridate::as.duration( DATE_TIME - dplyr::lag(DATE_TIME, n = 1) )
-
-        )) %>%
-
-        dplyr::ungroup() %>%
-
-        # Rolling index counter that continues beyond grouping to uniquely identify
-        # Adds a value for each unique period of sleep or awake given the groupings
-        dplyr::mutate(roll_idx = rep(1:length(rle(idx)[[1]]), rle(idx)[[1]]) ) %>%
-
-        ### Begin indicator columns for each stage and group accordingly
-        dplyr::group_by(date_grp, roll_idx) %>%
-
-        # Calculate how much time has elapsed
-        dplyr::mutate(time_elapsed = lubridate::as.duration( cumsum(time_diff) ) ) %>%
-
-        # Create temporary roll_temp which shifts roll_temp down by one so that time_rev can correctly calculated
-        dplyr::ungroup() %>%
-        dplyr::group_by(date_grp) %>%
-        dplyr::mutate(roll_tmp = dplyr::lag(roll_idx) ) %>%
-        dplyr::mutate(roll_tmp = ifelse( is.na( roll_tmp ), dplyr::lead(roll_tmp), roll_tmp ) )  %>%
-        dplyr::group_by(date_grp, roll_idx) %>%
-
-        # Create reverse time elapsed column which calculates how much time until the next roll_idx period
-        dplyr::mutate(time_rev = lubridate::as.duration( rev( cumsum( time_diff ) ) ) ) %>%
-
-        # DELETE - just for reference
-        #tmp <- tmp %>% relocate(SBP, DBP, ID, GROUP, DATE_TIME, VISIT, WAKE, date_grp, wake_ind, idx, time_diff, roll_idx, time_elapsed, roll_tmp, time_rev)
-
-        # At this point, now there are four differentiating values for idx:
-
-        # 0 - The first period of the group which happens to be asleep
-        # 1 - The first period of the group which happens to be awake
-        # 2 - Following the first period of the group, this is the next period of being asleep
-        # 3 - Following the first period of the group, this is the next period of being awake
-
-      # Also, roll_idx and roll_tmp are the unique CUMULATIVE identifiers for each group (within the actual dplyr groups --> grps)
-
-
-      dplyr::ungroup() %>%
-        dplyr::group_by(date_grp, roll_idx) %>%
-
-
-        ################################################################################
-      ##                                                                            ##
-      ##    KEY - 1: Evening BP | 2: Lowest BP | 3: Pre-Wake BP | 4: Morning BP     ##
-      ##                                                                            ##
-      ################################################################################
-
-      # Evening Indicator
-      dplyr::mutate(eve_ind = ifelse(time_rev <= lubridate::dhours(2) & wake_ind == 1 & idx != 3, 1, 999)) %>%
-
-        # Pre-Wake Indicator
-        dplyr::mutate(prewake_ind = ifelse(time_rev <= lubridate::dhours(2) & wake_ind == 0, 3, 999)) %>%
-
-        # Morning Indicator
-        dplyr::mutate(morn_ind = ifelse(time_elapsed <= lubridate::dhours(2) & (wake_ind == 1 | wake_ind == 11) & idx != 1, 4, 999 )) %>%
-
-        # Lowest Reading Indicator
-        dplyr::mutate(low_idx = dplyr::case_when(
-
-          wake_ind == 1 | wake_ind == 11 ~ as.numeric(999),
-          TRUE ~ as.numeric( which.min(SBP) ) # Need to change to account for both SBP and DBP
-
-        ))
-
-
-    return(tmp)
-
+  # Return the output (summary_SBP and summary_DBP) together
+  return(dplyr::bind_cols(summary_DBP, summary_SBP))
 }
-
 
 
 
@@ -264,8 +242,8 @@ bp_sleep_metrics <- function(data, subj = NULL){
     # Function requires: SBP, DBP, DATE_TIME, WAKE, ID
 
     # Initialize variables for dplyr
-    ID = SBP = DBP = WAKE = wake_ind = eve_ind = morn_ind = prewake_ind = lowest_SBP = lowest_DBP = evening_SBP = evening_DBP = morning_SBP = morning_DBP = NULL
-    rm(list = c("ID", "SBP", "DBP", "WAKE", "wake_ind", "eve_ind", "morn_ind", "prewake_ind", "lowest_SBP", "lowest_DBP", "evening_SBP", "evening_DBP", "morning_SBP", "morning_DBP"))
+    ID = DATE_TIME = SBP = DBP = WAKE =  lowest_SBP = lowest_DBP = presleep_SBP = presleep_DBP = postwake_SBP = postwake_DBP = prewake_SBP = prewake_DBP = sleep_DBP = wake_DBP = sleep_SBP = wake_SBP = NULL
+    rm(list = c("ID", "DATE_TIME", "SBP", "DBP", "WAKE", "lowest_SBP", "lowest_DBP", "presleep_SBP", "presleep_DBP", "postwake_SBP", "postwake_DBP", "prewake_SBP", "prewake_DBP", "sleep_DBP", "wake_DBP", "sleep_SBP", "wake_SBP"))
 
 
       # Uppercase all column names
@@ -307,6 +285,17 @@ bp_sleep_metrics <- function(data, subj = NULL){
 
       }
 
+      # Check the data type
+      if ( ("BP_TYPE" %in% colnames(data)) == FALSE){
+        stop('No BP_TYPE column found. Cannot automatically identify the type of BP data. Make sure to process the data using process_data function.')
+      }
+
+      if (unique(data$BP_TYPE) != "ABPM"){
+        if (unique(data$BP_TYPE) == "HBPM"){
+          warning("The supplied data has HBPM type, for which calculation of sleep BP metrics is not recommended. If the supplied data should be ABPM type, please rerun process_data function with correct BP type specfication.")
+        }
+      }
+
       # Check function for whether or not DATE_TIME values are proper date/time format
       is.POSIXct <- function(x) inherits(x, "POSIXct")
 
@@ -339,258 +328,93 @@ bp_sleep_metrics <- function(data, subj = NULL){
       grps = grps[which( grps %in% colnames(data) == TRUE)]
 
       #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
-      # Update calculation of sleep counts table
+      # Calculation of sleep counts table (table 1) based on WAKE column
 
       sleep_counts = data %>%
         dplyr::group_by_at(dplyr::vars(grps)) %>%
         dplyr::summarize(N_total = dplyr::n(), N_wake = sum(WAKE == 1), N_sleep = sum(WAKE == 0), .groups = 'drop')
 
-      # Add back DATE_TIME for sleep stages in grps, as stays local, grps later will not have it
-      # Calculate sleep stage indicator columns using sleep_stages() helper function from above
-      data <- sleep_stages(data, grps = c(grps, "DATE_TIME"))
 
 
       # ******************************************************************************************************************************* #
       #                                               BP Sleep Periods
       # ******************************************************************************************************************************* #
 
+      # Order time from oldest to newest
+      data = data[order(data$DATE_TIME), ]
 
-      ##
-      ## FIX ISSUE WITH INCLUDING VALUES OUTSIDE OF LAG/LEAD 4 --> if 11 1 1 22 0 then Morning BP CANNOT include values corresponding to 22 or 0
-      ##
-      ## Make sure to include option for SBP, DBP, or BOTH
-      ##
+      # Calculate all summaries on SBP and DBP using get_summaries_SBP_DBP
+      output = data %>%
+        dplyr::group_by_at(dplyr::vars(grps)) %>%
+        dplyr::summarise(get_summaries_SBP_DBP(data.frame(ID, DATE_TIME, SBP, DBP, WAKE)))
 
-      #if("DATE_TIME" %in% grps){
-      #  grps <- grps[-which(grps %in% "DATE_TIME")]
-      #}
-
+      # Extract ids of grouping variables in output
+      idgrps = which(names(output) %in% grps)
 
       #########################
       ##    Systolic (SBP)   ##
       #########################
 
-      # Sleep BP
-      sleep_SBP <- data %>%
-        dplyr::group_by_at(dplyr::vars( c(grps, "date_grp") ) ) %>%
-        dplyr::filter(wake_ind == 0 | wake_ind == 22) %>%
-        dplyr::summarise( sleep_SBP = mean(SBP), .groups = 'drop' )
+      # Extract positions of SBP summaries in output
+      idSBP = grep("SBP", names(output))
 
-      # Sleep SD
-      sleep_SBP_sd <- data %>%
-        dplyr::group_by_at(dplyr::vars( c(grps, "date_grp") ) ) %>%
-        dplyr::filter(wake_ind == 0 | wake_ind == 22) %>%
-        dplyr::summarise( sleep_SBP_sd = sd(SBP), .groups = 'drop' )
-
-      # Awake BP
-      awake_SBP <- data %>%
-        dplyr::group_by_at(dplyr::vars( c(grps, "date_grp") ) ) %>%
-        dplyr::filter(wake_ind == 1 | wake_ind == 11) %>%
-        dplyr::summarise( awake_SBP = mean(SBP), .groups = 'drop' )
-
-      # Awake SD
-      awake_SBP_sd <- data %>%
-        dplyr::group_by_at(dplyr::vars( c(grps, "date_grp") ) ) %>%
-        dplyr::filter(wake_ind == 1 | wake_ind == 11) %>%
-        dplyr::summarise( awake_SBP_sd = sd(SBP), .groups = 'drop' )
-
-
-
-      # Evening BP
-      eve_SBP <- data %>%
-        dplyr::group_by_at(dplyr::vars( c(grps, "date_grp") ) ) %>%
-        dplyr::filter(eve_ind == 1) %>%
-        dplyr::summarise(evening_SBP = mean(SBP), .groups = 'drop')
-
-
-      # Morning BP
-      morn_SBP <- data %>%
-        dplyr::group_by_at(dplyr::vars( c(grps, "date_grp") ) ) %>%
-        dplyr::filter(morn_ind == 4) %>%
-        dplyr::summarise(morning_SBP = mean(SBP), .groups = 'drop')
-
-
-      # Pre-Wake BP
-      prewake_SBP <- data %>%
-        dplyr::group_by_at(dplyr::vars( c(grps, "date_grp") ) ) %>%
-        dplyr::filter(prewake_ind == 3) %>%
-        dplyr::summarise(prewake_SBP = mean(SBP), .groups = 'drop')
-
-
-      # Lowest BP
-      low_SBP <- data %>%
-        dplyr::group_by_at(dplyr::vars( c(grps, "date_grp", "roll_idx") ) ) %>%
-        dplyr::summarise(.groups = 'drop', lowest_SBP = dplyr::case_when(
-
-          # when low is end, take lowest and 2 before
-          low_idx[1] == length(SBP) ~ mean(c(SBP[low_idx[1] - 2], SBP[low_idx[1] - 1],
-                                             SBP[low_idx[1]])),
-
-          # when low is very beginning, take lowest and two after
-          low_idx[1] == 1 ~ mean(SBP[1:3]),
-
-          # when low is in the middle, take low and one before/one after
-          TRUE ~ mean(c(SBP[low_idx[1] - 1], SBP[low_idx[1]], SBP[low_idx[1] + 1]))
-
-        )) %>%
-        dplyr::filter(!is.na(lowest_SBP))
-
-
+      # Create SBP table
+      sleep_summary_SBP = output[ , c(idgrps, idSBP)]
 
       ##########################
       ##    Diastolic (DBP)   ##
       ##########################
 
-      # Sleep DBP
-      sleep_DBP <- data %>%
-        dplyr::group_by_at(dplyr::vars( c(grps, "date_grp") ) ) %>%
-        dplyr::filter(wake_ind == 0 | wake_ind == 22) %>%
-        dplyr::summarise( sleep_DBP = mean(DBP), .groups = 'drop' )
+      # Extract positions of DBP summaries in output
+      idDBP = grep("DBP", names(output))
 
-      # Sleep SD
-      sleep_DBP_sd <- data %>%
-        dplyr::group_by_at(dplyr::vars( c(grps, "date_grp") ) ) %>%
-        dplyr::filter(wake_ind == 0 | wake_ind == 22) %>%
-        dplyr::summarise( sleep_DBP_sd = sd(DBP), .groups = 'drop' )
-
-      # Awake DBP
-      awake_DBP <- data %>%
-        dplyr::group_by_at(dplyr::vars( c(grps, "date_grp") ) ) %>%
-        dplyr::filter(wake_ind == 1 | wake_ind == 11) %>%
-        dplyr::summarise( awake_DBP = mean(DBP), .groups = 'drop' )
-
-      # Awake SD
-      awake_DBP_sd <- data %>%
-        dplyr::group_by_at(dplyr::vars( c(grps, "date_grp") ) ) %>%
-        dplyr::filter(wake_ind == 1 | wake_ind == 11) %>%
-        dplyr::summarise( awake_DBP_sd = sd(DBP), .groups = 'drop' )
+      # Create DBP table
+      sleep_summary_DBP = output[ , c(idgrps, idDBP)]
 
 
+      #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+      ### Calculation of Sleep Metrics (Table 4) based on SBP/DBP sleep summaries (Tables 2-3)
+      ####################################
 
-      # Evening BP
-      eve_DBP <- data %>%
-        dplyr::group_by_at(dplyr::vars( c(grps, "date_grp") ) ) %>%
-        dplyr::filter(eve_ind == 1) %>%
-        dplyr::summarise(evening_DBP = mean(DBP), .groups = 'drop')
+      # Metrics based on SBP
+      sleep_metrics_SBP <- sleep_summary_SBP %>%
+        dplyr::group_by_at(dplyr::vars(grps)) %>%
+        dplyr::transmute(
+          # dip calculation (proportion)
+          dip_calc_SBP = 1 - sleep_SBP / wake_SBP,
+          # "Nocturnal BP Fall" (Kario et al 2002)
+          noct_fall_SBP = presleep_SBP / lowest_SBP,
+          # Sleep-Trough MBPS (Kario et al 2002)
+          ST_mbps_SBP = postwake_SBP - lowest_SBP,
+          # Prewake MBPS (Kario et al 2002)
+          PW_mbps_SBP = postwake_SBP - prewake_SBP,
+          # Morningness-Eveningness Average (Kario 2005)
+          ME_SBP_avg = (postwake_SBP + presleep_SBP) / 2,
+          # Morningness-Eveningness Difference (Kario 2005)
+          ME_SBP_diff = postwake_SBP - presleep_SBP
+        )
 
+      # Metrics based on DBP
+      sleep_metrics_DBP <- sleep_summary_DBP %>%
+        dplyr::group_by_at(dplyr::vars(grps)) %>%
+        dplyr::transmute(
+          # dip calculation (proportion)
+          dip_calc_DBP = 1 - sleep_DBP / wake_DBP,
+          # "Nocturnal BP Fall" (Kario et al 2002)
+          noct_fall_DBP = presleep_DBP / lowest_DBP,
+          # Sleep-Trough MBPS (Kario et al 2002)
+          ST_mbps_DBP = postwake_DBP - lowest_DBP,
+          # Prewake MBPS (Kario et al 2002)
+          PW_mbps_DBP = postwake_DBP - prewake_DBP,
+          # Morningness-Eveningness Average (Kario 2005)
+          ME_DBP_avg = (postwake_DBP + presleep_DBP) / 2,
+          # Morningness-Eveningness Difference (Kario 2005)
+          ME_DBP_diff = postwake_DBP - presleep_DBP
+        )
 
-      # Morning BP
-      morn_DBP <- data %>%
-        dplyr::group_by_at(dplyr::vars( c(grps, "date_grp") ) ) %>%
-        dplyr::filter(morn_ind == 4) %>%
-        dplyr::summarise(morning_DBP = mean(DBP), .groups = 'drop')
+      # Combine the two together
+      sleep_metrics <- dplyr::left_join(sleep_metrics_SBP, sleep_metrics_DBP, by = c(grps))
 
-
-      # Pre-Wake BP
-      prewake_DBP <- data %>%
-        dplyr::group_by_at(dplyr::vars( c(grps, "date_grp") ) ) %>%
-        dplyr::filter(prewake_ind == 3) %>%
-        dplyr::summarise(prewake_DBP = mean(DBP), .groups = 'drop')
-
-
-      # Lowest BP
-      low_DBP <- data %>%
-        dplyr::group_by_at(dplyr::vars( c(grps, "date_grp", "roll_idx") ) ) %>%
-        dplyr::summarise(.groups = 'drop', lowest_DBP = dplyr::case_when(
-
-          # when low is end, take lowest and 2 before
-          low_idx[1] == length(DBP) ~ mean(c(DBP[low_idx[1] - 2], DBP[low_idx[1] - 1],
-                                             DBP[low_idx[1]])),
-
-          # when low is very beginning, take lowest and two after
-          low_idx[1] == 1 ~ mean(DBP[1:3]),
-
-          # when low is in the middle, take low and one before/one after
-          TRUE ~ mean(c(DBP[low_idx[1] - 1], DBP[low_idx[1]], DBP[low_idx[1] + 1]))
-
-        )) %>%
-        dplyr::filter(!is.na(lowest_DBP))
-
-
-
-      # Count data summary
-      # sleep_counts <- dplyr::left_join(readings, awake_readings, by = c(grps, "date_grp"))
-      # sleep_counts <- dplyr::left_join(sleep_counts, sleep_readings, by = c(grps, "date_grp"))
-
-      # SBP Metrics
-      sleep_summary_SBP <- dplyr::left_join(sleep_SBP, awake_SBP, by = c(grps, "date_grp"))
-      sleep_summary_SBP <- dplyr::left_join(sleep_summary_SBP, eve_SBP, by = c(grps, "date_grp"))
-      sleep_summary_SBP <- dplyr::left_join(sleep_summary_SBP, low_SBP, by = c(grps, "date_grp"))
-      sleep_summary_SBP <- dplyr::left_join(sleep_summary_SBP, prewake_SBP, by = c(grps, "date_grp"))
-      sleep_summary_SBP <- dplyr::left_join(sleep_summary_SBP, morn_SBP, by = c(grps, "date_grp"))
-      sleep_summary_SBP <- dplyr::left_join(sleep_summary_SBP, sleep_SBP_sd, by = c(grps, "date_grp"))
-      sleep_summary_SBP <- dplyr::left_join(sleep_summary_SBP, awake_SBP_sd, by = c(grps, "date_grp"))
-
-
-      # DBP Metrics
-      sleep_summary_DBP <- dplyr::left_join(sleep_DBP, awake_DBP, by = c(grps, "date_grp"))
-      sleep_summary_DBP <- dplyr::left_join(sleep_summary_DBP, eve_DBP, by = c(grps, "date_grp"))
-      sleep_summary_DBP <- dplyr::left_join(sleep_summary_DBP, low_DBP, by = c(grps, "date_grp"))
-      sleep_summary_DBP <- dplyr::left_join(sleep_summary_DBP, prewake_DBP, by = c(grps, "date_grp"))
-      sleep_summary_DBP <- dplyr::left_join(sleep_summary_DBP, morn_DBP, by = c(grps, "date_grp"))
-      sleep_summary_DBP <- dplyr::left_join(sleep_summary_DBP, sleep_DBP_sd, by = c(grps, "date_grp"))
-      sleep_summary_DBP <- dplyr::left_join(sleep_summary_DBP, awake_DBP_sd, by = c(grps, "date_grp"))
-
-
-      # Remove roll_idx column
-      sleep_summary_SBP <- sleep_summary_SBP %>% dplyr::select(-c("roll_idx"))
-      sleep_summary_DBP <- sleep_summary_DBP %>% dplyr::select(-c("roll_idx"))
-
-
-      ### Sleep Metrics from Literature
-
-      # Dip Calc Percentage
-      # TO DO: include dip calc classification
-      sleep_metrics <- sleep_summary_SBP %>% dplyr::mutate(dip_calc_SBP = 1 - sleep_SBP / awake_SBP) %>% dplyr::select(grps, "dip_calc_SBP") # matches dip_calc function
-      dip2 <- sleep_summary_DBP %>% dplyr::mutate(dip_calc_DBP = 1 - sleep_DBP / awake_DBP) %>% dplyr::select(grps, "dip_calc_DBP")
-
-      sleep_metrics <- dplyr::left_join(sleep_metrics, dip2, by = c(grps))
-
-      # "Nocturnal BP Fall" (Kario et al 2002)
-      tmp1 <- sleep_summary_SBP %>% dplyr::mutate(noct_fall_SBP = evening_SBP / lowest_SBP) %>% dplyr::select(grps, "noct_fall_SBP")
-      tmp2 <- sleep_summary_DBP %>% dplyr::mutate(noct_fall_DBP = evening_DBP / lowest_DBP) %>% dplyr::select(grps, "noct_fall_DBP")
-
-      sleep_metrics <- dplyr::left_join(sleep_metrics, tmp1, by = c(grps))
-      sleep_metrics <- dplyr::left_join(sleep_metrics, tmp2, by = c(grps))
-
-      # Sleep-Trough MBPS (Kario et al 2002)
-      tmp1 <- sleep_summary_SBP %>% dplyr::mutate(ST_mbps_SBP = morning_SBP - lowest_SBP) %>% dplyr::select(grps, "ST_mbps_SBP")
-      tmp2 <- sleep_summary_DBP %>% dplyr::mutate(ST_mbps_DBP = morning_DBP - lowest_DBP) %>% dplyr::select(grps, "ST_mbps_DBP")
-
-      sleep_metrics <- dplyr::left_join(sleep_metrics, tmp1, by = c(grps))
-      sleep_metrics <- dplyr::left_join(sleep_metrics, tmp2, by = c(grps))
-
-      # Prewake MBPS (Kario et al 2002)
-      tmp1 <- sleep_summary_SBP %>% dplyr::mutate(PW_mbps_SBP = morning_SBP - prewake_SBP) %>% dplyr::select(grps, "PW_mbps_SBP")
-      tmp2 <- sleep_summary_DBP %>% dplyr::mutate(PW_mbps_DBP = morning_DBP - prewake_DBP) %>% dplyr::select(grps, "PW_mbps_DBP")
-
-      sleep_metrics <- dplyr::left_join(sleep_metrics, tmp1, by = c(grps))
-      sleep_metrics <- dplyr::left_join(sleep_metrics, tmp2, by = c(grps))
-
-          # SBP ME Metrics (Kario 2005)
-          tmp1 <- sleep_summary_SBP %>%
-
-              # Morningness-Eveningness Average (Kario 2005)
-              dplyr::mutate(ME_SBP_avg = (morning_SBP + evening_SBP) / 2 ) %>%
-
-              # Morningness-Eveningness Difference (Kario 2005)
-              dplyr::mutate(ME_SBP_diff = morning_SBP - evening_SBP) %>%
-
-            dplyr::select(grps, "ME_SBP_avg", "ME_SBP_diff")
-
-          # DBP ME Metrics
-          tmp2 <- sleep_summary_DBP %>%
-
-              # Morningness-Eveningness Average (Kario 2005)
-              dplyr::mutate(ME_DBP_avg = (morning_DBP + evening_DBP) / 2 ) %>%
-
-              # Morningness-Eveningness Difference (Kario 2005)
-              dplyr::mutate(ME_DBP_diff = morning_DBP - evening_DBP) %>%
-
-            dplyr::select(grps, "ME_DBP_avg", "ME_DBP_diff")
-
-          sleep_metrics <- dplyr::left_join(sleep_metrics, tmp1, by = c(grps))
-          sleep_metrics <- dplyr::left_join(sleep_metrics, tmp2, by = c(grps))
       #
       # # Weighted Standard Deviation (wSD)
       # tmp1 <- sleep_summary_SBP %>%
