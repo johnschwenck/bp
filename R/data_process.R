@@ -364,7 +364,7 @@ process_data <- function(data,
         }
 
         # Adjust WAKE indicator
-        data <- wake_adj(data = data, wake = wake)
+        data <- wake_adj(data = data, wake = wake, bp_type = bp_type)
 
         # Adjust Day of Week
         data <- dow_adj(data = data, DoW = DoW)

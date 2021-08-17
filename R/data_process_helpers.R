@@ -433,7 +433,7 @@ map_adj <- function(data, map = NULL){
 #                                                                                                      #
 ########################################################################################################
 
-wake_adj <- function(data, wake = NULL){
+wake_adj <- function(data, wake = NULL, bp_type){
 
   WAKE = DBP = TIME_OF_DAY = NULL
   rm(list = c("WAKE", "DBP", "TIME_OF_DAY"))
@@ -465,7 +465,7 @@ wake_adj <- function(data, wake = NULL){
 
     data$WAKE <- as.factor(data$WAKE)
 
-  }else if ("TIME_OF_DAY" %in% colnames(data)){
+  }else if (("TIME_OF_DAY" %in% colnames(data)) & (toupper(bp_type) == "ABPM")){
     # if there is time of day information, then assign all night to sleep and rest to wake with a message
     message("Absent wake column. Allocating night as sleep.")
     data <- data %>%
