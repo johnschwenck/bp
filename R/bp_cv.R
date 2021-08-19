@@ -1,17 +1,8 @@
-
-#' Successive Variation (SV)
+#' Coefficient of Variation (CV)
 #'
-#' Calculate the successive variation (SV) at various levels of granularity
-#' based on what is supplied (ID, VISIT, WAKE, and / or DATE)for either SBP,
-#' DBP, or both. SV is a measure of dispersion that takes into account the
-#' temporal structure of the data and relies on the sum of squared differences
-#' in successive observations, unlike the average real variability (ARV)
-#' which relies on the sum of absolute differences.
-#' $$SV = sqrt(sum(x_{i+1} - x_i)^2/n-1)$$
-#'
-#' \strong{NOTE:} The canonical standard deviation, independent of the temporal
-#' structure using the sample average, is added for comparison:
-#' $$SD = sqrt(sum(x_{i+1} - xbar)^2/n-1)$$
+#' Calculate the coefficient of variation at various levels of granularity
+#' based on what is supplied (ID, VISIT, WAKE, and / or DATE) for either SBP,
+#' DBP, or both. CV is a measure of dispersion
 #'
 #' @param data Required argument. Pre-processed dataframe with SBP and DBP columns
 #' with optional ID, VISIT, WAKE, and DATE columns if available.
@@ -46,10 +37,12 @@
 #'    \item \code{VISIT}: (If applicable) Corresponds to the visit # of the subject, if more than 1
 #'    \item \code{WAKE}: (If applicable) Corresponds to the awake status of the subject (0 = asleep |
 #'    1 = awake)
-#'    \item \code{SV_SBP} / \code{SV_DBP}: Calculates the square root of the average squared differences
-#'    between successive measurements. The resulting value averages across the granularity
-#'    grouping for however many observations are present.
-#'    \item N: The number of observations for that particular grouping. If \code{inc_date = TRUE},
+#'    \item \code{CV_SBP} / \code{CV_DBP}: Calculates the ratio of standard deviation to the mean. \code{CV_SBP}
+#'    or \code{CV_DBP} is useful for comparing the degree of variation from one data series
+#'    to another.
+#'    \item \code{SD_SBP} / \code{SD_DBP}: For completeness, the \code{cv} function also includes the
+#'    standard deviation as a comparison metric to measure spread around the average.
+#'    \item \code{N}: The number of observations for that particular grouping. If \code{inc_date = TRUE},
 #'    \code{N} corresponds to the number of observations for that date. If \code{inc_date = FALSE}, N
 #'    corresponds to the number of observations for the most granular grouping available (i.e.
 #'    a combination of \code{ID}, \code{VISIT}, and \code{WAKE})
@@ -59,7 +52,6 @@
 #' }
 #'
 #' @export
-#'
 #'
 #' @examples
 #' # Load data
@@ -73,11 +65,11 @@
 #' jhs_proc <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", date_time = "DateTime",
 #' hr = "Pulse.bpm.")
 #'
-#' # SV Calculation
-#' sv(hypnos_proc)
-#' sv(jhs_proc, add_groups = c("meal_time"))
+#' # CV Calculation
+#' bp_cv(hypnos_proc, inc_date = TRUE, add_groups = "SBP_Category")
+#' bp_cv(jhs_proc, add_groups = c("meal_time"))
 #' # Notice that meal_time is not a column from process_data, but it still works
-sv <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups = NULL){
+bp_cv <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups = NULL){
 
   SBP = DBP = ID = . = NULL
   rm(list = c('SBP', 'DBP', 'ID', '.'))
@@ -119,7 +111,7 @@ sv <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups = NU
   }
 
 
-  # Create groups for summarizing data with dplyr
+  # Verify that add_groups is valid and create grps variable for dplyr
   grps <- create_grps(data = data, inc_date = inc_date, add_groups = add_groups)
 
   if(length(grps) == 0){
@@ -137,13 +129,14 @@ sv <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups = NU
   out <- data %>%
     dplyr::group_by_at( dplyr::vars(grps) ) %>%
 
-    # SV Calculation
-    { if (bp_type == 1) dplyr::summarise(., SV = sqrt( sum(( (SBP - dplyr::lag(SBP))[2:length(SBP - dplyr::lag(SBP))] )^2 ) / (dplyr::n() - 1)), N = dplyr::n()) else . } %>% # SBP only
-    { if (bp_type == 2) dplyr::summarise(., SV = sqrt( sum(( (DBP - dplyr::lag(DBP))[2:length(DBP - dplyr::lag(DBP))] )^2 ) / (dplyr::n() - 1)), N = dplyr::n()) else . } %>% # DBP only
-    { if (bp_type == 0) dplyr::summarise(., SV_SBP = sqrt( sum(( (SBP - dplyr::lag(SBP))[2:length(SBP - dplyr::lag(SBP))] )^2 ) / (dplyr::n() - 1)),
-                                            SV_DBP = sqrt( sum(( (DBP - dplyr::lag(DBP))[2:length(DBP - dplyr::lag(DBP))] )^2 ) / (dplyr::n() - 1)),
+    # CV Calculation
+    { if (bp_type == 1) dplyr::summarise(., CV = sd(SBP, na.rm = TRUE) / mean(SBP, na.rm = TRUE) * 100, SD = sd(SBP),N = dplyr::n()) else . } %>% # SBP only
+    { if (bp_type == 2) dplyr::summarise(., CV = sd(DBP, na.rm = TRUE) / mean(DBP, na.rm = TRUE) * 100, SD = sd(DBP),N = dplyr::n()) else . } %>% # DBP only
+    { if (bp_type == 0) dplyr::summarise(., CV_SBP = sd(SBP, na.rm = TRUE) / mean(SBP, na.rm = TRUE) * 100,
+                                            CV_DBP = sd(DBP, na.rm = TRUE) / mean(DBP, na.rm = TRUE) * 100,
+                                            SD_SBP = sd(SBP),
+                                            SD_DBP = sd(DBP),
                                             N = dplyr::n()) else . } # both SBP and DBP
-
 
   return(out)
 }

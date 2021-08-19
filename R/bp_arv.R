@@ -72,10 +72,10 @@
 #' hr = "Pulse.bpm.")
 #'
 #' # ARV Calculation
-#' arv(hypnos_proc, add_groups = c("SBP_Category"))
-#' arv(jhs_proc, inc_date = TRUE)
+#' bp_arv(hypnos_proc, add_groups = c("SBP_Category"))
+#' bp_arv(jhs_proc, inc_date = TRUE)
 #' @export
-arv <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups = NULL){
+bp_arv <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups = NULL){
 
   SBP = DBP = ID = . = NULL
   rm(list = c('SBP', 'DBP', 'ID', '.'))

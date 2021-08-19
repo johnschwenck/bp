@@ -109,9 +109,9 @@ bp_stats <- function(data,
 
   # Pull in all necessary data from functions --> functions do not need subj argument because data is already filtered above
   bp_center_tmp <- bp_center(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups)
-  arv_tmp       <- arv(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups)
-  sv_tmp        <- sv(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups)
-  cv_tmp        <- cv(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups)
+  arv_tmp       <- bp_arv(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups)
+  sv_tmp        <- bp_sv(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups)
+  cv_tmp        <- bp_cv(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups)
   bp_range_tmp  <- bp_range(data, inc_date = inc_date, add_groups = add_groups)
   bp_mag_tmp    <- bp_mag(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups)
 

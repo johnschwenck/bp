@@ -15,7 +15,6 @@
 #' \item{Day}{Integer. The day of the month corresponding to the Date column.}
 #' \item{Year}{Integer. The year corresponding to the Date column.}
 #' \item{DayofWk}{Character. The day of the week corresponding to the Date column.}
-#' \item{Time}{Character. The time corresponding to the DateTime column.}
 #' \item{Hour}{Integer. The hour corresponding to the DateTime column.}
 #' \item{Meal_Time}{Character. The estimated meal time corresponding to the DateTime column.}
 #' \item{Sys.mmHg.}{Integer. The systolic blood pressure reading.}
