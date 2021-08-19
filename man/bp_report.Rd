@@ -10,14 +10,15 @@ bp_report(
   inc_low = TRUE,
   inc_crisis = TRUE,
   group_var = NULL,
-  save_report = 1,
+  save_report = TRUE,
   path = NULL,
   filename = "bp_report",
   width = 11,
   height = 8.5,
   filetype = "pdf",
   units = "in",
-  scale = 1.25
+  scale = 1.25,
+  plot = TRUE
 )
 }
 \arguments{
@@ -57,9 +58,8 @@ be grouped / separated by for a given plot. Cannot contain more than 10 levels (
 overcrowding the plot). This is different from the \code{wrap_var} argument which segments
 plots by category and cannot be used with the \code{process_data} function.}
 
-\item{save_report}{A binary indicator (1 or 0) that determines whether or not to save the output.
-The default is \code{save_report = 1} indicating that the report will be saved. Regardless of the
-input, the report will still appear in the RStudio Plots pane.}
+\item{save_report}{A logical value indicating whether to save the BP report output as a separate file.
+The default is \code{TRUE} indicating that the report will be saved.}
 
 \item{path}{Optional argument. A string corresponding to the respective file path by which the
 report is to be saved. Do not include trailing slashes (i.e. ~/loc/) or the file name (i.e. ~/loc/testfile.pdf).
@@ -96,11 +96,11 @@ correspond to in the exported output. The default is inches ("in"), but centimet
 millimeters ("mm") are also available.}
 
 \item{scale}{A multiplicative scaling factor for the report output.}
+
+\item{plot}{A logical value indicating whether to automatically produce the plot of bp_report, or suppress the output. The default value is TRUE. If false, the returned object is a grob that can be plotted using \code{\link{grid.arrange}}}
 }
 \value{
-A report visual containing various blood pressure metrics and visuals and a saved report (if
-indicated) on the specified path. If no path specified, the report will be saved at the current
-working directory which can be checked using \code{getwd()}
+If \code{plot = TRUE}, the function produces a plot of BP report that contains scatterplot of BP values by stages (see \code{\link{bp_scatter}}), histograms of BP values by stages (see \code{\link{bp_hist}}) and frequency tables of BP values by stages and day of the week/time of the day (see \code{\link{dow_tod_plots}}). If \code{plot = FALSE}, the function returns the grob object that can be plotted later using \code{\link{grid.arrange}}. If \code{save_report = TRUE}, the report will be automatically saved at the current working directory (can be checked using \code{getwd()}) or at specified file path.
 }
 \description{
 The \code{bp_report} function serves to aggregate various data visuals and metrics
@@ -131,11 +131,13 @@ jhs_proc <- process_data(bp_jhs,
 rm(bp_hypnos, bp_jhs)
 
 # Single-subject Report
-# Note: save_report set to 0 for illustrative purposes of the example, not to actually save
-bp_report(jhs_proc, filetype = 'png', save_report = 0)
+# save_report = FALSE for illustrative purposes
+# plot = TRUE will automatically generate a plot
+bp_report(jhs_proc, save_report = FALSE, plot = TRUE)
 
 # Multi-subject Report
-# Note: save_report set to 0 for illustrative purposes of the example, not to actually save
-bp_report(hyp_proc, group_var = 'VISIT', save_report = 0)
-
+# save_report = FALSE for illustrative purposes
+# plot = FALSE will suppress the plot output and return a grob object
+out = bp_report(hyp_proc, group_var = 'VISIT', save_report = FALSE, plot = FALSE)
+gridExtra::grid.arrange(out)
 }
