@@ -13,8 +13,9 @@
 #' comply with integers so long as they are all present in the \code{ID} column of the data.
 #'
 #'
-#' @return A list containing three histogram visual graphics corresponding to the SBP / DBP totals,
-#' SBP frequency, and DBP frequency.
+#' @return A list containing four objects: three histogram visual graphics corresponding to
+#' the SBP / DBP totals, SBP frequency, and DBP frequency, and a fourth list element
+#' corresponding to a plot legend object for use in the \code{bp_report} function
 #'
 #' @export
 #'

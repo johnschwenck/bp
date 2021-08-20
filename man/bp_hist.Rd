@@ -16,8 +16,9 @@ value or a vector of elements. The input type should be character, but the funct
 comply with integers so long as they are all present in the \code{ID} column of the data.}
 }
 \value{
-A list containing three histogram visual graphics corresponding to the SBP / DBP totals,
-SBP frequency, and DBP frequency.
+A list containing four objects: three histogram visual graphics corresponding to
+the SBP / DBP totals, SBP frequency, and DBP frequency, and a fourth list element
+corresponding to a plot legend object for use in the \code{bp_report} function
 }
 \description{
 The \code{bp_hist} function serves to display the frequencies of the \code{SBP}
