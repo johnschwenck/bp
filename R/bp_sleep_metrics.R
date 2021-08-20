@@ -211,7 +211,7 @@ get_summaries_SBP_DBP <- function(data){
 #'
 #' \code{ME_diff} = mean_postwake_BP - mean_presleep_BP (morning-evening difference)
 #'
-#' \code{wSD} = ( (wake_SD x HRS_wake) + (sleep_SD x HRS_sleep) ) / (HRS_wake + HRS_sleep)
+#' \code{wSD} = ( (wake_SD x HRS_wake) + (sleep_SD x HRS_sleep) ) / (HRS_wake + HRS_sleep) (weighted standard deviation)
 #'
 #' @return The function outputs a list containing 4 tibble objects corresponding to the following tables:
 #' \item{[[1]]}{Counts of how many BP measurements were observed overall (\code{N_total}), during sleep (\code{N_sleep}), and during wake (\code{N_wake}) for each subject ID and grouping variable}
