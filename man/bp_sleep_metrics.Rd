@@ -41,6 +41,8 @@ The calculation of BP metrics related to sleep is based on averages of BP readin
 \code{ME_ave} = (mean_presleep_BP + mean_postwake_BP)/2 (morning-evening average)
 
 \code{ME_diff} = mean_postwake_BP - mean_presleep_BP (morning-evening difference)
+
+\code{wSD} = ( (wake_SD x HRS_wake) + (sleep_SD x HRS_sleep) ) / (HRS_wake + HRS_sleep)
 }
 \examples{
 hypnos_proc <- process_data(bp_hypnos,
@@ -53,7 +55,8 @@ hypnos_proc <- process_data(bp_hypnos,
                            hr = "hr",
                            map = "map",
                            rpp = "rpp",
-                           pp = "pp")
+                           pp = "pp",
+                           bp_type = "abpm")
 
 bp_sleep_metrics(hypnos_proc)
 

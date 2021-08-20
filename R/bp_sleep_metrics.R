@@ -211,6 +211,8 @@ get_summaries_SBP_DBP <- function(data){
 #'
 #' \code{ME_diff} = mean_postwake_BP - mean_presleep_BP (morning-evening difference)
 #'
+#' \code{wSD} = ( (wake_SD x HRS_wake) + (sleep_SD x HRS_sleep) ) / (HRS_wake + HRS_sleep)
+#'
 #' @return The function outputs a list containing 4 tibble objects corresponding to the following tables:
 #' \item{[[1]]}{Counts of how many BP measurements were observed overall (\code{N_total}), during sleep (\code{N_sleep}), and during wake (\code{N_wake}) for each subject ID and grouping variable}
 #' \item{[[2]]}{Summary statistics for systolic BP measurements (SBP): mean SBP value over Sleep and Wake, sd SBP value over Sleep and Wake, mean SBP value over presleep period (evening in Kario et al. (2003)), mean SBP value over prewake period, mean SBP value over postwake period (morning in Kario et al. (2003)), mean SBP value over 3 reading centered at the lowest SBP value during sleep}
@@ -233,7 +235,8 @@ get_summaries_SBP_DBP <- function(data){
 #'                            hr = "hr",
 #'                            map = "map",
 #'                            rpp = "rpp",
-#'                            pp = "pp")
+#'                            pp = "pp",
+#'                            bp_type = "abpm")
 #'
 #' bp_sleep_metrics(hypnos_proc)
 #'
@@ -242,8 +245,8 @@ bp_sleep_metrics <- function(data, subj = NULL){
     # Function requires: SBP, DBP, DATE_TIME, WAKE, ID
 
     # Initialize variables for dplyr
-    ID = DATE_TIME = SBP = DBP = WAKE =  lowest_SBP = lowest_DBP = presleep_SBP = presleep_DBP = postwake_SBP = postwake_DBP = prewake_SBP = prewake_DBP = sleep_DBP = wake_DBP = sleep_SBP = wake_SBP = NULL
-    rm(list = c("ID", "DATE_TIME", "SBP", "DBP", "WAKE", "lowest_SBP", "lowest_DBP", "presleep_SBP", "presleep_DBP", "postwake_SBP", "postwake_DBP", "prewake_SBP", "prewake_DBP", "sleep_DBP", "wake_DBP", "sleep_SBP", "wake_SBP"))
+    ID = DATE_TIME = SBP = DBP = WAKE = HOUR = lowest_SBP = lowest_DBP = presleep_SBP = presleep_DBP = postwake_SBP = postwake_DBP = prewake_SBP = prewake_DBP = sleep_DBP = wake_DBP = sleep_SBP = wake_SBP = wSD_DBP = wake_SBP_sd = wake_DBP_sd = sleep_SBP_sd = sleep_DBP_sd = HRS_sleep = HRS_wake = NULL
+    rm(list = c("ID", "DATE_TIME", "SBP", "DBP", "WAKE", "HOUR", "lowest_SBP", "lowest_DBP", "presleep_SBP", "presleep_DBP", "postwake_SBP", "postwake_DBP", "prewake_SBP", "prewake_DBP", "sleep_DBP", "wake_DBP", "sleep_SBP", "wake_SBP", "wSD_DBP", "wake_SBP_sd", "wake_DBP_sd", "sleep_SBP_sd", "sleep_DBP_sd", "HRS_sleep", "HRS_wake"))
 
 
       # Uppercase all column names
@@ -332,7 +335,12 @@ bp_sleep_metrics <- function(data, subj = NULL){
 
       sleep_counts = data %>%
         dplyr::group_by_at(dplyr::vars(grps)) %>%
-        dplyr::summarize(N_total = dplyr::n(), N_wake = sum(WAKE == 1), N_sleep = sum(WAKE == 0), .groups = 'drop')
+        dplyr::summarize(N_total = dplyr::n(), # Total number of readings
+                         N_wake = sum(WAKE == 1), # Number of total readings while awake
+                         N_sleep = sum(WAKE == 0), # Number of total readings while asleep
+                         HRS_wake = dplyr::n_distinct(HOUR[WAKE == 1]), # Number of unique hours recorded while awake (for wSD calc)
+                         HRS_sleep = dplyr::n_distinct(HOUR[WAKE == 0]), # Number of unique hours recorded during sleep (for wSD calc)
+                         .groups = 'drop')
 
 
 
@@ -376,8 +384,12 @@ bp_sleep_metrics <- function(data, subj = NULL){
       ### Calculation of Sleep Metrics (Table 4) based on SBP/DBP sleep summaries (Tables 2-3)
       ####################################
 
+      # Join the sleep_summary_SBP/DBP with the sleep counts to include the HRS_wake/sleep for the wSD calculation
+      sleep_summary_SBP_all <- suppressMessages(dplyr::left_join(sleep_summary_SBP, sleep_counts)) #suppressMessages ignores the "joining by: ..." message
+      sleep_summary_DBP_all <- suppressMessages(dplyr::left_join(sleep_summary_DBP, sleep_counts))
+
       # Metrics based on SBP
-      sleep_metrics_SBP <- sleep_summary_SBP %>%
+      sleep_metrics_SBP <- sleep_summary_SBP_all %>%
         dplyr::group_by_at(dplyr::vars(grps)) %>%
         dplyr::transmute(
           # dip calculation (proportion)
@@ -391,11 +403,13 @@ bp_sleep_metrics <- function(data, subj = NULL){
           # Morningness-Eveningness Average (Kario 2005)
           ME_SBP_avg = (postwake_SBP + presleep_SBP) / 2,
           # Morningness-Eveningness Difference (Kario 2005)
-          ME_SBP_diff = postwake_SBP - presleep_SBP
+          ME_SBP_diff = postwake_SBP - presleep_SBP,
+          # Weighted Standard Deviation (Bilo et al 2007)
+          wSD_SBP = ( ( (wake_SBP_sd * HRS_wake) + (sleep_SBP_sd * HRS_sleep) ) / (HRS_wake + HRS_sleep) )
         )
 
       # Metrics based on DBP
-      sleep_metrics_DBP <- sleep_summary_DBP %>%
+      sleep_metrics_DBP <- sleep_summary_DBP_all %>%
         dplyr::group_by_at(dplyr::vars(grps)) %>%
         dplyr::transmute(
           # dip calculation (proportion)
@@ -409,7 +423,9 @@ bp_sleep_metrics <- function(data, subj = NULL){
           # Morningness-Eveningness Average (Kario 2005)
           ME_DBP_avg = (postwake_DBP + presleep_DBP) / 2,
           # Morningness-Eveningness Difference (Kario 2005)
-          ME_DBP_diff = postwake_DBP - presleep_DBP
+          ME_DBP_diff = postwake_DBP - presleep_DBP,
+          # Weighted Standard Deviation (Bilo et al 2007)
+          wSD_DBP = ( ( (wake_DBP_sd * HRS_wake) + (sleep_DBP_sd * HRS_sleep) ) / (HRS_wake + HRS_sleep) )
         )
 
       # Combine the two together
