@@ -18,8 +18,15 @@ comply with integers so long as they are all present in the \code{ID} column of 
 }
 \value{
 The function outputs a list containing 4 tibble objects corresponding to the following tables:
-\item{[[1]]}{Counts of how many BP measurements were observed overall (\code{N_total}), during sleep (\code{N_sleep}), and during wake (\code{N_wake}) for each subject ID and grouping variable}
-\item{[[2]]}{Summary statistics for systolic BP measurements (SBP): mean SBP value over Sleep and Wake, sd SBP value over Sleep and Wake, mean SBP value over presleep period (evening in Kario et al. (2003)), mean SBP value over prewake period, mean SBP value over postwake period (morning in Kario et al. (2003)), mean SBP value over 3 reading centered at the lowest SBP value during sleep}
+\item{[[1]]}{Counts of how many BP measurements were observed overall (\code{N_total}),
+total number of readings during sleep (\code{N_sleep}),
+total number of readings during wake (\code{N_wake}),
+number of unique hours recorded during the sleep period (\code{HRS_sleep}), and
+number of unique hours recorded during the wake period (\code{HRS_wake}) for each subject ID and grouping variable}
+\item{[[2]]}{Summary statistics for systolic BP measurements (SBP): mean SBP value over Sleep and Wake, sd SBP value
+over Sleep and Wake, mean SBP value over presleep period (evening in Kario et al. (2003)), mean SBP value over prewake period,
+mean SBP value over postwake period (morning in Kario et al. (2003)), mean SBP value over 3 reading centered at the lowest SBP
+value during sleep}
 \item{[[3]]}{Summary statistics for diastolic BP measurements (DBP), same as for SBP}
 \item{[[4]]}{BP metrics associated with sleep as defined above, separately for SBP and DBP}
 }
@@ -28,7 +35,13 @@ The \code{bp_sleep_metrics} function serves to calculate sleep-dependent metrics
 from relevant medical literature.
 }
 \details{
-The calculation of BP metrics related to sleep is based on averages of BP readings from four periods as identified in Kairo et al. (2003): presleep or evening (2 hours before sleep start), prewake (2 hours before wake), postwake or morning (2 hours after wake), lowest (3 measurements centered at the minimal BP reading over sleep). The function uses \code{WAKE} column to automatically allocate BP measurements to various periods. The following metrics are defined as a function of the period averages (separately for SBP and DBP)
+The calculation of BP metrics related to sleep is based on averages of BP readings from four periods as identified in Kairo et al. (2003):
+presleep or evening (2 hours before sleep start),
+prewake (2 hours before wake),
+postwake or morning (2 hours after wake),
+lowest (3 measurements centered at the minimal BP reading over sleep). T
+he function uses \code{WAKE} column to automatically allocate BP measurements to various periods. The following metrics are defined as a
+function of the period averages (separately for SBP and DBP)
 
 \code{dip_calc} = 1 - mean_sleep_BP/mean_wake_BP (dip proportion)
 
@@ -62,5 +75,7 @@ bp_sleep_metrics(hypnos_proc)
 
 }
 \references{
-Kario, K., Pickering, T. G., Umeda, Y., Hoshide, S., Hoshide, Y., Morinari, M., ... & Shimada, K. (2003). Morning surge in blood pressure as a predictor of silent and clinical cerebrovascular disease in elderly hypertensives: a prospective study. Circulation, 107(10), 1401-1406.
+Kario, K., Pickering, T. G., Umeda, Y., Hoshide, S., Hoshide, Y., Morinari, M., ... & Shimada, K. (2003). Morning surge in blood
+pressure as a predictor of silent and clinical cerebrovascular disease in elderly hypertensives: a prospective study. Circulation,
+107(10), 1401-1406.
 }
