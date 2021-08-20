@@ -1,3 +1,4 @@
+
 #' Blood Pressure - 1 Subject - John Schwenck
 #'
 #' Single-subject self-monitored blood pressure readings over 108 days (April 15, 2019 - August 01, 2019).
@@ -300,7 +301,7 @@
 
 #' Blood Pressure in Salt-Sensitive Dahl Rats Data
 #'
-#' The \code{bp_ghana} data set includes arterial blood pressure waveform time series data
+#' The \code{bp_rats} data set includes arterial blood pressure waveform time series data
 #' of the SS(n = 9) and SS.13 (n = 6) genetic strains of Dahl rats sampled at 100 Hz who
 #' were each administered a low and high salt diet. It is taken from the study of Bugenhagen
 #' et al.(2010) which sought to investigate the origins of the baroreflex dysfunction in
