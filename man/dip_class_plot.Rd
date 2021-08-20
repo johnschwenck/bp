@@ -9,7 +9,8 @@ dip_class_plot(
   subj = NULL,
   dip_thresh = 0.1,
   extreme_thresh = 0.2,
-  thresh_mult = 2
+  thresh_mult = 2,
+  sleep_start_end = NULL
 )
 }
 \arguments{
@@ -32,15 +33,29 @@ Specifically, this category includes all dips between 0\% and this value.}
 \item{extreme_thresh}{Default threshold for "Extreme Dipping" set to 0.20 (i.e. 20\%). This value represents the maximum
 percentage that BP can fall during sleep and be characterized as "Extreme" nocturnal decline (dipping).
 Specifically, this category includes all dips between the Normal dipping threshold and this value.
+
 NOTE: dip_thresh cannot exceed extreme_thresh.}
 
 \item{thresh_mult}{Optional argument that serves as a multiplier by which to expand plot sizing for X and Y axis. Default
 set to 2.}
+
+\item{sleep_start_end}{Optional User-supplied manual override to adjust sleep interval indicating indicate start and end time
+corresponding to the sleep interval of interest. Must only contain 2 values and must be 24-hour denoted integers
+
+Example: \code{sleep_start_end = c(22,5)} indicates a sleep period from 10pm - 5am.}
 }
 \value{
-A scatter plot of all dipping percentage values overlayed on top of the category plot outlined in
+A scatter plot of all dipping percentage values layered on top of the category plot outlined in
 Okhubo et al. (1995). dip_thresh and extreme_thresh denote the cutoffs for the Normal and Extreme
-dipping categories. Any dips below zero are denoted as Inverted dipping.
+dipping categories. Any dips below zero are denoted as Inverted (or Reverse) dipping.
+
+The default plot categories are as follows:
+\itemize{
+   \item{\emph{INV}: Inverted (Reverse) Dipper - no nocturnal decline (greater or equal to 0\%)}
+   \item{\emph{ND}: Non-Dipper - a nocturnal decline between 0 - 10\%}
+   \item{\emph{DIP}: Dipper - a nocturnal decline between 10\% and the extreme dipping \% (20\%)}
+   \item{\emph{ED}: Extreme Dipper - a nocturnal decline exceeding 20\%}
+}
 }
 \description{
 Plot of Dipping Classifications
