@@ -4,7 +4,13 @@
 \alias{bp_range}
 \title{Blood Pressure Range}
 \usage{
-bp_range(data, inc_date = FALSE, subj = NULL, add_groups = NULL)
+bp_range(
+  data,
+  inc_date = FALSE,
+  subj = NULL,
+  add_groups = NULL,
+  inc_wake = TRUE
+)
 }
 \arguments{
 \item{data}{Required dataframe with SBP and DBP columns corresponding to
@@ -25,6 +31,11 @@ additional "group" to further refine the output. The supplied input must be a
 character vector with the strings corresponding to existing column names of the
 processed \code{data} input supplied. Capitalization of \code{add_groups} does not matter.
 Ex: \code{add_groups = c("Time_of_Day")}}
+
+\item{inc_wake}{Optional argument corresponding to whether or not to include \code{WAKE}
+in the grouping of the final output (if \code{WAKE} column is available). By default,
+\code{inc_wake = TRUE} which will include the \code{WAKE} column in the groups by which
+to calculate the respective metrics.}
 }
 \value{
 A tibble with SBP_max, SBP_min, SBP_range, DBP_max, DBP_min, DBP_range

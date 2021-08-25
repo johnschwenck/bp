@@ -16,20 +16,33 @@
 #' @param data Required argument. Pre-processed dataframe containing SBP and
 #' DBP with optional ID, VISIT, WAKE, and DATE columns if available.
 #' Use \code{process_data} to properly format data.
+#'
 #' @param inc_date Optional argument. Default is FALSE. As ABPM data typically
 #' overlaps due to falling asleep on one date and waking up on another, the \code{inc_date}
 #' argument is typically kept as FALSE, but the function will work regardless. Setting
 #' \code{inc_date = TRUE} will include these dates as a grouping level.
+#'
 #' @param bp_type Optional argument. Determines whether to calculate ARV for SBP
 #' values or DBP values. Default is 0 corresponding to output for both SBP & DBP.
 #' For both SBP and DBP ARV values use bp_type = 0, for SBP-only use bp_type = 1,
 #' and for DBP-only use bp_type = 2
+#'
 #' @param add_groups Optional argument. Allows the user to aggregate the data by an
 #' additional "group" to further refine the output. The supplied input must be a
 #' character vector with the strings corresponding to existing column names of the
 #' processed \code{data} input supplied. Capitalization of \code{add_groups} does not matter.
 #' Ex: \code{add_groups = c("Time_of_Day")}
-#' @param subj Optional argument.
+#'
+#' @param subj Optional argument. Allows the user to specify and subset specific subjects
+#' from the \code{ID} column of the supplied data set. The \code{subj} argument can be a single
+#' value or a vector of elements. The input type should be character, but the function will
+#' comply with integers so long as they are all present in the \code{ID} column of the data.
+#'
+#' @param inc_wake Optional argument corresponding to whether or not to include \code{WAKE}
+#' in the grouping of the final output (if \code{WAKE} column is available). By default,
+#' \code{inc_wake = TRUE} which will include the \code{WAKE} column in the groups by which
+#' to calculate the respective metrics.
+#'
 #'
 #' @return A tibble object with a row corresponding to each subject, or alternatively
 #' a row corresponding to each date, if inc_date = TRUE. The resulting tibble consists of:
@@ -71,7 +84,8 @@ bp_stats <- function(data,
                      inc_date = FALSE,
                      subj = NULL,
                      bp_type = 0,
-                     add_groups = NULL){
+                     add_groups = NULL,
+                     inc_wake = TRUE){
 
   ID = N = DATE = SBP_mean = DBP_mean = SBP_med = DBP_med = SD = SD_SBP = SD_DBP = CV_SBP = CV_DBP = SBP_max = DBP_max = SBP_min = DBP_min = SBP_range = DBP_range = . = NULL
   rm(list = c(ID, N, DATE, SBP_mean, DBP_mean, SBP_med, DBP_med, SD, SD_SBP, SD_DBP, CV_SBP, CV_DBP, SBP_range, DBP_range, SBP_max, SBP_min, DBP_max, DBP_min, .))
@@ -108,12 +122,12 @@ bp_stats <- function(data,
 
 
   # Pull in all necessary data from functions --> functions do not need subj argument because data is already filtered above
-  bp_center_tmp <- bp_center(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups)
-  arv_tmp       <- bp_arv(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups)
-  sv_tmp        <- bp_sv(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups)
-  cv_tmp        <- bp_cv(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups)
-  bp_range_tmp  <- bp_range(data, inc_date = inc_date, add_groups = add_groups)
-  bp_mag_tmp    <- bp_mag(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups)
+  bp_center_tmp <- bp_center(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups, inc_wake = inc_wake)
+  arv_tmp       <- bp_arv(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups, inc_wake = inc_wake)
+  sv_tmp        <- bp_sv(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups, inc_wake = inc_wake)
+  cv_tmp        <- bp_cv(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups, inc_wake = inc_wake)
+  bp_range_tmp  <- bp_range(data, inc_date = inc_date, add_groups = add_groups, inc_wake = inc_wake)
+  bp_mag_tmp    <- bp_mag(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups, inc_wake = inc_wake)
 
   # Find all common column names to join by
   grps <- intersect(colnames(bp_center_tmp), colnames(arv_tmp))

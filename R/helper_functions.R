@@ -133,16 +133,23 @@ stage_check <- function(sbp_stages = NULL, dbp_stages = NULL){
 #' \code{arv}, \code{bp_mag}, \code{bp_range}, \code{cv}, \code{sv}, \code{bp_center}, \code{bp_stats}
 #'
 #' @param data Supplied data from function
+#'
 #' @param inc_date TRUE/FALSE indicator from function argument for whether or not to
 #' include the date in grouping
+#'
 #' @param add_groups Character vector from function argument input corresponding
 #' to which other variables other than "ID", "WAKE", and "VISIT" to include from
 #' the supplied data's column names. If "DATE" is supplied in add_groups, and
 #' inc_date = TRUE, the duplicate will be omitted.
 #'
+#' @param inc_wake Optional argument corresponding to whether or not to include \code{WAKE}
+#' in the grouping of the final output (if \code{WAKE} column is available). By default,
+#' \code{inc_wake = TRUE} which will include the \code{WAKE} column in the groups by which
+#' to calculate the respective metrics.
+#'
 #' @return A vector of string values corresponding to the column names that
 #' will subset / group the data in dplyr functions
-create_grps <- function(data, inc_date, add_groups){
+create_grps <- function(data, inc_date, add_groups, inc_wake){
 
   # Verify that add_groups is valid
   if(!is.null(add_groups)){
@@ -165,11 +172,21 @@ create_grps <- function(data, inc_date, add_groups){
         warning('inc_date = TRUE but no DATE column found in supplied data set. Ignored inc_date argument.')
       }
 
-    grps = c("ID", "VISIT", "WAKE", "DATE", add_groups)
+    if(inc_wake == TRUE){
+        grps = c("ID", "VISIT", "WAKE", "DATE", add_groups)
+    }else{
+        grps = c("ID", "VISIT", "DATE", add_groups)
+    }
+
 
   }else{
 
-    grps = c("ID", "VISIT", "WAKE", add_groups)
+    if(inc_wake == TRUE){
+        grps = c("ID", "VISIT", "WAKE", add_groups)
+    }else{
+        grps = c("ID", "VISIT", add_groups)
+    }
+
 
     }
 

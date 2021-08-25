@@ -4,7 +4,14 @@
 \alias{bp_stats}
 \title{Aggregated BP Summary Statistics}
 \usage{
-bp_stats(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups = NULL)
+bp_stats(
+  data,
+  inc_date = FALSE,
+  subj = NULL,
+  bp_type = 0,
+  add_groups = NULL,
+  inc_wake = TRUE
+)
 }
 \arguments{
 \item{data}{Required argument. Pre-processed dataframe containing SBP and
@@ -16,7 +23,10 @@ overlaps due to falling asleep on one date and waking up on another, the \code{i
 argument is typically kept as FALSE, but the function will work regardless. Setting
 \code{inc_date = TRUE} will include these dates as a grouping level.}
 
-\item{subj}{Optional argument.}
+\item{subj}{Optional argument. Allows the user to specify and subset specific subjects
+from the \code{ID} column of the supplied data set. The \code{subj} argument can be a single
+value or a vector of elements. The input type should be character, but the function will
+comply with integers so long as they are all present in the \code{ID} column of the data.}
 
 \item{bp_type}{Optional argument. Determines whether to calculate ARV for SBP
 values or DBP values. Default is 0 corresponding to output for both SBP & DBP.
@@ -28,6 +38,11 @@ additional "group" to further refine the output. The supplied input must be a
 character vector with the strings corresponding to existing column names of the
 processed \code{data} input supplied. Capitalization of \code{add_groups} does not matter.
 Ex: \code{add_groups = c("Time_of_Day")}}
+
+\item{inc_wake}{Optional argument corresponding to whether or not to include \code{WAKE}
+in the grouping of the final output (if \code{WAKE} column is available). By default,
+\code{inc_wake = TRUE} which will include the \code{WAKE} column in the groups by which
+to calculate the respective metrics.}
 }
 \value{
 A tibble object with a row corresponding to each subject, or alternatively

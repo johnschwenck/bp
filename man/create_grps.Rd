@@ -4,7 +4,7 @@
 \alias{create_grps}
 \title{Create Groups for Dplyr}
 \usage{
-create_grps(data, inc_date, add_groups)
+create_grps(data, inc_date, add_groups, inc_wake)
 }
 \arguments{
 \item{data}{Supplied data from function}
@@ -16,6 +16,11 @@ include the date in grouping}
 to which other variables other than "ID", "WAKE", and "VISIT" to include from
 the supplied data's column names. If "DATE" is supplied in add_groups, and
 inc_date = TRUE, the duplicate will be omitted.}
+
+\item{inc_wake}{Optional argument corresponding to whether or not to include \code{WAKE}
+in the grouping of the final output (if \code{WAKE} column is available). By default,
+\code{inc_wake = TRUE} which will include the \code{WAKE} column in the groups by which
+to calculate the respective metrics.}
 }
 \value{
 A vector of string values corresponding to the column names that

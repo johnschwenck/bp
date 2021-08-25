@@ -23,6 +23,12 @@
 #' processed \code{data} input supplied. Capitalization of \code{add_groups} does not matter.
 #' Ex: \code{add_groups = c("Time_of_Day")}
 #'
+#' @param inc_wake Optional argument corresponding to whether or not to include \code{WAKE}
+#' in the grouping of the final output (if \code{WAKE} column is available). By default,
+#' \code{inc_wake = TRUE} which will include the \code{WAKE} column in the groups by which
+#' to calculate the respective metrics.
+#'
+#'
 #' @return A tibble with SBP_max, SBP_min, SBP_range, DBP_max, DBP_min, DBP_range
 #' and any additional optional columns included in data such as \code{ID}, \code{VISIT},
 #' \code{WAKE}, and \code{DATE}. If inc_date = TRUE, each row will correspond to a date.
@@ -63,7 +69,7 @@
 #' bp_range(hypnos_proc)
 #' bp_range(jhs_proc, inc_date = TRUE, add_groups = c("meal_time"))
 #' # Notice that meal_time is not a column from process_data, but it still works
-bp_range <- function(data, inc_date = FALSE, subj = NULL, add_groups = NULL){
+bp_range <- function(data, inc_date = FALSE, subj = NULL, add_groups = NULL, inc_wake = TRUE){
 
   SBP = DBP = ID = NULL
   rm(list = c('SBP', 'DBP', 'ID'))
@@ -87,7 +93,7 @@ bp_range <- function(data, inc_date = FALSE, subj = NULL, add_groups = NULL){
 
 
   # Verify that add_groups is valid and create grps variable for dplyr
-  grps <- create_grps(data = data, inc_date = inc_date, add_groups = add_groups)
+  grps <- create_grps(data = data, inc_date = inc_date, add_groups = add_groups, inc_wake = inc_wake)
 
   if(length(grps) == 0){
 

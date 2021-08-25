@@ -29,6 +29,11 @@
 #' processed \code{data} input supplied. Capitalization of \code{add_groups} does not matter.
 #' Ex: \code{add_groups = c("Time_of_Day")}
 #'
+#' @param inc_wake Optional argument corresponding to whether or not to include \code{WAKE}
+#' in the grouping of the final output (if \code{WAKE} column is available). By default,
+#' \code{inc_wake = TRUE} which will include the \code{WAKE} column in the groups by which
+#' to calculate the respective metrics.
+#'
 #' @return A tibble object with a row corresponding to each subject, or alternatively
 #' a row corresponding to each date if inc_date = TRUE. The resulting tibble consists of:
 #' \itemize{
@@ -69,7 +74,7 @@
 #' bp_cv(hypnos_proc, inc_date = TRUE, add_groups = "SBP_Category")
 #' bp_cv(jhs_proc, add_groups = c("meal_time"))
 #' # Notice that meal_time is not a column from process_data, but it still works
-bp_cv <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups = NULL){
+bp_cv <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups = NULL, inc_wake = TRUE){
 
   SBP = DBP = ID = . = NULL
   rm(list = c('SBP', 'DBP', 'ID', '.'))
@@ -112,7 +117,7 @@ bp_cv <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups =
 
 
   # Verify that add_groups is valid and create grps variable for dplyr
-  grps <- create_grps(data = data, inc_date = inc_date, add_groups = add_groups)
+  grps <- create_grps(data = data, inc_date = inc_date, add_groups = add_groups, inc_wake = inc_wake)
 
   if(length(grps) == 0){
 
