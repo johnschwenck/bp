@@ -85,7 +85,7 @@ bp_cv <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups =
 
       # Filter data based on subset of subjects
       data <- data %>%
-        dplyr::filter(ID == subj)
+        dplyr::filter(ID %in% subj)
 
     }
 
