@@ -213,7 +213,7 @@ get_summaries_SBP_DBP <- function(data){
 #'
 #' \code{PW_mbps} = mean_postwake_BP - mean_prewake_BP (prewake morning blood pressure surge)
 #'
-#' \code{ME_ave} = (mean_presleep_BP + mean_postwake_BP)/2 (morning-evening average)
+#' \code{ME_avg} = (mean_presleep_BP + mean_postwake_BP)/2 (morning-evening average)
 #'
 #' \code{ME_diff} = mean_postwake_BP - mean_presleep_BP (morning-evening difference)
 #'

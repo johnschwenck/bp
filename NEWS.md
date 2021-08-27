@@ -17,7 +17,31 @@
 * Added warnings to bp_sleep_metrics if input is not as expected
 * Treat night as sleep in ABPM data in the absence of sleep/wake information
 
-# bp 1.0.3
+# bp 2.0.0
 
+### Major Updates:
+* Complete overhaul to process_data() function by adding the following changes:
+    - Added a data_process_helpers.R file to improve the readability and efficiency of background processes of process_data() function
+    - Added argument to aggregate data (agg) for successive measurements and collapse if desired
+    - Added argument to differentiate between HBPM, ABPM, and AP data types
+    - Added argument to differentiate the end-of-day (eod)
+    - Restructured the way that BP stages are calculated in order to obtain a 2-to-1 mapping of SBP & DBP to a respective category
+    - Added the ability to change the input date/time format and specify time zone
+    - Added the ability to adjust the order of the data (chronological vs reverse-chronological)
+* Addition of new visualization functions:
+    - bp_ts_plots: Time series plots
+    - dip_class_plot: Plot for dipping percentage classification
+* Addition of new Hypertension metrics:
+    - dip_calc: Nocturnal dipping percentage
+    - bp_sleep_metrics: Sleep metrics that include weighted SD (wSD), morning blood pressure surge (PW_mbps and ST_mbps), and morningness-eveningness (ME_avg and ME_diff)
+* Added 4 new data sets:
+    - bp_preg
+    - bp_children
+    - bp_ghana
+    - bp_rats
+    
+    
+### Bug Fixes:
 * Set UTC time zone for bp_jhs for consistency of time conversion across systems
 * More flexible output of bp_report for either direct plotting or saving grob object for later
+* Renamed hypnos_data.rda to bp_hypnos.rda for consistency
