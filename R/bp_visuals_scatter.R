@@ -424,38 +424,38 @@ bp_scatter <- function(data,
       ### Stage labels
 
       # Low (Hypotension)
-      {if(inc_low == TRUE) geom_text(aes(x = min(xlim_breaks) + 5, y = low_y_lim[2], label = 'Low'), color = 'black', hjust = .35, vjust = 2, size = 3) }+
+      {if(inc_low == TRUE) geom_text(aes(x = min(xlim_breaks) + 5, y = low_y_lim[2], label = 'Low'), color = 'black', hjust = .35, vjust = 2, size = 3, check_overlap = TRUE) }+
 
       # Normal
-      geom_text(aes(x = min(xlim_breaks) + 5, y = norm_y_lim[2], label = 'Normal'), color = 'black', hjust = .35, vjust = 2, size = 3) +
+      geom_text(aes(x = min(xlim_breaks) + 5, y = norm_y_lim[2], label = 'Normal'), color = 'black', hjust = .35, vjust = 2, size = 3, check_overlap = TRUE) +
 
       # Elevated
-      geom_text(aes(x = min(xlim_breaks) + 5, y = 130, label = 'Elevated'), color = 'black', hjust = .35, vjust = 1.5, size = 3) +
+      geom_text(aes(x = min(xlim_breaks) + 5, y = 130, label = 'Elevated'), color = 'black', hjust = .35, vjust = 1.5, size = 3, check_overlap = TRUE) +
 
       # SDH - Stage 1 - All
-      geom_text(aes(x = 90, y = 140, label = 'S1'), color = 'black', hjust = 1.5, vjust = 1.5, size = 3) +
+      geom_text(aes(x = 90, y = 140, label = 'S1'), color = 'black', hjust = 1.5, vjust = 1.5, size = 3, check_overlap = TRUE) +
 
       # SDH - Stage 2 - All
-      geom_text(aes(x = s2_x_lim[2] - 5, y = s2_y_lim[2] - 5, label = 'S2'), color = 'black', hjust = 1.5, vjust = 1.5, size = 3) +
+      geom_text(aes(x = s2_x_lim[2] - 5, y = s2_y_lim[2] - 5, label = 'S2'), color = 'black', hjust = 1.5, vjust = 1.5, size = 3, check_overlap = TRUE) +
 
       # ******************************************************************************************************************************** #
 
       # ISH - Stage 1
-      geom_text(aes(x = min(xlim_breaks) + 5, y = 140, label = 'ISH - S1'), color = 'black', hjust = .35, vjust = 1.5, size = 3) +
+      geom_text(aes(x = min(xlim_breaks) + 5, y = 140, label = 'ISH - S1'), color = 'black', hjust = .35, vjust = 1.5, size = 3, check_overlap = TRUE) +
 
       # ISH - Stage 2
-      geom_text(aes(x = min(xlim_breaks) + 5, y = s2_y_lim[2] - 5, label = 'ISH - S2'), color = 'black', hjust = .35, vjust = 1.5, size = 3) +
+      geom_text(aes(x = min(xlim_breaks) + 5, y = s2_y_lim[2] - 5, label = 'ISH - S2'), color = 'black', hjust = .35, vjust = 1.5, size = 3, check_overlap = TRUE) +
 
       # ******************************************************************************************************************************** #
 
       # IDH - Stage 1
-      geom_text(aes(x = 90, y = 90, label = 'IDH\n S1'), color = 'black', hjust = 1.25, size = 3) +
+      geom_text(aes(x = 90, y = 90, label = 'IDH\n S1'), color = 'black', hjust = 1.25, size = 3, check_overlap = TRUE) +
 
       # IDH - Stage 2
-      geom_text(aes(x = s2_x_lim[2] - 5, y = 90, label = 'IDH\n S2'), color = 'black', hjust = 1.25, size = 3) +
+      geom_text(aes(x = s2_x_lim[2] - 5, y = 90, label = 'IDH\n S2'), color = 'black', hjust = 1.25, size = 3, check_overlap = TRUE) +
 
       # Crisis
-      {if(inc_crisis == TRUE) geom_text(aes(x = xlim_breaks[xlim_breaks_length], y = ylim_breaks[ylim_breaks_length], label = 'Crisis'), color = 'black', hjust = 1.25, vjust = 1.5, size = 3) }+
+      {if(inc_crisis == TRUE) geom_text(aes(x = xlim_breaks[xlim_breaks_length], y = ylim_breaks[ylim_breaks_length], label = 'Crisis'), color = 'black', hjust = 1.25, vjust = 1.5, size = 3, check_overlap = TRUE) }+
 
       # Main Title & Subtitle
       ggtitle('Scatterplot of BP Values', subtitle = 'Source: Lee et al (2020)')
@@ -501,12 +501,12 @@ bp_scatter <- function(data,
       annotate("rect", xmin = dbp_breaks[6], xmax = dbp_breaks[7], ymin = sbp_breaks[1], ymax = sbp_breaks[6], fill = 'darkred',        alpha = .5) +
 
       # Add stage labels
-      geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[2], label = 'Low'), color = 'black', hjust = .35, vjust = 2, size = 3) +
-      geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[3], label = 'Normal'), color = 'black', hjust = .35, vjust = 2, size = 3) +
-      geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[4], label = 'Elevated'), color = 'black', hjust = .35, vjust = 1.5, size = 3) +
-      geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[5], label = 'Stage 1'), color = 'black', hjust = .35, vjust = 1.5, size = 3) +
-      geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[6] - ( (sbp_breaks[6] - sbp_breaks[5]) / 2), label = 'Stage 2'), color = 'black', hjust = .35, vjust = 1.5, size = 3) +
-      geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[7], label = 'Crisis'), color = 'black', hjust = .35, vjust = 1.5, size = 3) +
+      geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[2], label = 'Low'), color = 'black', hjust = .35, vjust = 2, size = 3, check_overlap = TRUE) +
+      geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[3], label = 'Normal'), color = 'black', hjust = .35, vjust = 2, size = 3, check_overlap = TRUE) +
+      geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[4], label = 'Elevated'), color = 'black', hjust = .35, vjust = 1.5, size = 3, check_overlap = TRUE) +
+      geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[5], label = 'Stage 1'), color = 'black', hjust = .35, vjust = 1.5, size = 3, check_overlap = TRUE) +
+      geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[6] - ( (sbp_breaks[6] - sbp_breaks[5]) / 2), label = 'Stage 2'), color = 'black', hjust = .35, vjust = 1.5, size = 3, check_overlap = TRUE) +
+      geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[7], label = 'Crisis'), color = 'black', hjust = .35, vjust = 1.5, size = 3, check_overlap = TRUE) +
 
       # Add title
       ggtitle('Scatterplot of BP Values', subtitle = 'Source: American Heart Association') +
