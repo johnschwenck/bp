@@ -121,7 +121,7 @@ jhs_proc_agg <- process_data(bp_jhs,
                                hr = "pulse.bpm.",
                                agg = TRUE)
 
-# Display a few rows of selected columns with averaging
+# Display averaged ones
 head(jhs_proc_agg[4:14, c(1:6, 8:9, 13:14)], 10)
 
 # Re-process data but aggregate AND collapse values
@@ -145,11 +145,10 @@ jhs_proc_eod <- process_data(bp_jhs,
                              dbp = "Dias.mmHg.",
                              date_time = "DateTime",
                              hr = "pulse.bpm.",
-                             eod = "0400")
+                             eod = "0600")
 
 # Display the data with Dates adjusted for this cutoff
-head(jhs_proc_eod[9:14, c(1:8, 13)], 15)
-
+head(jhs_proc_eod[4:14, c(1:8, 13)], 10)
 
 ## Section 5.3: Generating a Report
 
@@ -160,24 +159,33 @@ jhs_proc_report <- process_data(bp_jhs,
                                 dbp = "Dias.mmHg.",
                                 date_time = "DateTime",
                                 hr = "pulse.bpm.",
-                                eod = "0400",
+                                eod = "0600",
                                 agg = TRUE,
                                 collapse_df = TRUE)
 
 # Display the report
-bp_report(jhs_proc_report, group_var = "TIME_OF_DAY", save_report = FALSE)
-
+out = bp_report(jhs_proc_report, group_var = "TIME_OF_DAY", save_report = FALSE)
+pdf(file = "paper/paper_report.pdf", width = 14, height = 9)
+gridExtra::grid.arrange(out)
+dev.off()
 
 
 ### Section 6: Case Study II - HYPNOS Data ################
 
 
 ## Section 6.1 - Time Series Plots
+library(patchwork)
 
 # Figure 4: time series plots
 # Time series plots for subjects 70435 and 70439
-out <- bp_ts_plots(hypnos_proc,first_hour = 11,wrap_var ='visit',subj = c('70435','70439') )
+out <- bp_ts_plots(hypnos_proc, first_hour = 11, wrap_var = 'visit', subj = c('70435', '70439') )
+pdf(file = "paper/ts_plots_dt_side_by_side.pdf", width = 14, height = 4)
+out[[1]][[1]] + out[[1]][[2]]
+dev.off()
 
+pdf(file = "paper/ts_plots_hour_side_by_side.pdf", width = 14, height = 4)
+out[[2]][[1]] + out[[2]][[2]]
+dev.off()
 
 ## Section 6.2 - Nocturnal Dipping Calculation
 
@@ -213,10 +221,17 @@ hypnos_proc_recalc <- process_data(bp_hypnos,
 dip_calc(hypnos_proc_recalc, subj = c('70439') )
 
 # Figure 5 - dipping plots
+library(ggforce)
 # Dipping category plots before and after removing outlier
-dip_class_plot(hypnos_proc, subj = c('70435','70439'))
-dip_class_plot(hypnos_proc_recalc, subj = c('70435','70439'))
+p1 = dip_class_plot(hypnos_proc, subj = c('70435','70439'))
+p2 = dip_class_plot(hypnos_proc_recalc, subj = c('70435','70439'))
 
+p1 = p1 + geom_circle(aes(x0 = -4.4, y0 = 9.6, r = 3), inherit.aes = FALSE, col = "orange", size = 1.5)
+p2 = p2 + geom_circle(aes(x0 = -5.5, y0 = 2.7, r = 3), inherit.aes = FALSE, col = "orange", size = 1.5)
+
+pdf(file = "paper/side-by-side-dip-calc.pdf", width = 12, height = 6)
+p1 + p2
+dev.off()
 
 ## Section 6.3 - Sleep-period Metrics
 bp_sleep_metrics(hypnos_proc_recalc, subj = c('70435','70439'))
