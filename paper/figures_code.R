@@ -1,16 +1,13 @@
-############################################################
-#                                                          #
-#   bp: Blood Pressure Analysis in R -  Code  for Figures #
+#   bp: Blood Pressure Analysis in R -  Code  for Figures  ####
 #        Authors: John Schwenck & Irina Gaynanova          #
 #                                                          #
-#       Plots, Figures, and Output for JSS Article         #
-#                                                          #
-############################################################
+#       Plots, Figures, and Output for the Article         #
 
-# Load bp Package
+# Load bp package
 library(bp)
 
-### Section 3: Data Processing
+### Section 3: Data Processing ##################
+
 
 # Names of JHS data set
 names(bp_jhs)
@@ -47,21 +44,68 @@ names(jhs_proc)
 names(hypnos_proc)
 
 
-### Section 4: Metrics and Visualizations
+### Section 4: Metrics and Visualizations ##########
 
-# Figure 2: Sleep Periods
+# Figure 1: Scatter plot of blood pressure measurements
+p1 = bp_scatter(hypnos_proc,
+                subj = '70435',
+                group_var = "VISIT",
+                wrap_var = "TIME_OF_DAY")
+pdf(file = "paper/scatterBP_hyp.pdf", width = 11, height = 8)
+print(p1)
+dev.off()
+
+
+# Figure 2: Sleep Periods identification
 # NOTE: Sleep period labels on figure in paper were added with photo editing software
+library(ggplot2)
+
+hypnos_proc$WAKE = as.factor(hypnos_proc$WAKE)
+
 fig2_data <- hypnos_proc %>% dplyr::filter(ID == "70435" & VISIT == 1)
 fig2_data$HOUR <- factor(fig2_data$HOUR, levels = c(12:23, 0:11))
-ggplot2::ggplot(fig2_data, ggplot2::aes(x = HOUR, y = SBP)) +
-  ggplot2::geom_point(ggplot2::aes(color = WAKE)) +
+p2 = ggplot2::ggplot(fig2_data, ggplot2::aes(x = HOUR, y = SBP)) +
+  ggplot2::geom_point(ggplot2::aes(color = WAKE), size = 3) +
   ggplot2::ggtitle("BP Sleep Periods", subtitle = "HYPNOS Subject: 70435") +
-  ggplot2::annotate("rect", xmin = '23', xmax = '6', ymin = -Inf, ymax = Inf, fill = 'gold', alpha = .45) +
-  ggplot2::theme_bw()
+  ggplot2::annotate("rect", xmin = 11.5, xmax = 17.5, ymin = -Inf, ymax = Inf, fill = 'gold', alpha = .45) +
+  ggplot2::theme_bw() + ylim(c(80, 160))
 
+p2 = p2 +
+  geom_text(aes(x = 4, y = 158, label = 'Wake'), color = 'black', hjust = 0, vjust = 0, size = 8, check_overlap = TRUE) +
+  geom_text(aes(x = 19, y = 158, label = 'Wake'), color = 'black', hjust = 0, vjust = 0, size = 8, check_overlap = TRUE) +
+  geom_text(aes(x = 13, y = 158, label = 'Sleep'), color = 'black', hjust = 0, vjust = 0, size = 8, check_overlap = TRUE)
 
+p2 = p2 +
+  annotate("rect", xmin = 9.5,
+           xmax = 11.5,
+           ymin = 125,
+           ymax = 150,
+           fill = 'red3', alpha = .2) +
+  annotate("rect", xmin = 17.5,
+           xmax = 19.5,
+           ymin = 100,
+           ymax = 140,
+           fill = 'red3', alpha = .2) +
+  annotate("rect", xmin = 14.5,
+           xmax = 17.5,
+           ymin = 80,
+           ymax = 135,
+           fill = 'red3', alpha = .2) +
+  annotate("rect", xmin = 14.8,
+           xmax = 17.2,
+           ymin = 87,
+           ymax = 123,
+           fill = 'brown', alpha = .2) +
+  geom_text(aes(x = 9.5, y = 151, label = 'Presleep BP'), color = 'black', hjust = 0, vjust = 0, size = 4, check_overlap = TRUE) +
+  geom_text(aes(x = 15, y = 124, label = 'Lowest BP'), color = 'black', hjust = 0, vjust = 0, size = 4, check_overlap = TRUE) +
+  geom_text(aes(x = 15, y = 136, label = 'Prewake BP'), color = 'black', hjust = 0, vjust = 0, size = 4, check_overlap = TRUE) +
+  geom_text(aes(x = 17.5, y = 141, label = 'Postwake BP'), color = 'black', hjust = 0, vjust = 0, size = 4, check_overlap = TRUE)
 
-### Section 5: Case Study I - JHS Data
+pdf(file = "paper/BP_sleep_periods.pdf", width = 11, height = 5)
+print(p2)
+dev.off()
+
+### Section 5: Case Study I - JHS Data ################
 
 
 ## Section 5.1: Data Aggregation
@@ -109,6 +153,7 @@ head(jhs_proc_eod[9:14, c(1:8, 13)], 15)
 
 ## Section 5.3: Generating a Report
 
+# Figure 3: bp_report
 # Put it all together in a new process data call
 jhs_proc_report <- process_data(bp_jhs,
                                 sbp = "Sys.mmHg.",
@@ -124,11 +169,12 @@ bp_report(jhs_proc_report, group_var = "TIME_OF_DAY", save_report = FALSE)
 
 
 
-### Section 6: Case Study II - HYPNOS Data
+### Section 6: Case Study II - HYPNOS Data ################
 
 
 ## Section 6.1 - Time Series Plots
 
+# Figure 4: time series plots
 # Time series plots for subjects 70435 and 70439
 out <- bp_ts_plots(hypnos_proc,first_hour = 11,wrap_var ='visit',subj = c('70435','70439') )
 
@@ -166,6 +212,7 @@ hypnos_proc_recalc <- process_data(bp_hypnos,
 # Run dip calc again but with filtered HYPNOS data
 dip_calc(hypnos_proc_recalc, subj = c('70439') )
 
+# Figure 5 - dipping plots
 # Dipping category plots before and after removing outlier
 dip_class_plot(hypnos_proc, subj = c('70435','70439'))
 dip_class_plot(hypnos_proc_recalc, subj = c('70435','70439'))
