@@ -638,6 +638,34 @@ date_time_adj <- function(data, date_time = NULL, dt_fmt = "ymd HMS", ToD_int = 
     # Hour
     data$HOUR <- lubridate::hour(data$DATE_TIME)
 
+    ### Date
+    # Check whether DATE is in data set
+    if("DATE" %in% colnames(data)){
+
+        # Check that the specified Date column is actually of the type: Date
+        if(inherits(data$DATE, "Date") == TRUE){
+
+          # Check to see if all of the Dates in the DATE column match with as.Date(data$DATE_TIME)
+          # In this case, check for differences
+          if( !all(data$DATE == as.Date(data$DATE_TIME)) ){
+
+                data$DATE_OLD <- data$DATE
+                data$DATE <- as.Date( data$DATE_TIME )
+                warning('User-supplied DATE column does not align with DATE_TIME values.\nCreated additional column DATE_OLD in place of DATE.\nMismatches between rows among DATE_OLD and DATE_TIME columns\n')
+          }
+
+        }else{ # Date is of the wrong format (i.e. integer, etc)
+          data$DATE_OLD <- data$DATE
+          data$DATE <- as.Date( data$DATE_TIME )
+          warning('DATE column found in data set is not of the proper Date Type. Created additional column DATE_OLD in place of DATE')
+      }
+
+    }else{
+
+      data$DATE <- as.Date( data$DATE_TIME )
+
+    }
+
     # Ordering of date time values
     # Possible groupings for dplyr
     grps = c("ID", "VISIT", "GROUP")
