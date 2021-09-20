@@ -6,7 +6,7 @@
 <!-- badges: start -->
 
 [![Travis build
-status](https://travis-ci.com/johnschwenck/bp.svg?branch=master)](https://travis-ci.com/johnschwenck/bp)
+status](https://www.travis-ci.com/johnschwenck/bp.svg?branch=master)](https://www.travis-ci.com/johnschwenck/bp)
 [![AppVeyor build
 status](https://ci.appveyor.com/api/projects/status/github/johnschwenck/bp?branch=master&svg=true)](https://ci.appveyor.com/project/johnschwenck/bp)
 
@@ -244,7 +244,6 @@ hypnos_proc <- process_data(bp_hypnos,
                      id = 'id', 
                      visit = 'Visit', 
                      wake = 'wake')
-#> NOTE: DATE column found in data and coerced to as.Date() format.
 ```
 
 **NOTE:** the `process_data` function is insensitive to capitalization
