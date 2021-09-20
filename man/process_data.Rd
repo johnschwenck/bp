@@ -64,7 +64,11 @@ Pressure (mmHg)}
 Pressure (mmHg)}
 
 \item{date_time}{Optional column name (character string) corresponding to Date/Time,
-but HIGHLY recommended to supply if available.}
+but HIGHLY recommended to supply if available.
+
+For DATE-only columns (with no associated time), leave date_time = NULL. DATE-only
+adjustments are automatic. Dates can be automatically calculated off DATE_TIME column
+provided that it is called "DATE_TIME" exactly.}
 
 \item{id}{Optional column name (character string) corresponding to subject ID. Typically
 needed for data corresponding to more than one subject. For one-subject datasets, ID

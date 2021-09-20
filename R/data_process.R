@@ -29,6 +29,10 @@
 #' @param date_time Optional column name (character string) corresponding to Date/Time,
 #' but HIGHLY recommended to supply if available.
 #'
+#' For DATE-only columns (with no associated time), leave date_time = NULL. DATE-only
+#' adjustments are automatic. Dates can be automatically calculated off DATE_TIME column
+#' provided that it is called "DATE_TIME" exactly.
+#'
 #' @param id Optional column name (character string) corresponding to subject ID. Typically
 #' needed for data corresponding to more than one subject. For one-subject datasets, ID
 #' will default to 1 (if ID column not found in dataset)
@@ -347,19 +351,17 @@ process_data <- function(data,
         data <- visit_adj(data = data, visit = visit)
 
         # Adjust Date/Time values
-        data <- date_time_adj(data = data, date_time = date_time, dt_fmt = dt_fmt, ToD_int = ToD_int, chron_order = chron_order, tz = tz)
+        if(!is.null(date_time)){
+
+            data <- date_time_adj(data = data, date_time = date_time, dt_fmt = dt_fmt, ToD_int = ToD_int, chron_order = chron_order, tz = tz)
+
+        }
 
         # Adjust eod / dates
         if(!is.null(eod)){
 
               # Incorporate End-of-Day argument and calibrate dates
               data <- eod_adj(data = data, eod = eod)
-
-          # No adjustment needed for dates / eod
-        }else{
-
-              # Adjust Dates, no eod specified
-              data <- dates_adj(data = data)
 
         }
 

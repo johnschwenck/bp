@@ -604,8 +604,8 @@ ToD_int_check <- function(ToD_int){
 # ToD_int - optional argument that changes default allocation into morning, afternoon, evening and night
 date_time_adj <- function(data, date_time = NULL, dt_fmt = "ymd HMS", ToD_int = NULL, chron_order = FALSE, tz = "UTC"){
 
-  TIME_OF_DAY = HOUR = DATE_TIME = ID = GROUP = YEAR = MONTH = DAY = SBP = DBP = NULL
-  rm(list = c("TIME_OF_DAY", "HOUR", "DATE_TIME", "ID", "GROUP", "YEAR", "MONTH", "DAY", "SBP", "DBP"))
+  TIME_OF_DAY = DATE = HOUR = DATE_TIME = ID = GROUP = YEAR = MONTH = DAY = SBP = DBP = NULL
+  rm(list = c("TIME_OF_DAY", "DATE", "HOUR", "DATE_TIME", "ID", "GROUP", "YEAR", "MONTH", "DAY", "SBP", "DBP"))
 
   # Date & Time (DateTime object)
   if(!is.null(date_time)){
@@ -637,34 +637,6 @@ date_time_adj <- function(data, date_time = NULL, dt_fmt = "ymd HMS", ToD_int = 
 
     # Hour
     data$HOUR <- lubridate::hour(data$DATE_TIME)
-
-    ### Date
-    # Check whether DATE is in data set
-    if("DATE" %in% colnames(data)){
-
-        # Check that the specified Date column is actually of the type: Date
-        if(inherits(data$DATE, "Date") == TRUE){
-
-          # Check to see if all of the Dates in the DATE column match with as.Date(data$DATE_TIME)
-          # In this case, check for differences
-          if( !all(data$DATE == as.Date(data$DATE_TIME)) ){
-
-                data$DATE_OLD <- data$DATE
-                data$DATE <- as.Date( data$DATE_TIME )
-                warning('User-supplied DATE column does not align with DATE_TIME values.\nCreated additional column DATE_OLD in place of DATE.\nMismatches between rows among DATE_OLD and DATE_TIME columns\n')
-          }
-
-        }else{ # Date is of the wrong format (i.e. integer, etc)
-          data$DATE_OLD <- data$DATE
-          data$DATE <- as.Date( data$DATE_TIME )
-          warning('DATE column found in data set is not of the proper Date Type. Created additional column DATE_OLD in place of DATE')
-      }
-
-    }else{
-
-      data$DATE <- as.Date( data$DATE_TIME )
-
-    }
 
     # Ordering of date time values
     # Possible groupings for dplyr
@@ -717,6 +689,42 @@ date_time_adj <- function(data, date_time = NULL, dt_fmt = "ymd HMS", ToD_int = 
 
     # Rearrange columns for consistency
     data <- data %>% dplyr::relocate(ID, GROUP, DATE_TIME, YEAR, MONTH, DAY, HOUR, TIME_OF_DAY, SBP, DBP)
+
+  }
+
+
+  ### Date only
+
+  # Check whether DATE is in data set
+  if("DATE" %in% colnames(data)){
+
+    # Check that the specified Date column is actually of the type: Date
+    if(inherits(data$DATE, "Date") == FALSE){
+
+      warning("Original DATE column is not of the type as.Date. Coerced to proper format.")
+      data$DATE <- as.Date( data$DATE_TIME )
+      data <- data %>% dplyr::relocate(DATE, .after = DBP) # Place after DBP
+
+    }
+
+  }else if("DATE_TIME" %in% colnames(data)){
+
+      # Check to see if all of the Dates in the DATE column match with as.Date(data$DATE_TIME)
+      # In this case, check for differences
+      if( !all(data$DATE == as.Date(data$DATE_TIME)) ){
+
+          data$DATE_OLD <- data$DATE
+          data$DATE <- as.Date( data$DATE_TIME )
+          warning('User-supplied DATE column does not align with DATE_TIME values.\nCreated additional column DATE_OLD in place of DATE.\nMismatches between rows among DATE_OLD and DATE_TIME columns\n')
+
+      }else{
+
+          # Ensure that DATE is of the proper format
+          data$DATE <- as.Date( data$DATE_TIME )
+
+      }
+
+    data <- data %>% dplyr::relocate(DATE, .after = DATE_TIME) # Place after DATE_TIME
 
   }
 
@@ -874,68 +882,68 @@ agg_adj <- function(data, bp_type, agg = TRUE, agg_thresh = 3, collap = FALSE, c
 
 #### NOTE: This function and the eod helper funcion must be contained within a conditional in the process_data
 #         function as one will overwrite the other. i.e. If eod is specified, ignore dates_adj and vice versa.
-
-dates_adj <- function(data){
-
-      DATE = SBP = DBP = DATE_TIME = NULL
-      rm(list = c("DATE", "SBP", "DBP", "DATE_TIME"))
-
-      # DATE column identified in dataset
-      if(length(grep("^DATE$", names(data))) == 1){
-
-        # If DATE column found
-
-        # # Coerce to Date type
-        # if( inherits(data[,grep("^DATE$", names(data))], "Date") == FALSE ){
-        #
-        #   message('NOTE: DATE column found in data and coerced to as.Date() format.\n')
-        #   data[,grep("^DATE$", names(data))] <- as.Date(data[,grep("^DATE$", names(data))])
-        #
-        # }
-
-
-        # DATE_TIME column AND identified DATE column present
-        if(length(grep("^DATE_TIME$", names(data))) == 1){
-
-          message('NOTE: DATE column found in data and coerced to as.Date() format.\n')
-
-          # Coerce to Date type
-          data$DATE <- as.Date(data$DATE)
-
-          # If applicable, Check that all date values of the identified date column match the date_time values in as.Date format
-          if( !all(data$DATE == as.Date(data$DATE_TIME)) ){
-            data$DATE_OLD <- data$DATE
-            data$DATE <- as.Date( lubridate::ymd_hms(data$DATE_TIME, tz = "UTC") )
-            warning('User-supplied DATE column does not align with DATE_TIME values.\nCreated additional column DATE_OLD in place of DATE.\nMismatches between rows among DATE_OLD and DATE_TIME columns\n')
-            #which(as.Date(data$DATE_TIME) != data$DATE_OLD)
-          }
-
-        } # No DATE_TIME column but identified DATE column present --> continue
-
-        col_idx <- grep("^DATE$", names(data))
-        colnames(data)[col_idx] <- "DATE"
-        data <- data %>% dplyr::relocate(DATE, .after = DBP) # No DATE_TIME so place after DBP
-
-
-        # DATE column NOT identified in dataset
-      } else if(length(grep("^DATE_TIME$", names(data))) == 1){
-
-        # DATE_TIME column is present AND no DATE column found:
-
-        message('NOTE: Created DATE column from DATE_TIME column\n')
-
-        # Create DATE column using as.Date of DATE_TIME
-        data$DATE <- as.Date( lubridate::ymd_hms(data$DATE_TIME, tz = "UTC") )
-
-        col_idx <- grep("^DATE$", names(data))
-        colnames(data)[col_idx] <- "DATE"
-        data <- data %>% dplyr::relocate(DATE, .after = DATE_TIME) # Place after DATE_TIME
-
-      }
-
-  return(data)
-}
-
+#
+# dates_adj <- function(data){
+#
+#       DATE = SBP = DBP = DATE_TIME = NULL
+#       rm(list = c("DATE", "SBP", "DBP", "DATE_TIME"))
+#
+#       # DATE column identified in dataset
+#       if(length(grep("^DATE$", names(data))) == 1){
+#
+#         # If DATE column found
+#
+#         # # Coerce to Date type
+#         # if( inherits(data[,grep("^DATE$", names(data))], "Date") == FALSE ){
+#         #
+#         #   message('NOTE: DATE column found in data and coerced to as.Date() format.\n')
+#         #   data[,grep("^DATE$", names(data))] <- as.Date(data[,grep("^DATE$", names(data))])
+#         #
+#         # }
+#
+#
+#         # DATE_TIME column AND identified DATE column present
+#         if(length(grep("^DATE_TIME$", names(data))) == 1){
+#
+#           message('NOTE: DATE column found in data and coerced to as.Date() format.\n')
+#
+#           # Coerce to Date type
+#           data$DATE <- as.Date(data$DATE)
+#
+#           # If applicable, Check that all date values of the identified date column match the date_time values in as.Date format
+#           if( !all(data$DATE == as.Date(data$DATE_TIME)) ){
+#             data$DATE_OLD <- data$DATE
+#             data$DATE <- as.Date( lubridate::ymd_hms(data$DATE_TIME, tz = "UTC") )
+#             warning('User-supplied DATE column does not align with DATE_TIME values.\nCreated additional column DATE_OLD in place of DATE.\nMismatches between rows among DATE_OLD and DATE_TIME columns\n')
+#             #which(as.Date(data$DATE_TIME) != data$DATE_OLD)
+#           }
+#
+#         } # No DATE_TIME column but identified DATE column present --> continue
+#
+#         col_idx <- grep("^DATE$", names(data))
+#         colnames(data)[col_idx] <- "DATE"
+#         data <- data %>% dplyr::relocate(DATE, .after = DBP) # No DATE_TIME so place after DBP
+#
+#
+#         # DATE column NOT identified in dataset
+#       } else if(length(grep("^DATE_TIME$", names(data))) == 1){
+#
+#         # DATE_TIME column is present AND no DATE column found:
+#
+#         message('NOTE: Created DATE column from DATE_TIME column\n')
+#
+#         # Create DATE column using as.Date of DATE_TIME
+#         data$DATE <- as.Date( lubridate::ymd_hms(data$DATE_TIME, tz = "UTC") )
+#
+#         col_idx <- grep("^DATE$", names(data))
+#         colnames(data)[col_idx] <- "DATE"
+#         data <- data %>% dplyr::relocate(DATE, .after = DATE_TIME) # Place after DATE_TIME
+#
+#       }
+#
+#   return(data)
+# }
+#
 
 
 
