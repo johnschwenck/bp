@@ -248,7 +248,7 @@ bp_ts_plots(jhs_proc)
 
 Suppose now that we turn our attention back to the `bp_hypnos` example, suppose now we wish to examine sleep patterns. Using the dipping category plot we can analyze BP behavior during sleep
 ```{r fig2, fig.height = 4.5, fig.width = 6.5, fig.align = "center"}
-dip_class_plot(hypnos_proc, )
+dip_class_plot(hypnos_proc)
 ```
 
 

@@ -6,7 +6,7 @@
 <!-- badges: start -->
 
 [![Travis build
-status](https://www.travis-ci.com/johnschwenck/bp.svg?branch=master)](https://www.travis-ci.com/johnschwenck/bp)
+status](https://www.travis-ci.org/johnschwenck/bp.svg?branch=master)](https://www.travis-ci.org/johnschwenck/bp)
 [![AppVeyor build
 status](https://ci.appveyor.com/api/projects/status/github/johnschwenck/bp?branch=master&svg=true)](https://ci.appveyor.com/project/johnschwenck/bp)
 
