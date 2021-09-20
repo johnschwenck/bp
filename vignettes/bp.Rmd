@@ -55,6 +55,21 @@ Stage 1 Hypertension    | 130 - 139       | or     | 80 - 89
 Stage 2 Hypertension    | 140 - 180       | or     | 90 - 120
 Hypertensive Crisis     | Higher than 180 | and/or | Higher than 120
 
+Recently, an adaption of these guidelines by (Lee et al 2020) provides a two-to-one mapping of SBP and DBP in order to avoid the instances where there is an unusually high SBP value and low DBP value, or vice versa. These new guidelines are as follows:
+
+BP Stage                | Systolic (mmHg)  |       | Diastolic (mmHg)
+------------------------|------------------|-------|-----------------
+Low (optional)          | <100             | and   | <60
+Normal                  | <120             | and   | <80
+Elevated                | 120 - 129        | and   | <80
+Stage 1 - All           | 130 - 139        | and   | 80 - 89
+Stage 1 - ISH (ISH - S1)| 130 - 139        | and   | <80
+Stage 1 - IDH (IDH - S1)| <130             | and   | 80 - 89
+Stage 2 - All           | >140             | and   | >90
+Stage 2 - ISH (ISH - S2)| >140             | and   | <90
+Stage 2 - IDH (IDH - S2)| <140             | and   | >90
+Crisis (optional)       | >180             | or    | >120
+
 
 ## The `bp` Package
 The general workflow of the `bp` package consists of 1) a data processing stage and 2) an analysis stage, in ideally as little as two lines of code. The processing stage formats the user's supplied input data in such a way that it adheres to the rest of the `bp` functions. The analysis stage uses the processed data to quantify various attributes of the blood pressure relationships or to provide various visualizations. One of the key abilities of the `bp` package is `bp_report` function which generates a report that combines such visualization plots into one easily digestible summary for clinicians or researchers to interpret an individual's (or multiple individuals') blood pressure results. We will walk through each of these stages in the subsequent sections.
@@ -114,12 +129,17 @@ After the data has been processed, we can now utilize the built-in metrics from 
 
 Function    | Metric Name                             | Source
 ----------- | --------------------------------------- | ----------
-bp_arv         | Average Real Variability                | [Mena et al (2005)](https://doi.org/10.1097/01.hjh.0000160205.81652.5a)
-bp_mag      | Blood Pressure Magnitude                | [Munter et al (2011)](https://doi.org/10.1097/HJH.0b013e32834cf213 )
-bp_range    | Blood Pressure Range                    | [Levitan et al (2013)](https://doi.org/10.1038/jhh.2013.19)
-bp_cv          | Coefficient of Variation                | [Munter et al (2011)](https://doi.org/10.1097/HJH.0b013e32834cf213 )
-bp_sv          | Successive Variation                    | [Munter et al (2011)](https://doi.org/10.1097/HJH.0b013e32834cf213 )
-dip_calc    | Nocturnal Dipping \% and Classification | [Okhubo et al (1997)](https://doi.org/10.1016/s0895-7061(97)00274-4)
+`bp_arv`              | Average Real Variability                    | [Mena et al (2005)](https://doi.org/10.1097/01.hjh.0000160205.81652.5a)
+`bp_center`           | Mean and Median                             | [Amaro Lijarcio et al (2006)](https://doi.org/10.1016/j.ejim.2006.07.023)
+`bp_cv`               | Coefficient of Variation                    | [Munter et al (2011)](https://doi.org/10.1097/HJH.0b013e32834cf213 )
+`bp_mag`              | Blood Pressure Magnitude (peak and trough)  | [Munter et al (2011)](https://doi.org/10.1097/HJH.0b013e32834cf213 )
+`bp_range`            | Blood Pressure Range                        | [Levitan et al (2013)](https://doi.org/10.1038/jhh.2013.19)
+`bp_sv`               | Successive Variation                        | [Munter et al (2011)](https://doi.org/10.1097/HJH.0b013e32834cf213 )
+`bp_sleep_metrics`    | Blood Pressure Sleep Metrics                | (Multiple - see documentation)
+`bp_stages`           | Blood Pressure Stages Classification        | American Heart Association
+`bp_stats`            | Aggregation of statistical summaries        | N/A
+`dip_calc`            | Nocturnal Dipping \% and Classification     | [Okhubo et al (1997)](https://academic.oup.com/ajh/article/10/11/1201/148906)
+
 
 **Time-Dependent Dispersion Metrics**  
 
@@ -142,7 +162,8 @@ dip_calc    | Nocturnal Dipping \% and Classification | [Okhubo et al (1997)](ht
 
 * `dip_calc` - **Nocturnal Dipping \% and Classification**
   + Nocturnal dipping percentage is the \% drop in blood pressure while asleep compared with awake. Requires an indication of when a subject is asleep to know how to calculate: `1 - (avg sleep BP / avg daytime BP)`. The severity of the dipping percentage indicates the corresponding classification of that individual (dipper, non-dipper, reverse dipper).
-
+* `bp_sleep_metrics` - **Sleep-specific metrics for BP**
+  + This function includes the following sleep metrics: dipping calculation, nocturnal fall, morning blood pressure surge (MBPS) calculated both sleep-trough and pre-wake variants, morningness-eveningness average and difference, and weighted standard deviation (wSD)
 
 Let's say we are working with the `bp_hypnos` and would like to compare the time-dependent nature of the `bp_arv` with the `bp_sv` for each subject. 
 ```{r}
@@ -155,7 +176,12 @@ head(dplyr::left_join(bp_arv(hypnos_proc), bp_cv(hypnos_proc)))
 ```
 Note that this is possible thanks to the work we did in standardizing column names from the processing step.
 
-Suppose instad we wanted to look at peaks and troughs of the single-subject data set `bp_jhs`. We would then call the `bp_mag` function on our data.
+Because the `hypnos_proc` data contains BP readings during sleep, sleep-specific metrics through the `bp_sleep_metrics` function can be used to garner further insight:
+```{r}
+bp_sleep_metrics(hypnos_proc)
+```
+
+Turning back to the `bp_jhs` data set, let's examine the peaks and troughs of the BP readings. We would call the `bp_mag` function on our data.
 ```{r}
 head(bp_mag(jhs_proc))
 ```
@@ -170,33 +196,32 @@ So far, we have processed the original data and ran a couple metrics to get a cl
 
 Function         | Visual                             
 ---------------- | ---------------------------------- 
-bp_hist          | Blood Pressure Stage Histograms
-bp_scatter       | Blood Pressure Stage Scatter Plot ([American Heart Association](https://www.heart.org/en/health-topics/high-blood-pressure/understanding-blood-pressure-readings))
-dow_tod_plots    | Day of Week / Time of Day chart
-bp_report        | Exportable Blood Pressure Report
+`bp_scatter`          | Scatter plot of BP stages ([American Heart Association](https://www.heart.org/en/health-topics/high-blood-pressure/understanding-blood-pressure-readings))
+`bp_ts_plots`         | Time series plots
+`bp_hist`             | Histograms of BP stages
+`dip_class_plot`      | Dipping % category plot
+`bp_report`           | Exportable report of BP summary
+`dow_tod_plots`       | Day of Week / Time of Day chart
 
+<!-- Continuing with our previous example using the `bp_jhs` data set, let's suppose we wanted to explore how peaks and troughs of systolic blood pressure change over time. Note that there is a subtle assumption here in that we have multiple measurements for a given day, otherwise a single value will be both the peak and trough; however, the plot still works regardless. -->
+<!-- ```{r fig1, fig.height = 4, fig.width = 7.5, fig.align = "center"} -->
+<!-- viz_data <- bp_mag(jhs_proc, inc_date = TRUE) -->
+<!-- plot(viz_data[which(viz_data$Peak_SBP > 0 & viz_data$N > 1),]$DATE, viz_data[which(viz_data$Peak_SBP > 0 & viz_data$N > 1),]$Peak_SBP, type = 'l', col = "red", xlab ="DATE", ylab = "Magnitude") -->
+<!-- lines(viz_data[which(viz_data$Peak_SBP > 0 & viz_data$N > 1),]$DATE, viz_data[which(viz_data$Trough_SBP > 0 & viz_data$N > 1),]$Trough_SBP, col = "darkgreen") -->
+<!-- legend("topright", legend = c("Peak", "Trough"), col = c("red","darkgreen"), lty =1) -->
+<!-- ``` -->
 
-Continuing with our previous example using the `bp_jhs` data set, let's suppose we wanted to explore how peaks and troughs of systolic blood pressure change over time. Note that there is a subtle assumption here in that we have multiple measurements for a given day, otherwise a single value will be both the peak and trough; however, the plot still works regardless.
-```{r fig1, fig.height = 4, fig.width = 7.5, fig.align = "center"}
-viz_data <- bp_mag(jhs_proc, inc_date = TRUE)
-plot(viz_data[which(viz_data$Peak_SBP > 0 & viz_data$N > 1),]$DATE, viz_data[which(viz_data$Peak_SBP > 0 & viz_data$N > 1),]$Peak_SBP, type = 'l', col = "red", xlab ="DATE", ylab = "Magnitude")
-lines(viz_data[which(viz_data$Peak_SBP > 0 & viz_data$N > 1),]$DATE, viz_data[which(viz_data$Trough_SBP > 0 & viz_data$N > 1),]$Trough_SBP, col = "darkgreen")
-legend("topright", legend = c("Peak", "Trough"), col = c("red","darkgreen"), lty =1)
-```
+<!-- From the above time series chart, notice that the values are absolute magnitudes for both peak and trough. So, when peak exceeds trough, as was evident during late-May and early-June, the interpretation is that blood pressure rose more on average than it fell. In other words, the **variability** of the blood pressure data is right-skewed more toward the high end. In contrast, in the very beginning the variability was more left-skewed favoring the low end of the spectrum since there were more troughs than peaks. We can verify this by looking at the very first day of measurements on `2020-04-16` as shown below: -->
+<!-- ```{r} -->
+<!-- head(viz_data[which(viz_data$Peak_SBP > 0 & viz_data$N > 1),]) -->
+<!-- ``` -->
 
-From the above time series chart, notice that the values are absolute magnitudes for both peak and trough. So, when peak exceeds trough, as was evident during late-May and early-June, the interpretation is that blood pressure rose more on average than it fell. In other words, the **variability** of the blood pressure data is right-skewed more toward the high end. In contrast, in the very beginning the variability was more left-skewed favoring the low end of the spectrum since there were more troughs than peaks. We can verify this by looking at the very first day of measurements on `2020-04-16` as shown below:
-```{r}
-head(viz_data[which(viz_data$Peak_SBP > 0 & viz_data$N > 1),])
-```
-
-Recall that in the processing stage, there were additional columns that were automatically created. We will now visualize two of these, `SBP_Category` and `DBP_Category`, through the `bp_hist` and `bp_scatter` functions, and the `Time_of_Day` column through the `dow_tod_plots` function.
+<!-- Recall that in the processing stage, there were additional columns that were automatically created. We will now visualize two of these, `SBP_Category` and `DBP_Category`, through the `bp_hist` and `bp_scatter` functions, and the `Time_of_Day` column through the `dow_tod_plots` function. -->
 
 The `bp_hist` returns three histograms of all readings corresponding to total number within each stage, frequency of SBP readings, and frequency of DBP readings. Furthermore, it breaks the data down by color according to which blood pressure stage it falls under:
 ```{r fig1a, fig.height = 2.5, fig.width = 5.5, fig.align = "center", results = FALSE, message = FALSE}
 bp_hist(jhs_proc)
 ```
-
-The above plots show a cautiously high frequency of Elevated and Stage 1 readings for `SBP`, but the frequency of `DBP` readings seems to fare better in the Normal and Elevated stages. 
 
 Let's now suppose that we wish to break down our readings by Time of Day and Day of Week. For this, we can implement the `dow_tod_plots` function. Because this function is mainly used as a helper function for the `bp_report` function, we need to add a couple steps using the `gridExtra` package
 ```{r fig1b, fig.height = 6, fig.width = 6, fig.align = "center", results = FALSE, message = FALSE}
@@ -214,14 +239,16 @@ img <- png::readPNG("vignette_report_1_subj.png")
 grid::grid.raster(img)
 ```
 
+Suppose we wanted to look at the observations for the `bp_jhs` data set over time. The time series plotting capabilities allow this to be visualized. The output returns two plots, one for the total duration through time, and another showing repeated measurements within a 24 hour period (by hour). In the event that there are more than one series of recordings (such as the `bp_hypnos` data set where there are two visits per subject), the `wrap_var` and `group_var` function arguments can be employed.
+```{r fig3, fig.height = 4.5, fig.width = 6.5, fig.align = "center", message=FALSE, results=FALSE}
+bp_ts_plots(jhs_proc)
+```
 
 ---------------------
 
-Suppose now that we turn our attention back to the `bp_hypnos` example where we joined the `ARV` and `CV` metrics together. We would now like to visualize these for all of the subjects to see if we can discern any patterns. From the first scatterplot matrix we see that the between-subject values differ and from the second scatterplot matrix we see that there is a very stark contrast between `ARV` and `CV` during sleep vs awake.  
+Suppose now that we turn our attention back to the `bp_hypnos` example, suppose now we wish to examine sleep patterns. Using the dipping category plot we can analyze BP behavior during sleep
 ```{r fig2, fig.height = 4.5, fig.width = 6.5, fig.align = "center"}
-viz_arv_cv <- dplyr::left_join(bp_arv(hypnos_proc), bp_cv(hypnos_proc))
-pairs(viz_arv_cv[,4:(ncol(viz_arv_cv)-1)], upper.panel = NULL, col = factor(viz_arv_cv$ID))
-pairs(hypnos_proc[,6:11], upper.panel = NULL, col = factor(hypnos_proc$WAKE))
+dip_class_plot(hypnos_proc, )
 ```
 
 
@@ -231,12 +258,10 @@ As our understanding of cardiovascular disease continues to grow, this package w
 
 In the short term, the following new features are to be incorporated with the next release of the package: 
 
-* Added visuals that incorporate heart rate, time, sleep status (`WAKE`), and existing metrics (dip_calc, etc)
 * Extensions to the `bp_report` function to include more visuals on another page, and include the ability to break down visuals by individuals (if data includes multiple subjects)
 * Shiny App for visualization and PDF export
 * Package website
-* Additional metrics: morning BP surge, morning bp surge power, SDIM
-* add an inc_time optional argument that breaks down groupings by time (similar to by day, but more useful for ABPM when time of day is of interest)
+* Additional metrics: morning bp surge power, SDIM
 
 -------------
 ### References
