@@ -90,18 +90,31 @@ sbp_adj <- function(data, sbp = NULL, data_screen, SUL, SLL){
           # Screen for extreme values
           if(data_screen == TRUE){
 
-            # Screening criteria: Eliminate values {SBP > 240 | SBP < 50} according to Omboni, et al (1995) paper
-            #   - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory
-            #     Blood Pressure: Methodological Aspects
-            data <- data %>%
-              dplyr::filter(SBP < SUL & SBP > SLL)
+            # Check to see if there are any extreme values
+            if( as.integer( dplyr::tally(data, SBP >= SUL | SBP <= SLL) ) > 0 ){
+
+              message(
+                paste( as.integer( dplyr::tally(data, SBP >= SUL | SBP <= SLL) ), ' values exceeded the SUL or SLL thresholds and were coerced to NA', sep = "" )
+              )
+
+
+              # Screening criteria: Eliminate values {SBP > 240 | SBP < 50} according to Omboni, et al (1995) paper
+              #   - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory
+              #     Blood Pressure: Methodological Aspects
+
+              # data <- data %>%
+              #   dplyr::filter(SBP < SUL & SBP > SLL)
+
+              data$SBP[which(data$SBP >= SUL | data$SBP <= SLL)] <- NA
+
+            }
 
           }
 
         }
       } else {
         stop('User-defined SBP name must be character.\n')
-      }# if working with numeric below, remove this bracket
+      }
 
   return(data)
 
@@ -148,12 +161,23 @@ dbp_adj <- function(data, dbp = NULL, data_screen, DUL, DLL){
           # Screen for extreme values
           if(data_screen == TRUE){
 
-            # Screening criteria: Eliminate values {DBP > 140 | DBP < 40} according to Omboni, et al (1995) paper
-            #   - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure: Methodological Aspects
-            data <- data %>%
-              # DUL: DBP Upper Limit
-              # DLL: DBP Lower Limit
-              dplyr::filter(DBP < DUL & DBP > DLL)
+            # Check to see if there are any extreme values
+            if( as.integer( dplyr::tally(data, DBP >= DUL | DBP <= DLL) ) > 0 ){
+
+              message(
+                paste( as.integer( dplyr::tally(data, DBP >= DUL | DBP <= DLL) ), ' values exceeded the DUL or DLL thresholds and were coerced to NA', sep = "" )
+              )
+
+
+              # Screening criteria: Eliminate values {DBP > 140 | DBP < 40} according to Omboni, et al (1995) paper
+              #   - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure: Methodological Aspects
+
+              # data <- data %>%
+              #   dplyr::filter(DBP < DUL & DBP > DLL)
+
+              data$DBP[which(data$DBP >= DUL | data$DBP <= DLL)] <- NA
+
+            }
 
           }
 
@@ -250,11 +274,24 @@ hr_adj <- function(data, hr = NULL, data_screen, HRUL, HRLL){
           # Screen for extreme values
           if(data_screen == TRUE){
 
-            # Screening Criteria:
-            # - Lowest HR recorded: https://www.guinnessworldrecords.com/world-records/lowest-heart-rate
-            # - High HR from the common {220 - age} formula
-            data <- data %>%
-              dplyr::filter(HR < HRUL & HR > HRLL)
+            # Check to see if there are any extreme values
+            if( as.integer( dplyr::tally(data, HR >= HRUL | HR <= HRLL) ) > 0 ){
+
+              message(
+                paste( as.integer( dplyr::tally(data, HR >= HRUL | HR <= HRLL) ), ' heart rate values exceeded the HRUL or HRLL thresholds and were coerced to NA', sep = "" )
+              )
+
+
+              # Screening Criteria:
+              # - Lowest HR recorded: https://www.guinnessworldrecords.com/world-records/lowest-heart-rate
+              # - High HR from the common {220 - age} formula
+
+              # data <- data %>%
+              #   dplyr::filter(HR < HRUL & HR > HRLL)
+
+              data$HR[which(data$HR >= HRUL | data$HR <= HRLL)] <- NA
+
+            }
 
           }
 
@@ -283,8 +320,11 @@ hr_adj <- function(data, hr = NULL, data_screen, HRUL, HRLL){
             # Screening Criteria:
             # - Lowest HR recorded: https://www.guinnessworldrecords.com/world-records/lowest-heart-rate
             # - High HR from the common {220 - age} formula
-            data <- data %>%
-              dplyr::filter(HR < HRUL & HR > HRLL)
+
+            # data <- data %>%
+            #   dplyr::filter(HR < HRUL & HR > HRLL)
+
+            data$HR[which(data$HR >= HRUL | data$HR <= HRLL)] <- NA
 
           }
         }
