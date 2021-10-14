@@ -23,6 +23,31 @@ annually. The goal of the  package is to provide a comprehensive toolbox
 for analyzing blood pressure (BP) data using a variety of statistical
 metrics and visualizations to bring more clarity to CVD.
 
+### Installation
+
+You can install the released version of bp from
+[CRAN](https://CRAN.R-project.org) with:
+
+``` r
+install.packages("bp")
+```
+
+You can install the development version from
+[GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("johnschwenck/bp")
+```
+
+For installation with vignettes:
+
+``` r
+devtools::install_github("johnschwenck/bp", build_vignettes = TRUE)
+```
+
+### Sample Data
+
 The  package includes six sample data sets:
 
   - `bp_hypnos`: The data set contains ABPM measurements from n=
@@ -84,29 +109,6 @@ The  package includes six sample data sets:
     diet. The aim of original study (Bugenhagen et al.2010) is to
     investigate the connection between the dysfunction of the baroreflex
     control system in Dahl rats and salt-sensitive Hypertension
-
-### Installation
-
-You can install the released version of bp from
-[CRAN](https://CRAN.R-project.org) with:
-
-``` r
-install.packages("bp")
-```
-
-You can install the development version from
-[GitHub](https://github.com/) with:
-
-``` r
-# install.packages("devtools")
-devtools::install_github("johnschwenck/bp")
-```
-
-For installation with vignettes:
-
-``` r
-devtools::install_github("johnschwenck/bp", build_vignettes = TRUE)
-```
 
 ### Intended Functionality
 
@@ -244,6 +246,7 @@ hypnos_proc <- process_data(bp_hypnos,
                      id = 'id', 
                      visit = 'Visit', 
                      wake = 'wake')
+#> 2 values exceeded the DUL or DLL thresholds and were coerced to NA
 ```
 
 **NOTE:** the `process_data` function is insensitive to capitalization
