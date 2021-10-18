@@ -5,7 +5,7 @@
 
 ########################################################################################################
 #                                                                                                      #
-#                                      Arterial Pressure                                         #
+#                                            Arterial Pressure                                         #
 #                                                                                                      #
 ########################################################################################################
 
@@ -201,50 +201,112 @@ dbp_adj <- function(data, dbp = NULL, data_screen, DUL, DLL){
 
 pp_adj <- function(data, pp = NULL){
 
+  DBP = PP = PP_OLD = NULL
+  rm(list = c("DBP", "PP", "PP_OLD"))
 
-      PP = DBP = NULL
-      rm(list = c("PP", "DBP"))
 
-      # Pulse Pressure
-      if(is.null(pp)){
+  # !null --> pp in cols --> rename and check for accuracy --> else throw error because pp not in colnames
+  # null --> check for PP col --> if present, compare accuracy --> if accurate keep as is, if not accurate create old and new col
+  #            else if HR col present, calculate PP --> if no HR col present --> skip and ignore pp (since pp = null)
 
-            if(length(grep(paste("\\bPP\\b", sep = ""), names(data))) == 0){
+  if(!is.null(pp)){
 
-                data$PP <- data$SBP - data$DBP
+    # Throw error if pp is not character (i.e. pp = 4)
+    if(!is.character(pp)){
+      stop('User-defined PP name must be character.\n')
+    }
 
-                message('No PP column found. Automatically generated from SBP and DBP columns.\n')
+    # Check to make sure user defined pp argument is within the column names
+    if(toupper(pp) %in% colnames(data) == FALSE){ # pp argument not found in data colnames
 
-            }
+      stop('User-defined PP name does not match column name of supplied dataset\n')
 
-            col_idx <- grep(paste("\\bPP\\b", sep = ""), names(data))
-            colnames(data)[col_idx] <- "PP"
+    }else{ # pp in colnames
 
-            # Relocate to after DBP column
-            data <- data %>% dplyr::relocate(PP, .after = DBP)
+      # pp argument matches a column name, rename it to PP
+      col_idx <- grep(paste("\\b",toupper(pp),"\\b", sep = ""), names(data))
+      colnames(data)[col_idx] <- "PP"
 
-            # Convert to numeric
-            data$PP <- as.numeric(data$PP)
+      # Check for accuracy
+      missing_calc <- which(is.na(data$SBP - data$DBP))
+      missing_pp  <- which(is.na(data$PP))
 
-      }else if(is.character(pp)){ # if character (i.e. by name)
+      # Compare the original PP column with the calculation of SBP - DBP
 
-            if(toupper(pp) %in% colnames(data) == FALSE){ # is pp argument found in data colnames
+      # The code below checks the following:
+      #   - If there are the same number of NA values in both the original PP column and the calculation of PP using SBP and HR
+      #   - If the values that remain after filtering out NA from both original PP and the PP calculation, are the same (sum of differences = 0)
+      if( (length(missing_pp) != length(missing_calc)) | # Are there the same # of NAs in the original PP as there are in the calculated PP?
+          all(missing_pp %in% missing_calc) == FALSE  | # Are the row #s of all the NA values in the original PP within the row #s of those in the calculated PP column?
+          all(missing_calc %in% missing_pp) == FALSE  | # Are the row #s of all the NA values in the calculated PP within the row #s of those in the original PP column?
+          (sum( (data$PP)[-which(is.na(data$SBP - data$DBP) | is.na(data$PP))] -
+                (data$SBP - data$DBP)[-which(is.na(data$SBP - data$DBP) | is.na(data$PP))] ) != 0) ){ # Of the non-NA values present in both columns, do they match each other?
+        # *** can the sum be simplified with identical()?
 
-                stop('User-defined PP name does not match column name of supplied dataset\n')
+        # Original PP column from input data renamed into PP_OLD
+        data$PP_OLD <- data$PP
 
-            }else{
+        # New calculated PP column from SBP - DBP
+        data$PP <- data$SBP - data$DBP
 
-                col_idx <- grep(paste("\\b",toupper(pp),"\\b", sep = ""), names(data))
-                colnames(data)[col_idx] <- "PP"
+      }# Otherwise it is assumed that the sums of the NAs are the same and the difference among the values equal zero --> therefore the two columns are the same
 
-                # Relocate to after DBP column
-                data <- data %>% dplyr::relocate(PP, .after = DBP)
+    }
 
-                data$PP <- as.numeric(data$PP)
-            }
-      } else {
 
-        stop('User-defined PP name must be character.\n')
-      }
+  }else{ # pp = NULL
+
+    # PP column DOES NOT exist --> create one if HR column available
+    if("PP" %in% colnames(data) == FALSE){ # pp argument is NULL, no PP column found --> if HR col found --> create PP otherwise do nothing
+
+      data$PP <- data$SBP - data$DBP
+      data$PP <- as.numeric(data$PP)
+
+      message('No PP column found or specified. Automatically generated from SBP and DBP columns.\n')
+
+    }else{# else PP column DOES exist --> and compare it with SBP - DBP --> else leave as is
+
+      # pp arg is NULL
+      # PP column exists
+
+      missing_calc <- which(is.na(data$SBP - data$DBP))
+      missing_pp  <- which(is.na(data$PP))
+
+      # Compare the original PP column with the calculation of SBP - DBP
+
+      # The code below checks the following:
+      #   - If there are the same number of NA values in both the original PP column and the calculation of PP using SBP and HR
+      #   - If the values that remain after filtering out NA from both original PP and the PP calculation, are the same (sum of differences = 0)
+      if( (length(missing_pp) != length(missing_calc)) | # Are there the same # of NAs in the original PP as there are in the calculated PP?
+          all(missing_pp %in% missing_calc) == FALSE  | # Are the row #s of all the NA values in the original PP within the row #s of those in the calculated PP column?
+          all(missing_calc %in% missing_pp) == FALSE  | # Are the row #s of all the NA values in the calculated PP within the row #s of those in the original PP column?
+          (sum( (data$PP)[-which(is.na(data$SBP - data$DBP) | is.na(data$PP))] -
+                (data$SBP - data$DBP)[-which(is.na(data$SBP - data$DBP) | is.na(data$PP))] ) != 0) ){ # Of the non-NA values present in both columns, do they match each other?
+        # *** can the sum be simplified with identical()?
+
+        # Original PP column from input data renamed into PP_OLD
+        data$PP_OLD <- data$PP
+
+        # New calculated PP column from SBP - DBP
+        data$PP <- data$SBP - data$DBP
+
+      }# Otherwise it is assumed that the sums of the NAs are the same and the difference among the values equal zero --> therefore the two columns are the same
+
+    }
+
+  }
+
+  # Relocate to after DBP column
+  data <- data %>% dplyr::relocate(PP, .after = DBP)
+
+  # Convert to numeric
+  data$PP <- as.numeric(data$PP)
+
+  # Move MAP_OLD after MAP if applicable
+  if("PP_OLD" %in% colnames(data)){
+    data <- data %>% dplyr::relocate(PP_OLD, .after = PP)
+  }
+
 
   return(data)
 
@@ -348,61 +410,134 @@ hr_adj <- function(data, hr = NULL, data_screen, HRUL, HRLL){
 
 rpp_adj <- function(data, rpp = NULL){
 
-    DBP = RPP = NULL
-    rm(list = c("DBP", "RPP"))
+  DBP = RPP = RPP_OLD = PP = NULL
+  rm(list = c("DBP", "RPP", "RPP_OLD", "PP"))
 
-    # Rate Pulse Product
-    if(is.null(rpp)){
 
-        # Try to find "RPP" column in data: if found, length is 1 (a number), if not found, length is 0 (i.e. logical(0) )
-        if(length(grep(paste("\\bRPP\\b", sep = ""), names(data))) == 1){
+  # !null --> rpp in cols --> rename and check for accuracy --> else throw error because rpp not in colnames
+  # null --> check for RPP col --> if present, compare accuracy --> if accurate keep as is, if not accurate create old and new col
+  #            else if HR col present, calculate RPP --> if no HR col present --> skip and ignore rpp (since rpp = null)
 
-          warning('"RPP" argument not specified in function, but "RPP" column found in data. \n Ensure that the "RPP" column in the data is not the desired column.')
+  if(!is.null(rpp)){
 
-        } else if( (length(grep(paste("\\bRPP\\b", sep = ""), names(data))) == 0) & (length(grep(paste("\\bHR\\b", sep = ""), names(data))) == 1)){
+    # Throw error if rpp is not character (i.e. rpp = 4)
+    if(!is.character(rpp)){
+      stop('User-defined RPP name must be character.\n')
+    }
 
+    # Check to make sure user defined rpp argument is within the column names
+    if(toupper(rpp) %in% colnames(data) == FALSE){ # rpp argument not found in data colnames
+
+      stop('User-defined RPP name does not match column name of supplied dataset\n')
+
+    }else{ # rpp in colnames
+
+      # rpp argument matches a column name, rename it to RPP
+      col_idx <- grep(paste("\\b",toupper(rpp),"\\b", sep = ""), names(data))
+      colnames(data)[col_idx] <- "RPP"
+
+
+      if("HR" %in% colnames(data)){ # HR available
+
+        missing_calc <- which(is.na(data$SBP * data$HR))
+        missing_rpp  <- which(is.na(data$RPP))
+
+        # Compare the original RPP column with the calculation of SBP * HR
+
+        # The code below checks the following:
+        #   - If there are the same number of NA values in both the original RPP column and the calculation of RPP using SBP and HR
+        #   - If the values that remain after filtering out NA from both original RPP and the RPP calculation, are the same (sum of differences = 0)
+        if( (length(missing_rpp) != length(missing_calc)) | # Are there the same # of NAs in the original RPP as there are in the calculated RPP?
+            all(missing_rpp %in% missing_calc) == FALSE  | # Are the row #s of all the NA values in the original RPP within the row #s of those in the calculated RPP column?
+            all(missing_calc %in% missing_rpp) == FALSE  | # Are the row #s of all the NA values in the calculated RPP within the row #s of those in the original RPP column?
+            (sum( (data$RPP)[-which(is.na(data$SBP * data$HR) | is.na(data$RPP))] -
+                  (data$SBP * data$HR)[-which(is.na(data$SBP * data$HR) | is.na(data$RPP))] ) != 0) ){ # Of the non-NA values present in both columns, do they match each other?
+          # *** can the sum be simplified with identical()?
+
+          # Original RPP column from input data renamed into RPP_OLD
+          data$RPP_OLD <- data$RPP
+
+          # New calculated RPP column from SBP * HR
           data$RPP <- data$SBP * data$HR
-          data$RPP <- as.numeric(data$RPP)
 
-          hr_idx <- grep(paste("\\bHR\\b", sep = ""), names(data))
-          rpp_idx <- grep(paste("\\bRPP\\b", sep = ""), names(data))
+        }# Otherwise it is assumed that the sums of the NAs are the same and the difference among the values equal zero --> therefore the two columns are the same
 
-          # Relocate to after DBP column
-          data <- data %>% dplyr::relocate(RPP, .after = DBP)
+      }else{
+        message('No HR column found to check RPP for accuracy')
+      }
 
-          message('No RPP column found. Automatically generated from SBP and HR columns.\n')
-        }else if( (length(grep(paste("\\bRPP\\b", sep = ""), names(data))) == 0) & (length(grep(paste("\\bHR\\b", sep = ""), names(data))) == 0)){
+    }
 
-          warning('No RPP column found and no HR column to calculate from')
 
-        }
+  }else{ # rpp = NULL
 
-      }else if( (toupper(rpp) %in% colnames(data)) == FALSE){
+    # RPP column DOES NOT exist --> create one if HR column available
+    if("RPP" %in% colnames(data) == FALSE){ # rpp argument is NULL, no RPP column found --> if HR col found --> create RPP otherwise do nothing
 
-        stop('User-defined RPP name does not match column name of supplied dataset\n')
+      if("HR" %in% colnames(data)){
 
-      }else if( (length(grep(paste("\\bHR\\b", sep = ""), names(data))) == 1) & (toupper(rpp) %in% colnames(data)) ){ # HR column is present and in position 4
+        data$RPP <- data$SBP * data$HR
+        data$RPP <- as.numeric(data$RPP)
 
-        col_idx <- grep(paste("\\b",toupper(rpp),"\\b", sep = ""), names(data))
-        colnames(data)[col_idx] <- "RPP"
-
-        # Relocate to after DBP column
-        data <- data %>% dplyr::relocate(RPP, .after = DBP)
-
-      }else if( (length(grep(paste("\\bHR\\b", sep = ""), names(data))) == 0) & (toupper(rpp) %in% colnames(data)) ){ # HR column is NOT present
-
-        col_idx <- grep(paste("\\b",toupper(rpp),"\\b", sep = ""), names(data))
-        colnames(data)[col_idx] <- "RPP"
-
-        # Relocate to after DBP column
-        data <- data %>% dplyr::relocate(RPP, .after = DBP)
+        message('No RPP column found or specified. Automatically generated from SBP and HR columns.\n')
 
       }
 
+    }else{# else RPP column DOES exist --> and compare it with SBP * HR if HR is available --> else leave as is
+
+      # rpp arg is NULL
+      # RPP column exists
+
+      if("HR" %in% colnames(data)){ # HR available
+
+        missing_calc <- which(is.na(data$SBP * data$HR))
+        missing_rpp  <- which(is.na(data$RPP))
+
+        # Compare the original RPP column with the calculation of SBP * HR
+
+        # The code below checks the following:
+        #   - If there are the same number of NA values in both the original RPP column and the calculation of RPP using SBP and HR
+        #   - If the values that remain after filtering out NA from both original RPP and the RPP calculation, are the same (sum of differences = 0)
+        if( (length(missing_rpp) != length(missing_calc)) | # Are there the same # of NAs in the original RPP as there are in the calculated RPP?
+            all(missing_rpp %in% missing_calc) == FALSE  | # Are the row #s of all the NA values in the original RPP within the row #s of those in the calculated RPP column?
+            all(missing_calc %in% missing_rpp) == FALSE  | # Are the row #s of all the NA values in the calculated RPP within the row #s of those in the original RPP column?
+            (sum( (data$RPP)[-which(is.na(data$SBP * data$HR) | is.na(data$RPP))] -
+                  (data$SBP * data$HR)[-which(is.na(data$SBP * data$HR) | is.na(data$RPP))] ) != 0) ){ # Of the non-NA values present in both columns, do they match each other?
+          # *** can the sum be simplified with identical()?
+
+          # Original RPP column from input data renamed into RPP_OLD
+          data$RPP_OLD <- data$RPP
+
+          # New calculated RPP column from SBP * HR
+          data$RPP <- data$SBP * data$HR
+
+        }# Otherwise it is assumed that the sums of the NAs are the same and the difference among the values equal zero --> therefore the two columns are the same
+
+      }
+
+    }
+
+  }
+
+  if("RPP" %in% colnames(data)){
+
+      # Relocate to after PP column
+      data <- data %>% dplyr::relocate(RPP, .after = PP)
+
+      # Convert to numeric
+      data$RPP <- as.numeric(data$RPP)
+
+      # Move RPP_OLD after RPP if applicable
+      if("RPP_OLD" %in% colnames(data)){
+        data <- data %>% dplyr::relocate(RPP_OLD, .after = RPP)
+      }
+
+  }
+
+
   return(data)
+
 }
-
-
 
 
 
@@ -416,51 +551,117 @@ rpp_adj <- function(data, rpp = NULL){
 
 map_adj <- function(data, map = NULL){
 
-    MAP = DBP = NULL
-    rm(list = c("MAP", "DBP"))
+  DBP = MAP = MAP_OLD = NULL
+  rm(list = c("DBP", "MAP", "MAP_OLD"))
 
-    # Mean Arterial Pressure
-    if(is.null(map)){
 
-        if(length(grep(paste("\\bMAP\\b", sep = ""), names(data))) == 0){
+  # !null --> map in cols --> rename and check for accuracy --> else throw error because map not in colnames
+  # null --> check for MAP col --> if present, compare accuracy --> if accurate keep as is, if not accurate create old and new col
+  #            else if HR col present, calculate MAP --> if no HR col present --> skip and ignore map (since map = null)
 
-          data$MAP <- (1/3) * data$SBP + (2/3) * data$DBP
-          message('No MAP column found. Automatically generated from SBP and DBP columns.\n')
+  if(!is.null(map)){
 
-          col_idx <- grep(paste("\\bMAP\\b", sep = ""), names(data))
-          colnames(data)[col_idx] <- "MAP"
+    # Throw error if map is not character (i.e. map = 4)
+    if(!is.character(map)){
+      stop('User-defined MAP name must be character.\n')
+    }
 
-          # Relocate to after DBP column
-          data <- data %>% dplyr::relocate(MAP, .after = DBP)
+    # Check to make sure user defined map argument is within the column names
+    if(toupper(map) %in% colnames(data) == FALSE){ # map argument not found in data colnames
 
-          # Convert to numeric
-          data$MAP <- as.numeric(data$MAP)
+      stop('User-defined MAP name does not match column name of supplied dataset\n')
 
-        }else if(length(grep(paste("\\bMAP\\b", sep = ""), names(data))) == 1){
+    }else{ # map in colnames
 
-          warning('MAP column found in data. \nIf this column corresponds to Mean Arterial Pressure, \nuse map = "MAP" in the function argument.\n')
+      # map argument matches a column name, rename it to MAP
+      col_idx <- grep(paste("\\b",toupper(map),"\\b", sep = ""), names(data))
+      colnames(data)[col_idx] <- "MAP"
 
-        }
-      } else if(toupper(map) %in% colnames(data) == FALSE){
+      # Check for accuracy
+      missing_calc <- which(is.na((1/3) * data$SBP + (2/3) * data$DBP))
+      missing_map  <- which(is.na(data$MAP))
 
-        stop('User-defined MAP name does not match column name of supplied dataset\n')
+      # Compare the original MAP column with the calculation of (1/3) SBP + (2/3) DBP
 
-      } else {
+      # The code below checks the following:
+      #   - If there are the same number of NA values in both the original MAP column and the calculation of MAP using SBP and HR
+      #   - If the values that remain after filtering out NA from both original MAP and the MAP calculation, are the same (sum of differences = 0)
+      if( (length(missing_map) != length(missing_calc)) | # Are there the same # of NAs in the original MAP as there are in the calculated MAP?
+          all(missing_map %in% missing_calc) == FALSE  | # Are the row #s of all the NA values in the original MAP within the row #s of those in the calculated MAP column?
+          all(missing_calc %in% missing_map) == FALSE  | # Are the row #s of all the NA values in the calculated MAP within the row #s of those in the original MAP column?
+          (sum( (data$MAP)[-which(is.na((1/3) * data$SBP + (2/3) * data$DBP) | is.na(data$MAP))] -
+                ((1/3) * data$SBP + (2/3) * data$DBP)[-which(is.na((1/3) * data$SBP + (2/3) * data$DBP) | is.na(data$MAP))] ) != 0) ){ # Of the non-NA values present in both columns, do they match each other?
+        # *** can the sum be simplified with identical()?
 
-        col_idx <- grep(paste("\\b",toupper(map),"\\b", sep = ""), names(data))
-        colnames(data)[col_idx] <- "MAP"
+        # Original MAP column from input data renamed into MAP_OLD
+        data$MAP_OLD <- data$MAP
 
-        # Relocate to after DBP column
-        data <- data %>% dplyr::relocate(MAP, .after = DBP)
+        # New calculated MAP column from (1/3) SBP + (2/3) DBP
+        data$MAP <- (1/3) * data$SBP + (2/3) * data$DBP
 
-        # Convert to numeric
-        data$MAP <- as.numeric(data$MAP)
+      }# Otherwise it is assumed that the sums of the NAs are the same and the difference among the values equal zero --> therefore the two columns are the same
 
-      }
+    }
+
+
+  }else{ # map = NULL
+
+    # MAP column DOES NOT exist --> create one if HR column available
+    if("MAP" %in% colnames(data) == FALSE){ # map argument is NULL, no MAP column found --> if HR col found --> create MAP otherwise do nothing
+
+      data$MAP <- (1/3) * data$SBP + (2/3) * data$DBP
+      data$MAP <- as.numeric(data$MAP)
+
+      message('No MAP column found or specified. Automatically generated from SBP and DBP columns.\n')
+
+    }else{# else MAP column DOES exist --> and compare it with (1/3) SBP + (2/3) DBP --> else leave as is
+
+      # map arg is NULL
+      # MAP column exists
+
+      missing_calc <- which(is.na((1/3) * data$SBP + (2/3) * data$DBP))
+      missing_map  <- which(is.na(data$MAP))
+
+      # Compare the original MAP column with the calculation of (1/3) SBP + (2/3) DBP
+
+      # The code below checks the following:
+      #   - If there are the same number of NA values in both the original MAP column and the calculation of MAP using SBP and HR
+      #   - If the values that remain after filtering out NA from both original MAP and the MAP calculation, are the same (sum of differences = 0)
+      if( (length(missing_map) != length(missing_calc)) | # Are there the same # of NAs in the original MAP as there are in the calculated MAP?
+          all(missing_map %in% missing_calc) == FALSE  | # Are the row #s of all the NA values in the original MAP within the row #s of those in the calculated MAP column?
+          all(missing_calc %in% missing_map) == FALSE  | # Are the row #s of all the NA values in the calculated MAP within the row #s of those in the original MAP column?
+          (sum( (data$MAP)[-which(is.na((1/3) * data$SBP + (2/3) * data$DBP) | is.na(data$MAP))] -
+                ((1/3) * data$SBP + (2/3) * data$DBP)[-which(is.na((1/3) * data$SBP + (2/3) * data$DBP) | is.na(data$MAP))] ) != 0) ){ # Of the non-NA values present in both columns, do they match each other?
+        # *** can the sum be simplified with identical()?
+
+        # Original MAP column from input data renamed into MAP_OLD
+        data$MAP_OLD <- data$MAP
+
+        # New calculated MAP column from (1/3) SBP + (2/3) DBP
+        data$MAP <- (1/3) * data$SBP + (2/3) * data$DBP
+
+      }# Otherwise it is assumed that the sums of the NAs are the same and the difference among the values equal zero --> therefore the two columns are the same
+
+    }
+
+  }
+
+
+  # Relocate to after DBP column
+  data <- data %>% dplyr::relocate(MAP, .after = DBP)
+
+  # Convert to numeric
+  data$MAP <- as.numeric(data$MAP)
+
+  # Move MAP_OLD after MAP if applicable
+  if("MAP_OLD" %in% colnames(data)){
+    data <- data %>% dplyr::relocate(MAP_OLD, .after = MAP)
+  }
+
 
   return(data)
-}
 
+}
 
 
 

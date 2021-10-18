@@ -190,8 +190,8 @@ bp_scatter <- function(data,
       stop('group_var not found in data set. Ensure that spelling matches column name in data set.')
     }
 
-    if( length( unique( data[[group_var]] ) ) > 10 ){
-      stop('group_var must be categorical with no more than 10 groups')
+    if( length( unique( data[[group_var]] ) ) > 11 ){
+      stop('group_var must be categorical with no more than 11 groups')
     }
 
     #print("Grouping Variable: ", group_var, sep = "")
@@ -414,7 +414,7 @@ bp_scatter <- function(data,
 
       # If group_var column present
       {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) geom_point(aes(color = factor(get(group_var))), size = 1) } +
-      {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) scale_color_brewer(type = 'div', palette = 'Paired')} +
+      {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) scale_color_brewer(type = 'div', palette = 'Paired', na.translate = FALSE)} +
       {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) guides(color=guide_legend(title=group_var)) } +
 
       # If wrap_var column present
@@ -516,7 +516,7 @@ bp_scatter <- function(data,
 
       # If group_var column present
       {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) geom_point(aes(color = factor(get(group_var))), size = 1) } +
-      {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) scale_color_brewer(type = 'div', palette = 'Paired')} +
+      {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) scale_color_brewer(type = 'div', palette = 'Paired', na.translate = FALSE)} +
       {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) guides(color=guide_legend(title=group_var)) }
 
     # If wrap_var column present

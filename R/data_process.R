@@ -380,11 +380,11 @@ process_data <- function(data,
         # Adjust Heart Rate (HR)
         data <- hr_adj(data = data, hr = hr, data_screen = data_screen, HRUL = HRUL, HRLL = HRLL)
 
-        # Adjust Rate Pressure Product (RPP)
-        data <- rpp_adj(data = data, rpp = rpp)
-
         # Adjust Pulse Pressure (PP)
         data <- pp_adj(data = data, pp = pp)
+
+        # Adjust Rate Pressure Product (RPP)
+        data <- rpp_adj(data = data, rpp = rpp)
 
         # Adjust Mean Arterial Pressure (MAP)
         data <- map_adj(data = data, map = map)
