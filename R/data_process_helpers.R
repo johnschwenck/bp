@@ -379,6 +379,13 @@ hr_adj <- function(data, hr = NULL, data_screen, HRUL, HRLL){
           # Screen for extreme values
           if(data_screen == TRUE){
 
+            # Check to see if there are any extreme values
+            if( as.integer( dplyr::tally(data, HR >= HRUL | HR <= HRLL) ) > 0 ){
+
+              message(
+                paste( as.integer( dplyr::tally(data, HR >= HRUL | HR <= HRLL) ), ' heart rate values exceeded the HRUL or HRLL thresholds and were coerced to NA', sep = "" )
+              )
+
             # Screening Criteria:
             # - Lowest HR recorded: https://www.guinnessworldrecords.com/world-records/lowest-heart-rate
             # - High HR from the common {220 - age} formula
@@ -387,6 +394,8 @@ hr_adj <- function(data, hr = NULL, data_screen, HRUL, HRLL){
             #   dplyr::filter(HR < HRUL & HR > HRLL)
 
             data$HR[which(data$HR >= HRUL | data$HR <= HRLL)] <- NA
+
+            }
 
           }
         }
