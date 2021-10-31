@@ -91,10 +91,10 @@ sbp_adj <- function(data, sbp = NULL, data_screen, SUL, SLL){
           if(data_screen == TRUE){
 
             # Check to see if there are any extreme values
-            if( as.integer( dplyr::tally(data, SBP >= SUL | SBP <= SLL) ) > 0 ){
+            if( as.integer( dplyr::tally(data, SBP > SUL | SBP < SLL) ) > 0 ){
 
               message(
-                paste( as.integer( dplyr::tally(data, SBP >= SUL | SBP <= SLL) ), ' values exceeded the SUL or SLL thresholds and were coerced to NA', sep = "" )
+                paste( as.integer( dplyr::tally(data, SBP > SUL | SBP < SLL) ), ' values exceeded the SUL or SLL thresholds and were coerced to NA', sep = "" )
               )
 
 
@@ -105,7 +105,7 @@ sbp_adj <- function(data, sbp = NULL, data_screen, SUL, SLL){
               # data <- data %>%
               #   dplyr::filter(SBP < SUL & SBP > SLL)
 
-              data$SBP[which(data$SBP >= SUL | data$SBP <= SLL)] <- NA
+              data$SBP[which(data$SBP > SUL | data$SBP < SLL)] <- NA
 
             }
 
@@ -162,10 +162,10 @@ dbp_adj <- function(data, dbp = NULL, data_screen, DUL, DLL){
           if(data_screen == TRUE){
 
             # Check to see if there are any extreme values
-            if( as.integer( dplyr::tally(data, DBP >= DUL | DBP <= DLL) ) > 0 ){
+            if( as.integer( dplyr::tally(data, DBP > DUL | DBP < DLL) ) > 0 ){
 
               message(
-                paste( as.integer( dplyr::tally(data, DBP >= DUL | DBP <= DLL) ), ' values exceeded the DUL or DLL thresholds and were coerced to NA', sep = "" )
+                paste( as.integer( dplyr::tally(data, DBP > DUL | DBP < DLL) ), ' values exceeded the DUL or DLL thresholds and were coerced to NA', sep = "" )
               )
 
 
@@ -175,7 +175,7 @@ dbp_adj <- function(data, dbp = NULL, data_screen, DUL, DLL){
               # data <- data %>%
               #   dplyr::filter(DBP < DUL & DBP > DLL)
 
-              data$DBP[which(data$DBP >= DUL | data$DBP <= DLL)] <- NA
+              data$DBP[which(data$DBP > DUL | data$DBP < DLL)] <- NA
 
             }
 
@@ -337,10 +337,10 @@ hr_adj <- function(data, hr = NULL, data_screen, HRUL, HRLL){
           if(data_screen == TRUE){
 
             # Check to see if there are any extreme values
-            if( as.integer( dplyr::tally(data, HR >= HRUL | HR <= HRLL) ) > 0 ){
+            if( as.integer( dplyr::tally(data, HR > HRUL | HR < HRLL) ) > 0 ){
 
               message(
-                paste( as.integer( dplyr::tally(data, HR >= HRUL | HR <= HRLL) ), ' heart rate values exceeded the HRUL or HRLL thresholds and were coerced to NA', sep = "" )
+                paste( as.integer( dplyr::tally(data, HR > HRUL | HR < HRLL) ), ' heart rate values exceeded the HRUL or HRLL thresholds and were coerced to NA', sep = "" )
               )
 
 
@@ -351,7 +351,7 @@ hr_adj <- function(data, hr = NULL, data_screen, HRUL, HRLL){
               # data <- data %>%
               #   dplyr::filter(HR < HRUL & HR > HRLL)
 
-              data$HR[which(data$HR >= HRUL | data$HR <= HRLL)] <- NA
+              data$HR[which(data$HR > HRUL | data$HR < HRLL)] <- NA
 
             }
 
@@ -379,6 +379,13 @@ hr_adj <- function(data, hr = NULL, data_screen, HRUL, HRLL){
           # Screen for extreme values
           if(data_screen == TRUE){
 
+            # Check to see if there are any extreme values
+            if( as.integer( dplyr::tally(data, HR > HRUL | HR < HRLL) ) > 0 ){
+
+              message(
+                paste( as.integer( dplyr::tally(data, HR > HRUL | HR < HRLL) ), ' heart rate values exceeded the HRUL or HRLL thresholds and were coerced to NA', sep = "" )
+              )
+
             # Screening Criteria:
             # - Lowest HR recorded: https://www.guinnessworldrecords.com/world-records/lowest-heart-rate
             # - High HR from the common {220 - age} formula
@@ -386,7 +393,9 @@ hr_adj <- function(data, hr = NULL, data_screen, HRUL, HRLL){
             # data <- data %>%
             #   dplyr::filter(HR < HRUL & HR > HRLL)
 
-            data$HR[which(data$HR >= HRUL | data$HR <= HRLL)] <- NA
+            data$HR[which(data$HR > HRUL | data$HR < HRLL)] <- NA
+
+            }
 
           }
         }

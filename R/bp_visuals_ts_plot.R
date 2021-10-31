@@ -200,13 +200,13 @@ bp_ts_plots <- function(data, index = NULL, subj = NULL, first_hour = 0, rotate_
                            ggplot2::geom_point(ggplot2::aes(y = SBP), col = 'blue') +
 
                            # If there is enough data, plot a smoothed non-parametric LOESS line for SBP
-                           ggplot2::geom_smooth(ggplot2::aes(group = "", y = SBP), method = "loess", col = 'blue') +
+                           ggplot2::geom_smooth(ggplot2::aes(group = "", y = SBP), formula = y ~ x, method = "loess", col = 'blue') +
 
                            # Plot the DBP values in red
                            ggplot2::geom_point(ggplot2::aes(y = DBP), col = 'red') +
 
                            # If there is enough data, plot a smoothed non-parametric LOESS line for DBP
-                           ggplot2::geom_smooth(ggplot2::aes(group = "", y = DBP), method = "loess", col = 'red') +
+                           ggplot2::geom_smooth(ggplot2::aes(group = "", y = DBP), formula = y ~ x, method = "loess", col = 'red') +
 
                            # Rotate x axis writing if rotate_xlab = TRUE
                            {if (rotate_xlab == TRUE) ggplot2::theme(axis.text.x = ggplot2::element_text(angle=90)) } +
@@ -337,13 +337,13 @@ bp_ts_plots <- function(data, index = NULL, subj = NULL, first_hour = 0, rotate_
                           ggplot2::geom_point(ggplot2::aes(y = SBP), col = 'blue') +
 
                           # If there is enough data, plot a smoothed non-parametric LOESS line for SBP
-                          ggplot2::geom_smooth(ggplot2::aes(group = "", y = SBP), method = "loess", col = 'blue') +
+                          ggplot2::geom_smooth(ggplot2::aes(group = "", y = SBP), formula = y ~ x, method = "loess", col = 'blue') +
 
                           # Plot the DBP values in red
                           ggplot2::geom_point(ggplot2::aes(y = DBP), col = 'red') +
 
                           # If there is enough data, plot a smoothed non-parametric LOESS line for DBP
-                          ggplot2::geom_smooth(ggplot2::aes(group = "", y = DBP), method = "loess", col = 'red') +
+                          ggplot2::geom_smooth(ggplot2::aes(group = "", y = DBP), formula = y ~ x, method = "loess", col = 'red') +
                           #ggplot2::geom_smooth(ggplot2::aes(x = index, y = DBP), method = "loess", col = 'red') +
 
                           # Rotate x axis writing if rotate_xlab = TRUE
@@ -369,13 +369,13 @@ bp_ts_plots <- function(data, index = NULL, subj = NULL, first_hour = 0, rotate_
                           ggplot2::geom_point(ggplot2::aes(y = SBP), col = 'blue') +
 
                           # Plot a smooth non-parametric LOESS curve for SBP
-                          ggplot2::geom_smooth(ggplot2::aes(group = "", y = SBP), method = "loess", col = 'blue')  +
+                          ggplot2::geom_smooth(ggplot2::aes(group = "", y = SBP), formula = y ~ x, method = "loess", col = 'blue')  +
 
                           # Plot the DBP values in red
                           ggplot2::geom_point(ggplot2::aes(y = DBP), col = 'red') +
 
                           # Plot a smooth non-parametric LOESS curve for DBP
-                          ggplot2::geom_smooth(ggplot2::aes(group = "", y = DBP), method = "loess", col = 'red')  +
+                          ggplot2::geom_smooth(ggplot2::aes(group = "", y = DBP), formula = y ~ x, method = "loess", col = 'red')  +
 
                           # Rotate x axis writing if rotate_xlab = TRUE
                           #{if (rotate_xlab == TRUE) ggplot2::theme(axis.text.x = ggplot2::element_text(angle=90)) } +
@@ -459,13 +459,13 @@ bp_ts_plots <- function(data, index = NULL, subj = NULL, first_hour = 0, rotate_
             ggplot2::geom_point(ggplot2::aes(y = SBP), col = 'blue') +
 
             # If there is enough data, plot a smoothed non-parametric LOESS line for SBP
-            ggplot2::geom_smooth(ggplot2::aes(group = "", y = SBP), method = "loess", col = 'blue') +
+            ggplot2::geom_smooth(ggplot2::aes(group = "", y = SBP), formula = y ~ x, method = "loess", col = 'blue') +
 
             # Plot the DBP values in red
             ggplot2::geom_point(ggplot2::aes(y = DBP), col = 'red') +
 
             # If there is enough data, plot a smoothed non-parametric LOESS line for DBP
-            ggplot2::geom_smooth(ggplot2::aes(group = "", y = DBP), method = "loess", col = 'red') +
+            ggplot2::geom_smooth(ggplot2::aes(group = "", y = DBP), formula = y ~ x, method = "loess", col = 'red') +
             #ggplot2::geom_smooth(ggplot2::aes(x = index, y = DBP), method = "loess", col = 'red') +
 
             # Rotate x axis writing if rotate_xlab = TRUE
