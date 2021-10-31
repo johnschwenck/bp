@@ -113,7 +113,7 @@ bp_hist <- function(data, subj = NULL){
     theme(legend.position = "top") +
     theme(legend.direction = "horizontal") +
     guides(fill = guide_legend(title = "Category: ", nrow = 1)) +
-    scale_fill_manual(values = chart_cols) +
+    scale_fill_manual(values = chart_cols, na.value = 'black') +
 
     geom_text(aes(label = n), vjust = -0.5, color = 'black', position = position_dodge(0.9), size = 3.5) +
     expand_limits(y = max(bp_table_data[[3]]$n) * 1.1) +
@@ -138,7 +138,7 @@ bp_hist <- function(data, subj = NULL){
     geom_histogram(position = "identity", alpha = 0.65, color = 'gray57') +
     ggtitle("Frequency of SBP Readings") +
     ylab("Freq") +
-    scale_fill_manual(values = sbp_cols) +
+    scale_fill_manual(values = sbp_cols, na.value = 'black') +
     #theme(legend.position = "top") + theme(legend.direction = "horizontal") + guides(fill = guide_legend(title = "Category: ", nrow = 1))
     theme(legend.position="none") +
     theme_minimal()
@@ -152,7 +152,7 @@ bp_hist <- function(data, subj = NULL){
     geom_histogram(position = "identity", alpha = 0.65, color = 'gray57')+
     ggtitle("Frequency of DBP Readings") +
     ylab("Freq") +
-    scale_fill_manual(values = dbp_cols) +
+    scale_fill_manual(values = dbp_cols, na.value = 'black') +
     theme(legend.position="none") +
     theme_minimal()
 

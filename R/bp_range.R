@@ -91,6 +91,14 @@ bp_range <- function(data, inc_date = FALSE, subj = NULL, add_groups = NULL, inc
 
   }
 
+  # Filter out missing data
+  if(nrow(data) != length(which(!is.na(data$SBP) & !is.na(data$DBP))) ){
+
+    message('Missing SBP and/or DBP values found in data set. Removing for calculation.')
+    data <- data[which(!is.na(data$SBP) & !is.na(data$DBP)),]
+    #data <- data %>% dplyr::filter( complete.cases(SBP, DBP) )
+  }
+
 
   # Verify that add_groups is valid and create grps variable for dplyr
   grps <- create_grps(data = data, inc_date = inc_date, add_groups = add_groups, inc_wake = inc_wake)

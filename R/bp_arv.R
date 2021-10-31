@@ -103,21 +103,30 @@ bp_arv <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups 
 
   }
 
+  # Check for missing values
+  if(bp_type == 0){
 
-  if(bp_type == 0 | bp_type == 1){
+      if(nrow(data) != length(which(!is.na(data$SBP) & !is.na(data$DBP))) ){
+
+        message('Missing SBP and/or DBP values found in data set. Removing for calculation.')
+        data <- data[which(!is.na(data$SBP) & !is.na(data$DBP)),]
+        #data <- data %>% dplyr::filter( complete.cases(SBP, DBP) )
+      }
+
+  }else if(bp_type == 1){
 
     # SBP
     # check for missing values
     if(nrow(data) != length(which(stats::complete.cases(data$SBP) == TRUE))){
-      warning('Missing SBP values found in data set. Removing for calculation')
+      warning('Missing SBP values found in data set. Removing for calculation.')
       data <- data[which(!is.na(data$SBP)),]
     }
-  }else if(bp_type == 0 | bp_type == 2){
+  }else if(bp_type == 2){
 
     # DBP
     # check for missing values
     if(nrow(data) != length(which(stats::complete.cases(data$DBP) == TRUE))){
-      warning('Missing DBP values found in data set. Removing for calculation')
+      warning('Missing DBP values found in data set. Removing for calculation.')
       data <- data[which(!is.na(data$DBP)),]
     }
   }
