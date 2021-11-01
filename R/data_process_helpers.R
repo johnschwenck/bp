@@ -94,7 +94,7 @@ sbp_adj <- function(data, sbp = NULL, data_screen, SUL, SLL){
             if( as.integer( dplyr::tally(data, SBP > SUL | SBP < SLL) ) > 0 ){
 
               message(
-                paste( as.integer( dplyr::tally(data, SBP > SUL | SBP < SLL) ), ' values exceeded the SUL or SLL thresholds and were coerced to NA', sep = "" )
+                paste( as.integer( dplyr::tally(data, SBP > SUL | SBP < SLL) ), ' values exceeded the SUL or SLL thresholds and were coerced to NA.', sep = "" )
               )
 
 
@@ -165,7 +165,7 @@ dbp_adj <- function(data, dbp = NULL, data_screen, DUL, DLL){
             if( as.integer( dplyr::tally(data, DBP > DUL | DBP < DLL) ) > 0 ){
 
               message(
-                paste( as.integer( dplyr::tally(data, DBP > DUL | DBP < DLL) ), ' values exceeded the DUL or DLL thresholds and were coerced to NA', sep = "" )
+                paste( as.integer( dplyr::tally(data, DBP > DUL | DBP < DLL) ), ' values exceeded the DUL or DLL thresholds and were coerced to NA.', sep = "" )
               )
 
 
@@ -219,7 +219,7 @@ pp_adj <- function(data, pp = NULL){
     # Check to make sure user defined pp argument is within the column names
     if(toupper(pp) %in% colnames(data) == FALSE){ # pp argument not found in data colnames
 
-      stop('User-defined PP name does not match column name of supplied dataset\n')
+      stop('User-defined PP name does not match column name of supplied dataset.\n')
 
     }else{ # pp in colnames
 
@@ -340,7 +340,7 @@ hr_adj <- function(data, hr = NULL, data_screen, HRUL, HRLL){
             if( as.integer( dplyr::tally(data, HR > HRUL | HR < HRLL) ) > 0 ){
 
               message(
-                paste( as.integer( dplyr::tally(data, HR > HRUL | HR < HRLL) ), ' heart rate values exceeded the HRUL or HRLL thresholds and were coerced to NA', sep = "" )
+                paste( as.integer( dplyr::tally(data, HR > HRUL | HR < HRLL) ), ' heart rate values exceeded the HRUL or HRLL thresholds and were coerced to NA.', sep = "" )
               )
 
 
@@ -383,7 +383,7 @@ hr_adj <- function(data, hr = NULL, data_screen, HRUL, HRLL){
             if( as.integer( dplyr::tally(data, HR > HRUL | HR < HRLL) ) > 0 ){
 
               message(
-                paste( as.integer( dplyr::tally(data, HR > HRUL | HR < HRLL) ), ' heart rate values exceeded the HRUL or HRLL thresholds and were coerced to NA', sep = "" )
+                paste( as.integer( dplyr::tally(data, HR > HRUL | HR < HRLL) ), ' heart rate values exceeded the HRUL or HRLL thresholds and were coerced to NA.', sep = "" )
               )
 
             # Screening Criteria:
@@ -437,7 +437,7 @@ rpp_adj <- function(data, rpp = NULL){
     # Check to make sure user defined rpp argument is within the column names
     if(toupper(rpp) %in% colnames(data) == FALSE){ # rpp argument not found in data colnames
 
-      stop('User-defined RPP name does not match column name of supplied dataset\n')
+      stop('User-defined RPP name does not match column name of supplied dataset.\n')
 
     }else{ # rpp in colnames
 
@@ -472,7 +472,7 @@ rpp_adj <- function(data, rpp = NULL){
         }# Otherwise it is assumed that the sums of the NAs are the same and the difference among the values equal zero --> therefore the two columns are the same
 
       }else{
-        message('No HR column found to check RPP for accuracy')
+        message('No HR column found to check RPP for accuracy.')
       }
 
     }
@@ -578,7 +578,7 @@ map_adj <- function(data, map = NULL){
     # Check to make sure user defined map argument is within the column names
     if(toupper(map) %in% colnames(data) == FALSE){ # map argument not found in data colnames
 
-      stop('User-defined MAP name does not match column name of supplied dataset\n')
+      stop('User-defined MAP name does not match column name of supplied dataset.\n')
 
     }else{ # map in colnames
 
@@ -693,7 +693,7 @@ wake_adj <- function(data, wake = NULL, bp_type){
 
     if(toupper(wake) %in% colnames(data) == FALSE){
 
-      stop('User-defined WAKE name does not match column name of supplied dataset\n')
+      stop('User-defined WAKE name does not match column name of supplied dataset.\n')
 
     }
 
@@ -753,7 +753,7 @@ visit_adj <- function(data, visit = NULL){
 
           if(toupper(visit) %in% colnames(data) == FALSE){
 
-            stop('User-defined VISIT name does not match column name of supplied dataset\n')
+            stop('User-defined VISIT name does not match column name of supplied dataset.\n')
 
           } else {
 
@@ -838,7 +838,7 @@ ToD_int_check <- function(ToD_int){
 
   # Check for the right sorting
   if ( any(ToD_int != sort(ToD_int))){
-    warning('The supplied ToD_int hours are not in chronological order, and are automatically resorted')
+    warning('The supplied ToD_int hours are not in chronological order, and are automatically resorted.')
     ToD_int = sort(ToD_int)
   }
 
@@ -862,7 +862,7 @@ date_time_adj <- function(data, date_time = NULL, dt_fmt = "ymd HMS", ToD_int = 
 
     if(toupper(date_time) %in% colnames(data) == FALSE){
 
-      stop('User-defined date_time name does not match column name within supplied dataset\n')
+      stop('User-defined date_time name does not match column name within supplied dataset.\n')
 
     }
 
@@ -943,40 +943,53 @@ date_time_adj <- function(data, date_time = NULL, dt_fmt = "ymd HMS", ToD_int = 
   }
 
 
-  ### Date only
+  #### Date only
 
-  # Check whether DATE is in data set
+  ## DATE is in data set:
   if("DATE" %in% colnames(data)){
 
-    # Check that the specified Date column is actually of the type: Date
-    if(inherits(data$DATE, "Date") == FALSE){
+      # Check that the specified DATE column is actually of the type: Date
+      if(inherits(data$DATE, "Date") == FALSE){
 
-      warning("Original DATE column is not of the type as.Date. Coerced to proper format.")
-      data$DATE <- as.Date( data$DATE_TIME )
-      data <- data %>% dplyr::relocate(DATE, .after = DBP) # Place after DBP
-
-    }
-
-  }else if("DATE_TIME" %in% colnames(data)){
-
-      # Check to see if all of the Dates in the DATE column match with as.Date(data$DATE_TIME)
-      # In this case, check for differences
-      if( !all(data$DATE == as.Date(data$DATE_TIME)) ){
-
-          data$DATE_OLD <- data$DATE
-          data$DATE <- as.Date( data$DATE_TIME )
-          warning('User-supplied DATE column does not align with DATE_TIME values.\nCreated additional column DATE_OLD in place of DATE.\nMismatches between rows among DATE_OLD and DATE_TIME columns\n')
-
-      }else{
-
-          # Ensure that DATE is of the proper format
-          data$DATE <- as.Date( data$DATE_TIME )
+          data$DATE <- as.Date( data$DATE )
+          warning("Original DATE column is not of the type as.Date. Coerced to proper format.")
 
       }
 
-    data <- data %>% dplyr::relocate(DATE, .after = DATE_TIME) # Place after DATE_TIME
+      # Move after DBP irrespective of accuracy
+      data <- data %>% dplyr::relocate(DATE, .after = DBP)
 
-  }
+      # Check accuracy of DATE column compared with DATE_TIME column (if it exists)
+      if("DATE_TIME" %in% colnames(data)){
+
+          # Check to see if all of the Dates in the DATE column match with as.Date(data$DATE_TIME)
+          # In this case, check for differences
+          if( !all(data$DATE == as.Date(data$DATE_TIME)) ){
+
+              data$DATE_OLD <- data$DATE
+              data$DATE <- as.Date( data$DATE_TIME )
+              warning('User-supplied DATE column does not align with DATE_TIME values.\nCreated additional column DATE_OLD in place of DATE.\nMismatches between rows among DATE_OLD and DATE_TIME columns.\n')
+
+            }
+
+          # Place after DATE_TIME
+          data <- data %>% dplyr::relocate(DATE, .after = DATE_TIME)
+
+      }
+
+
+  ## DATE not in data set: check if DATE_TIME is in data set and if so, create DATE from DATE_TIME
+  }else if("DATE_TIME" %in% colnames(data)){
+
+        # Ensure that DATE is of the proper format
+        data$DATE <- as.Date( data$DATE_TIME )
+
+        # Place after DATE_TIME
+        data <- data %>% dplyr::relocate(DATE, .after = DATE_TIME)
+
+        message('DATE column created from DATE_TIME column.')
+
+  } # else DATE not specified, nor is DATE_TIME available to create DATE from --> do nothing
 
   # Convert tibble back to dataframe
   data <- as.data.frame(data)
@@ -1011,7 +1024,7 @@ agg_adj <- function(data, bp_type, agg = TRUE, agg_thresh = 3, collap = FALSE, c
 
   # This function cannot currently support Arterial Pressure data
   if(bp_type == "AP"){
-    stop('The aggregation feature does not currently support Arterial Pressure (AP) data')
+    stop('The aggregation feature does not currently support Arterial Pressure (AP) data.')
   }
 
 
@@ -1216,7 +1229,7 @@ eod_adj <- function(data, eod){
   rm(list = c("DATE", "DATE_TIME"))
 
   if ("DATE_TIME" %in% colnames(data) == FALSE){
-    warning("The supplied eod argument is ignored as no DATE_TIME column is found")
+    warning("The supplied eod argument is ignored as no DATE_TIME column is found.")
     return(data)
   }
 
@@ -1238,7 +1251,7 @@ eod_adj <- function(data, eod){
 
   # Check that both hour and minute are valid
   if(!(hour_input %in% c(0:23)) | !(min_input %in% c(0:59))){
-    stop('eod hour argument must be an integer between 0 and 23, eod minutes argument must be an integer between 0 and 59')
+    stop('eod hour argument must be an integer between 0 and 23, eod minutes argument must be an integer between 0 and 59.')
   }
 
   # Adjust dates according to eod argument
@@ -1308,7 +1321,7 @@ dow_adj <- function(data, DoW = NULL){
         # Ensure that DoW argument matches corresponding column in dataset
         if(toupper(DoW) %in% colnames(data) == FALSE){
 
-          stop('User-defined day of week column name, DoW, does not match column name within supplied dataset\n')
+          stop('User-defined day of week column name, DoW, does not match column name within supplied dataset.\n')
 
         }
 
@@ -1328,7 +1341,7 @@ dow_adj <- function(data, DoW = NULL){
 
                 # Not all unique DoW values are valid, create another column and warn user that old DoW column was renamed
                 warning('Not all unique values from DoW column are valid.
-                            \nRenamed user-supplied DoW column to "DAY_OF_WEEK_OLD" and created new column from DATE/DATE_TIME column if available')
+                            \nRenamed user-supplied DoW column to "DAY_OF_WEEK_OLD" and created new column from DATE/DATE_TIME column if available.')
                 if( !("DATE_TIME" %in% colnames(data)) ){
 
                     data$DAY_OF_WEEK_OLD <- data$DAY_OF_WEEK
@@ -1411,7 +1424,7 @@ time_adj <- function(data, time_elap = NULL){
 
     if(toupper(time_elap) %in%  colnames(data)  == FALSE){
 
-      stop('User-defined time_elap name does not match column name of supplied dataset\n')
+      stop('User-defined time_elap name does not match column name of supplied dataset.\n')
 
     } else {
 
@@ -1452,7 +1465,7 @@ group_adj <- function(data, group = NULL){
 
     if(toupper(group) %in% colnames(data)  == FALSE){
 
-      stop('User-defined Group name does not match column name of supplied dataset\n')
+      stop('User-defined Group name does not match column name of supplied dataset.\n')
 
     } else {
 
@@ -1498,7 +1511,7 @@ id_adj <- function(data, id = NULL){
 
       if(toupper(id) %in% colnames(data) == FALSE){
 
-        stop('User-defined ID name does not match column name of supplied dataset\n')
+        stop('User-defined ID name does not match column name of supplied dataset.\n')
 
       } else {
 
