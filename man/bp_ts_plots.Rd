@@ -61,12 +61,12 @@ is specified.}
 but also accepts a character vector "lm", "glm", "gam", "loess". NULL implies that the
 smoothing method will be chosen automatically based on the size of the largest group.
 
-See https://ggplot2.tidyverse.org/reference/geom_smooth.html for more details.}
+See \url{https://ggplot2.tidyverse.org/reference/geom_smooth.html} for more details.}
 
 \item{formula}{(ggplot2 plotting arguments) Formula to use in smoothing function. Default is NULL
 implying y ~ x for fewer than 1,000 observations and y ~ x(x, bs = "cs") otherwise.
 
-See https://ggplot2.tidyverse.org/reference/geom_smooth.html for more details.}
+See \url{https://ggplot2.tidyverse.org/reference/geom_smooth.html} for more details.}
 }
 \value{
 If the data does not contain a DATE_TIME column, a single list will be
