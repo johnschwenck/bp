@@ -39,10 +39,15 @@
 #' @param wrap_col An optional argument specifying how many columnss to wrap the plots if \code{wrap_var}
 #' is specified.
 #'
-#' @return A list with a plot for each ID. If the data contains a DATE_TIME column (and index
-#' is not specified), two lists will be returned: one corresponding to the DATE_TIME plots for
-#' the values over its unique point in time, and another corresponding to the HOUR plots which
-#' show repeated measurements by HOUR.
+#' @return If the data does not contain a DATE_TIME column, a single list will be
+#' returned with the time-dependent plots for each subject ID. If the data does contain a DATE_TIME
+#' column (and index is not specified), a list of two lists will be returned for each subject ID:
+#' one corresponding to the time-dependent plots (according to the DATE_TIME values), and another
+#' plot corresponding to the HOUR plots which show repeated measurements of BP values throughout
+#' a 24-hour period. The index of the output therefore corresponds to whether there is only the
+#' time-dependent plot type (the former situation) or there are both time-dependent and hourly
+#' plot types (the latter situation).
+#'
 #'
 #' @export
 #'
