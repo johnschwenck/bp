@@ -12,7 +12,9 @@ bp_ts_plots(
   rotate_xlab = FALSE,
   wrap_var = NULL,
   wrap_row = NULL,
-  wrap_col = NULL
+  wrap_col = NULL,
+  method = NULL,
+  formula = NULL
 )
 }
 \arguments{
@@ -54,12 +56,27 @@ is specified.}
 
 \item{wrap_col}{An optional argument specifying how many columnss to wrap the plots if \code{wrap_var}
 is specified.}
+
+\item{method}{(ggplot2 plotting arguments) Smoothing method (function) to use. Default is NULL,
+but also accepts a character vector "lm", "glm", "gam", "loess". NULL implies that the
+smoothing method will be chosen automatically based on the size of the largest group.
+
+See https://ggplot2.tidyverse.org/reference/geom_smooth.html for more details.}
+
+\item{formula}{(ggplot2 plotting arguments) Formula to use in smoothing function. Default is NULL
+implying y ~ x for fewer than 1,000 observations and y ~ x(x, bs = "cs") otherwise.
+
+See https://ggplot2.tidyverse.org/reference/geom_smooth.html for more details.}
 }
 \value{
-A list with a plot for each ID. If the data contains a DATE_TIME column (and index
-is not specified), two lists will be returned: one corresponding to the DATE_TIME plots for
-the values over its unique point in time, and another corresponding to the HOUR plots which
-show repeated measurements by HOUR.
+If the data does not contain a DATE_TIME column, a single list will be
+returned with the time-dependent plots for each subject ID. If the data does contain a DATE_TIME
+column (and index is not specified), a list of two lists will be returned for each subject ID:
+one corresponding to the time-dependent plots (according to the DATE_TIME values), and another
+plot corresponding to the HOUR plots which show repeated measurements of BP values throughout
+a 24-hour period. The index of the output therefore corresponds to whether there is only the
+time-dependent plot type (the former situation) or there are both time-dependent and hourly
+plot types (the latter situation).
 }
 \description{
 Blood Pressure Time Series Plots
