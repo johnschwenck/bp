@@ -64,7 +64,7 @@ A dataframe with additional columns corresponding to the stages of high blood pr
 supplementary SBP / DBP categories
 }
 \description{
-Adds SBP_Category and DBP_Category columns to supplied dataframe.
+Adds BP_CLASS, SBP_Category, and DBP_Category columns to supplied dataframe.
 }
 \details{
 Supplied dataframe must adhere to the unified format using the \code{process_data} function.
