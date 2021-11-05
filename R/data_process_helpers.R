@@ -65,7 +65,7 @@ sbp_adj <- function(data, sbp = NULL, data_screen, SUL, SLL){
       # Systolic BP (SBP)
       if(is.character(sbp)){
 
-        if(toupper(sbp) %in% colnames(data)  == FALSE){
+        if(toupper(sbp) %in% colnames(data)  == FALSE){ # Note that colnames are uppercased in the process_data function
 
           warning('Could not find user-defined SBP argument name in dataset. \ni.e. for example, if user improperly defines sbp = "syst" but that column name does not exist in the dataset, \nthen there will be no matches for "syst". \nCheck spelling of SBP argument.\n')
 
@@ -700,22 +700,65 @@ wake_adj <- function(data, wake = NULL, bp_type){
     col_idx <- grep(paste("\\b",toupper(wake),"\\b", sep = ""), names(data))
     colnames(data)[col_idx] <- "WAKE"
 
-    if(length(unique(data$WAKE)) > 2){
 
-      warning('Ignoring wake argument. Wake column must only contain 2 unique values corresponding to awake or asleep status. \nTypically, these are denoted as 1 for Awake and 0 for Asleep.\n')
+    # Process for NA values which may throw off number of levels
+    #    - If NAs are NOT present, then only check for unusual number of levels (>2 i.e. 1 or 0)
+    #    - If NAs are present, then non-NAs should have two levels only and NAs should be changed to 0 or 1
+    #        based on ToD and throw a warning that those values were changed according to ToD (and how many)
 
+
+    # NA values are NOT present in data
+    if( any(is.na(data$WAKE)) == FALSE){
+
+        # Check that there are only two unique levels: 0 or 1, given that there are no NA values
+        if(length(unique(data$WAKE)) > 2){
+
+            stop('Wake column must only contain 2 unique values corresponding to awake or asleep status. \nTypically, these are denoted as 1 for Awake and 0 for Asleep.\n')
+
+        }else{
+
+          data$WAKE <- as.integer(data$WAKE) # coerce to integers
+
+          # Relocate to after DBP column
+          data <- data %>% dplyr::relocate(WAKE, .after = DBP)
+
+        }
+
+    # NA values ARE present in data
     }else{
 
-      data$WAKE <- as.integer(data$WAKE) # coerce to integers
+          # Store number of NA values for warning
+          num_NA <- length(data[ is.na(data$WAKE) == TRUE, ]$WAKE)
 
-      # Relocate to after DBP column
-      data <- data %>% dplyr::relocate(WAKE, .after = DBP)
+          # Convert NA values to 1 or 0 based on TIME_OF_DAY values
+          data[ is.na(data$WAKE) == TRUE, ]$WAKE <- dplyr::if_else( data[ is.na(data$WAKE) == TRUE, ]$TIME_OF_DAY == 'Night', 0, 1)
+
+          # Throw warning that NA values were changed
+          warning( paste(num_NA, ' WAKE NA values were coerced to either 0 or 1 based on TIME_OF_DAY column.', sep = "") )
+
+
+          # Check that there are still only two unique levels: 0 or 1,  after coercing NA values to 0 or 1
+          if(length(unique(data$WAKE)) > 2){
+
+            stop('Wake column must only contain 2 unique values corresponding to awake or asleep status. \nTypically, these are denoted as 1 for Awake and 0 for Asleep.\n')
+
+          }else{
+
+            data$WAKE <- as.integer(data$WAKE) # coerce to integers
+
+            # Relocate to after DBP column
+            data <- data %>% dplyr::relocate(WAKE, .after = DBP)
+
+          }
 
     }
 
+    # Coerce back to factor levels
     data$WAKE <- as.factor(data$WAKE)
 
+
   }else if (("TIME_OF_DAY" %in% colnames(data)) & (toupper(bp_type) == "ABPM")){
+
     # if there is time of day information, then assign all night to sleep and rest to wake with a message
     message("Absent wake column. Allocating night as sleep.")
     data <- data %>%
