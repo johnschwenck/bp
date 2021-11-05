@@ -331,21 +331,30 @@ process_data <- function(data,
 
         }
 
+        # SBP Adjustment, DBP Adjustment, and BP Stages
+        data <- bp_stages(data = data,
+                          sbp = sbp,
+                          dbp = dbp,
+                          inc_low = inc_low,
+                          inc_crisis = inc_crisis,
+                          data_screen = data_screen,
+                          SUL = SUL,
+                          SLL = SLL,
+                          DUL = DUL,
+                          DLL = DLL)
 
-        # Adjust Systolic Blood Pressure (SBP)
-        data <- sbp_adj(data = data, sbp = sbp, data_screen = data_screen, SUL = SUL, SLL = SLL)
-        sbp_tmp <- names(data)[1] # For bp_stages function
 
-        # Adjust Diastolic Blood Pressure (DBP)
-        data <- dbp_adj(data = data, dbp = dbp, data_screen = data_screen, DUL = DUL, DLL = DLL)
-        dbp_tmp <- names(data)[2] # For bp_stages function
+        # Move Classification columns to correct positions
+        data <- data %>%
+          dplyr::relocate(BP_CLASS, .after = DBP) #%>%
+        #dplyr::relocate(SBP_CATEGORY, .after = BP_CLASS) %>%
+        #dplyr::relocate(DBP_CATEGORY, .after = SBP_CATEGORY)
 
         # Adjust ID
         data <- id_adj(data = data, id = id)
 
         # Adjust Group
         data <- group_adj(data = data, group = group)
-
 
         # Adjust Visit
         data <- visit_adj(data = data, visit = visit)
@@ -373,10 +382,6 @@ process_data <- function(data,
 
         # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
 
-        #+++++++++++++++++++++++++++++++++++#
-        # KEEP THIS ORDER: RPP, PP, MAP, HR #
-        #+++++++++++++++++++++++++++++++++++#
-
         # Adjust Heart Rate (HR)
         data <- hr_adj(data = data, hr = hr, data_screen = data_screen, HRUL = HRUL, HRLL = HRLL)
 
@@ -390,6 +395,11 @@ process_data <- function(data,
         data <- map_adj(data = data, map = map)
 
 
+        # Relocate HR to after DBP column
+        if("HR" %in% colnames(data)){
+          data <- data %>% dplyr::relocate(HR, .after = DBP)
+        }
+
         # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
 
         # Aggregate data if selected
@@ -398,26 +408,6 @@ process_data <- function(data,
           data <- agg_adj(data = data, bp_type = bp_type, agg_thresh = agg_thresh, collapse_df = collapse_df)
 
         }
-
-
-        # BP Stages
-        data <- bp_stages(data = data,
-                          sbp = sbp_tmp,
-                          dbp = dbp_tmp,
-                          inc_low = inc_low,
-                          inc_crisis = inc_crisis,
-                          data_screen = data_screen,
-                          SUL = SUL,
-                          SLL = SLL,
-                          DUL = DUL,
-                          DLL = DLL)
-
-
-        # Move Classification columns to correct positions
-        data <- data %>%
-                  dplyr::relocate(BP_CLASS, .after = DBP) #%>%
-                  #dplyr::relocate(SBP_CATEGORY, .after = BP_CLASS) %>%
-                  #dplyr::relocate(DBP_CATEGORY, .after = SBP_CATEGORY)
 
 
 
