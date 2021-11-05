@@ -90,11 +90,18 @@ sbp_adj <- function(data, sbp = NULL, data_screen, SUL, SLL){
           # Screen for extreme values
           if(data_screen == TRUE){
 
+            # Sanity check for SLL & SUL
+            if(SLL > SUL){
+
+              stop('Systolic Lower Limit (SLL) cannot exceed Systolic Upper Limit (SUL) \nSLL > SUL is invalid.')
+
+            }
+
             # Check to see if there are any extreme values
             if( as.integer( dplyr::tally(data, SBP > SUL | SBP < SLL) ) > 0 ){
 
               message(
-                paste( as.integer( dplyr::tally(data, SBP > SUL | SBP < SLL) ), ' values exceeded the SUL or SLL thresholds and were coerced to NA.', sep = "" )
+                paste( as.integer( dplyr::tally(data, SBP > SUL | SBP < SLL) ), ' values that exceeded the SUL or SLL thresholds were coerced to NA.', sep = "" )
               )
 
 
@@ -161,11 +168,18 @@ dbp_adj <- function(data, dbp = NULL, data_screen, DUL, DLL){
           # Screen for extreme values
           if(data_screen == TRUE){
 
+            # Sanity check for DLL & DUL
+            if(DLL > DUL){
+
+              stop('Diastolic Lower Limit (DLL) cannot exceed Diastolic Upper Limit (DUL) \ni.e. DLL > DUL is invalid.')
+
+            }
+
             # Check to see if there are any extreme values
             if( as.integer( dplyr::tally(data, DBP > DUL | DBP < DLL) ) > 0 ){
 
               message(
-                paste( as.integer( dplyr::tally(data, DBP > DUL | DBP < DLL) ), ' values exceeded the DUL or DLL thresholds and were coerced to NA.', sep = "" )
+                paste( as.integer( dplyr::tally(data, DBP > DUL | DBP < DLL) ), ' values that exceeded the DUL or DLL thresholds were coerced to NA.', sep = "" )
               )
 
 
@@ -336,11 +350,18 @@ hr_adj <- function(data, hr = NULL, data_screen, HRUL, HRLL){
           # Screen for extreme values
           if(data_screen == TRUE){
 
+            # Sanity check for HRLL & HRUL
+            if(HRLL > HRUL){
+
+              stop('Heart Rate Lower Limit (HRLL) cannot exceed Heart Rate Upper Limit (HRUL) \nHRLL > HRUL is invalid.')
+
+            }
+
             # Check to see if there are any extreme values
             if( as.integer( dplyr::tally(data, HR > HRUL | HR < HRLL) ) > 0 ){
 
               message(
-                paste( as.integer( dplyr::tally(data, HR > HRUL | HR < HRLL) ), ' heart rate values exceeded the HRUL or HRLL thresholds and were coerced to NA.', sep = "" )
+                paste( as.integer( dplyr::tally(data, HR > HRUL | HR < HRLL) ), ' heart rate values that exceeded the HRUL or HRLL thresholds were coerced to NA.', sep = "" )
               )
 
 
@@ -356,6 +377,9 @@ hr_adj <- function(data, hr = NULL, data_screen, HRUL, HRLL){
             }
 
           }
+
+          # Relocate to after DBP column
+          data <- data %>% dplyr::relocate(HR, .after = DBP)
 
         }
 
@@ -531,7 +555,7 @@ rpp_adj <- function(data, rpp = NULL){
   if("RPP" %in% colnames(data)){
 
       # Relocate to after PP column
-      data <- data %>% dplyr::relocate(RPP, .after = PP)
+      data <- data %>% dplyr::relocate(RPP, .before = PP)
 
       # Convert to numeric
       data$RPP <- as.numeric(data$RPP)
@@ -734,7 +758,7 @@ wake_adj <- function(data, wake = NULL, bp_type){
           data[ is.na(data$WAKE) == TRUE, ]$WAKE <- dplyr::if_else( data[ is.na(data$WAKE) == TRUE, ]$TIME_OF_DAY == 'Night', 0, 1)
 
           # Throw warning that NA values were changed
-          warning( paste(num_NA, ' WAKE NA values were coerced to either 0 or 1 based on TIME_OF_DAY column.', sep = "") )
+          message( paste(num_NA, ' WAKE NA values were coerced to either 0 or 1 based on TIME_OF_DAY column.', sep = "") )
 
 
           # Check that there are still only two unique levels: 0 or 1,  after coercing NA values to 0 or 1
