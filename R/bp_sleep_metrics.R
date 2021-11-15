@@ -1,3 +1,13 @@
+# small helper function to return tibble NA with the appropriate colnames
+null_sleep_output <- function(){
+  out = tibble::tibble(data.frame(matrix(nrow = 1, ncol = 16)))
+  colnames(out) = c("sleep_DBP", "wake_DBP", "sleep_DBP_sd", "wake_DBP_sd",
+                    "presleep_DBP", "prewake_DBP", "postwake_DBP", "lowest_DBP",
+                    "sleep_SBP" , "wake_SBP", "sleep_SBP_sd", "wake_SBP_sd",
+                    "presleep_SBP", "prewake_SBP", "postwake_SBP", "lowest_SBP"  )
+  return(out)
+}
+
 # Calculate summaries for SBP and DBP to use with sleep metric calculations
 # First does check on unusual sleep periods, or periods with unusually short naps
 # For each subject, visit, group, want to do the following
@@ -8,11 +18,18 @@
 # lowest SBP - average of 3 readings centered around lowest
 
 
-# First, need to identify the sleep periods start and end. This is in general not easy because going to sleep time and BP measurement time are not going to be the same. If we use ToD as differentiation, and say measurements are 00:20, 00:50, 1:20, 1:50, 2:20, then technically the first 5 will be used rather than the first 4. Same is going to happen with sleep end.
+# First, need to identify the sleep periods start and end. This is in general
+# not easy because going to sleep time and BP measurement time are not going to
+# be the same. If we use ToD as differentiation, and say measurements are 00:20,
+# 00:50, 1:20, 1:50, 2:20, then technically the first 5 will be used rather than
+# the first 4. Same is going to happen with sleep end.
 
-# Approximation - the first time we observe 1 is going to be treated as sleep start, the last time we observe 1 is going to be treated as sleep end? or is it 0? something to discuss.
+# Approximation - the first time we observe 1 is going to be treated as sleep start,
+# the last time we observe 1 is going to be treated as sleep end? or is it 0?
+# something to discuss.
 
-# In any case, for each subject/group/visit, we can create Diff column that takes consecutive measurements differences of Wake column, so that
+# In any case, for each subject/group/visit, we can create Diff column that
+# takes consecutive measurements differences of Wake column, so that
 # 1 - 0 = 1 sleep end
 # 0 - 1 = -1 sleep start
 # 0 - 0 = 1 - 1 = 0 no change
@@ -29,34 +46,60 @@ get_summaries_SBP_DBP <- function(data){
   # Figure out total number of measurements
   nread = nrow(data)
 
-  # Create difference column (here I assume the time is already sorted, should probably check)
+  # Create difference column (here I assume the time is already sorted,
+  # should probably check) - time has been ordered in bp_sleep_metrics
   wake_binary = as.numeric(as.character(data$WAKE))
   # 1 - 0 = 1 sleep end
   # 0 - 1 = -1 sleep start
   # 0 - 0 = 1 - 1 = 0 no change
   data$diff = c(wake_binary[2:nread] - wake_binary[1:(nread - 1)], 0)
 
+  # if no sleep measurements (all wake), return null and message
+  if (!any(data$WAKE == 0)){
+    message(paste("No sleep measurements found for subject", unique(data$ID),
+                  ". Double check the WAKE column."))
+    return(null_sleep_output())
+  }
+  # if no wake measurements (all sleep), return null and message
+  if (!any(data$WAKE == 1)){
+    message(paste("No wake measurements found for subject", unique(data$ID),
+                  ". Double check the WAKE column."))
+    return(null_sleep_output())
+  }
+
+  # if starts in a sleep period, then set first row as sleep start
+  if (data$WAKE[1] == 0){
+    message(paste0("Can not detect the beginning of sleep period for subject ", unique(data$ID),
+                   ". First measurement automatically set as sleep start"))
+
+    data <- data %>%
+      # before first row, add row with diff = -1
+      # row with -1 labeled as wake_end, actual first row of data will be sleep_start
+      tibble::add_row(DATE_TIME = as.POSIXct(NA), diff = -1, .before = 1)
+  }
+
+  # if ends in a sleep period, then set last row as sleep end
+  if (data$WAKE[nread] == 0){
+    message(paste0("Can not detect the ending of sleep period for subject ", unique(data$ID),
+                   ". Last measurement automatically set as sleep end"))
+
+    data$diff[nread] = 1
+  }
+
+  # after checking/changing first and last measurements, calculate sleep starts and ends
+
   # Number of sleep period starts
   n_starts = sum(data$diff == -1)
   # Number of sleep period ends
   n_ends = sum(data$diff == 1)
 
-  # No sleep starts identified
-  if (n_starts == 0){
-    stop(paste("Can not detect the beginning of sleep period for subject", unique(data$ID), ". Double check the WAKE column."))
-  }
+  # in theory I think all sleep periods should now have a start and end
+  # i.e. sleep starts equals sleep ends because incomplete sleeps have been
+  # auto set to start or end at the first or last
 
-  # No sleep ends identified
-  if (n_ends == 0){
-    stop(paste("Can not detect the ending of sleep period for subject", unique(data$ID), ". Double check the WAKE column."))
-  }
+  # so now need to check if there is more than one sleep period
+  if (n_starts > 1){
 
-  # Check if there is more than one sleep period. Otherwise use sleep_start and sleep_end times based on diff
-  if ((n_starts > 1) | (n_ends > 1)){
-    message(paste("More than one sleep period detected for subject "), unique(data$ID))
-    if (n_starts != n_ends){
-      stop(paste("Incomplete sleep period for subject", unique(data$ID), ". Double check the WAKE column."))
-    }
     # Extract the times of start and end, should have the same length now
     wake_ends = data$DATE_TIME[which(data$diff == -1)] # This is the last time WAKE = 1
     sleep_starts = data$DATE_TIME[which(data$diff == -1) + 1] # This is the first time WAKE = 0
@@ -69,26 +112,22 @@ get_summaries_SBP_DBP <- function(data){
     # If any duration is less than two hours, treat as nap and remove
     no_naps = which(as.numeric(durations) > 2)
 
-    # If after that filtering no periods are left or more than one period, stop and exit
+    # if no periods are longer than 2 hours, return null and message
     if (length(no_naps) == 0){
-      stop(paste("Identified sleep period for subject", unique(data$ID), "is less than 2 hours. Double check the WAKE column."))
+      message(paste("Identified sleep period for subject", unique(data$ID), "is less than 2 hours. Double check the WAKE column."))
+      return(null_sleep_output())
     }
-
-    if (length(no_naps) > 1){
-      warning(paste("Current functionality only supports one sleep period per subject. Only the first sleep period is used for calculations."))
+    # if multiple periods and at least one longer than 2 hours, use first valid and message
+    # have removed naps messaging because regardless, the first valid sleep period is always chosen
+    if (length(no_naps) >= 1){
+      message(paste("Current functionality only supports one sleep period per subject. Only the first sleep period longer than 2 hours is used for calculations."))
       wake_end = wake_ends[no_naps[1]]
       sleep_start = sleep_starts[no_naps[1]]
       sleep_end = sleep_ends[no_naps[1]]
       wake_start = wake_starts[no_naps[1]]
-    }else{
-      message(paste("The sleep period shorter than 2 hours is treated as nap, and not used in calculations of sleep metrics."))
-      # Only one sleep period that has no gaps
-      wake_start = wake_starts[no_naps]
-      sleep_start = sleep_starts[no_naps]
-      sleep_end = sleep_ends[no_naps]
-      wake_end = wake_ends[no_naps]
     }
-  }else{
+    # if exactly one start and end, then simply extract start and end
+  }  else{
     # Extract the times of start and end, should be exactly one
     wake_end = data$DATE_TIME[which(data$diff == -1)] # last time WAKE = 1
     sleep_start = data$DATE_TIME[which(data$diff == -1) + 1] # This is the first time WAKE = 0
@@ -104,6 +143,11 @@ get_summaries_SBP_DBP <- function(data){
       (DATE_TIME <= sleep_end) & (DATE_TIME > sleep_end - lubridate::hours(2)) ~ "prewake",
       TRUE ~ ifelse(WAKE == 1, "wake", "sleep")
     ))
+
+  # if first row is NA period, remove dummy row from coercing sleep_start
+  if (is.na(data$period[1])){
+    data <- data[2:nrow(data), ]
+  }
 
   # Sometimes nothing is allocated to a particular period. Can adjust definition of sleep_start/sleep_end a little to see if extra measurements could be taken. This can only be done for presleep and postwake.
   if (sum(data$period == "presleep") == 0){
@@ -134,14 +178,16 @@ get_summaries_SBP_DBP <- function(data){
   # Mean and sd by WAKE
   stat_SBP_wake = tidyr::pivot_wider(data %>%
                                        dplyr::group_by(WAKE) %>%
-                                       dplyr::summarize(meanSBP = mean(SBP), sdSBP = sd(SBP)),
+                                       dplyr::summarize(meanSBP = mean(SBP, na.rm = TRUE),
+                                                        sdSBP = sd(SBP, na.rm = TRUE)),
                                      values_from = 2:3, names_from = 1)
   names(stat_SBP_wake) = c("sleep_SBP", "wake_SBP", "sleep_SBP_sd", "wake_SBP_sd")
 
   # Mean by period
   stat_SBP_period = tidyr::pivot_wider(data_period %>%
                                          dplyr::group_by(period) %>%
-                                         dplyr::summarize(SBP = mean(SBP)),
+                                         dplyr::summarize(SBP = mean(SBP, na.rm = TRUE)) %>%
+                                         tidyr::complete(period),
                                        values_from = 2, names_from = 1)
 
   names(stat_SBP_period) = c( "presleep_SBP", "prewake_SBP", "postwake_SBP")
@@ -150,22 +196,26 @@ get_summaries_SBP_DBP <- function(data){
   summary_SBP = dplyr::bind_cols(stat_SBP_wake, stat_SBP_period)
 
   # Mean over lowest BP reading during sleep, and two surrounding it
-  lowest_id = which((data$SBP == min(data$SBP[data$WAKE == 0]))&(data$WAKE == 0))
-  summary_SBP$lowest_SBP = mean(data$SBP[c(lowest_id - 1, lowest_id, lowest_id + 1)])
+  lowest_id = which((data$SBP == min(data$SBP[data$WAKE == 0], na.rm = TRUE)) &
+                      (data$WAKE == 0))
+  summary_SBP$lowest_SBP = mean(data$SBP[c(lowest_id - 1, lowest_id, lowest_id + 1)],
+                                na.rm = TRUE)
 
   # DBP
   ###########################################################################
   # Mean and sd by WAKE
   stat_DBP_wake = tidyr::pivot_wider(data %>%
                                        dplyr::group_by(WAKE) %>%
-                                       dplyr::summarize(meanDBP = mean(DBP), sdDBP = sd(DBP)),
+                                       dplyr::summarize(meanDBP = mean(DBP, na.rm = TRUE),
+                                                        sdDBP = sd(DBP, na.rm = TRUE)),
                                      values_from = 2:3, names_from = 1)
   names(stat_DBP_wake) = c("sleep_DBP", "wake_DBP", "sleep_DBP_sd", "wake_DBP_sd")
 
   # Mean by period
   stat_DBP_period = tidyr::pivot_wider(data_period %>%
                                          dplyr::group_by(period) %>%
-                                         dplyr::summarize(DBP = mean(DBP)),
+                                         dplyr::summarize(DBP = mean(DBP, na.rm = TRUE)) %>%
+                                         tidyr::complete(period),
                                        values_from = 2, names_from = 1)
   names(stat_DBP_period) = c("presleep_DBP", "prewake_DBP", "postwake_DBP")
 
@@ -173,13 +223,14 @@ get_summaries_SBP_DBP <- function(data){
   summary_DBP = dplyr::bind_cols(stat_DBP_wake, stat_DBP_period)
 
   # Mean over lowest BP reading during sleep, and two surrounding it
-  lowest_id = which((data$DBP == min(data$DBP[data$WAKE == 0]))&(data$WAKE == 0))
-  summary_DBP$lowest_DBP = mean(data$DBP[c(lowest_id - 1, lowest_id, lowest_id + 1)])
+  lowest_id = which((data$DBP == min(data$DBP[data$WAKE == 0], na.rm = TRUE)) &
+                      (data$WAKE == 0))
+  summary_DBP$lowest_DBP = mean(data$DBP[c(lowest_id - 1, lowest_id, lowest_id + 1)],
+                                na.rm = TRUE)
 
   # Return the output (summary_SBP and summary_DBP) together
   return(dplyr::bind_cols(summary_DBP, summary_SBP))
 }
-
 
 
 #' Blood Pressure Sleep Metrics
@@ -201,8 +252,8 @@ get_summaries_SBP_DBP <- function(data){
 #' presleep or evening (2 hours before sleep start),
 #' prewake (2 hours before wake),
 #' postwake or morning (2 hours after wake),
-#' lowest (3 measurements centered at the minimal BP reading over sleep). T
-#' he function uses \code{WAKE} column to automatically allocate BP measurements to various periods. The following metrics are defined as a
+#' lowest (3 measurements centered at the minimal BP reading over sleep).
+#' The function uses \code{WAKE} column to automatically allocate BP measurements to various periods. The following metrics are defined as a
 #' function of the period averages (separately for SBP and DBP)
 #'
 #' \code{dip_calc} = 1 - mean_sleep_BP/mean_wake_BP (dip proportion)
@@ -257,210 +308,210 @@ get_summaries_SBP_DBP <- function(data){
 #'
 bp_sleep_metrics <- function(data, subj = NULL){
 
-    # Function requires: SBP, DBP, DATE_TIME, WAKE, ID
+  # Function requires: SBP, DBP, DATE_TIME, WAKE, ID
 
-    # Initialize variables for dplyr
-    ID = DATE_TIME = SBP = DBP = WAKE = HOUR = lowest_SBP = lowest_DBP = presleep_SBP = presleep_DBP = postwake_SBP = postwake_DBP = prewake_SBP = prewake_DBP = sleep_DBP = wake_DBP = sleep_SBP = wake_SBP = wSD_DBP = wake_SBP_sd = wake_DBP_sd = sleep_SBP_sd = sleep_DBP_sd = HRS_sleep = HRS_wake = NULL
-    rm(list = c("ID", "DATE_TIME", "SBP", "DBP", "WAKE", "HOUR", "lowest_SBP", "lowest_DBP", "presleep_SBP", "presleep_DBP", "postwake_SBP", "postwake_DBP", "prewake_SBP", "prewake_DBP", "sleep_DBP", "wake_DBP", "sleep_SBP", "wake_SBP", "wSD_DBP", "wake_SBP_sd", "wake_DBP_sd", "sleep_SBP_sd", "sleep_DBP_sd", "HRS_sleep", "HRS_wake"))
-
-
-      # Uppercase all column names
-      colnames(data) <- toupper( colnames(data) )
+  # Initialize variables for dplyr
+  ID = DATE_TIME = SBP = DBP = WAKE = HOUR = lowest_SBP = lowest_DBP = presleep_SBP = presleep_DBP = postwake_SBP = postwake_DBP = prewake_SBP = prewake_DBP = sleep_DBP = wake_DBP = sleep_SBP = wake_SBP = wSD_DBP = wake_SBP_sd = wake_DBP_sd = sleep_SBP_sd = sleep_DBP_sd = HRS_sleep = HRS_wake = NULL
+  rm(list = c("ID", "DATE_TIME", "SBP", "DBP", "WAKE", "HOUR", "lowest_SBP", "lowest_DBP", "presleep_SBP", "presleep_DBP", "postwake_SBP", "postwake_DBP", "prewake_SBP", "prewake_DBP", "sleep_DBP", "wake_DBP", "sleep_SBP", "wake_SBP", "wSD_DBP", "wake_SBP_sd", "wake_DBP_sd", "sleep_SBP_sd", "sleep_DBP_sd", "HRS_sleep", "HRS_wake"))
 
 
-      # Ensure SBP column is present
-      if( ("SBP" %in% colnames(data)) == FALSE ){
-
-        stop('Could not find SBP column in supplied data set. Make sure to run process_data() for data processing.')
-
-      }
-
-      # Ensure DBP column is present
-      if( ("DBP" %in% colnames(data)) == FALSE ){
-
-        stop('Could not find DBP column in supplied data set. Make sure to run process_data() for data processing.')
-
-      }
-
-      # Ensure that both DATE_TIME column is present
-      if( ("DATE_TIME" %in% colnames(data)) == FALSE){
-
-        stop('No DATE_TIME column found. Cannot compute sleep stage metrics.')
-
-      }
-
-      # Ensure WAKE column is present
-      if( ("WAKE" %in% colnames(data)) == FALSE ){
-
-        stop('No WAKE column found. Cannot compute sleep stage metrics.')
-
-      }
-
-      # Ensure that both DATE_TIME column is present
-      if( ("ID" %in% colnames(data)) == FALSE){
-
-        stop('No ID column found. Cannot compute sleep stage metrics.')
-
-      }
-
-      # Check the data type
-      if ( ("BP_TYPE" %in% colnames(data)) == FALSE){
-        stop('No BP_TYPE column found. Cannot automatically identify the type of BP data. Make sure to process the data using process_data function.')
-      }
-
-      if (unique(data$BP_TYPE) != "ABPM"){
-        if (unique(data$BP_TYPE) == "HBPM"){
-          warning("The supplied data has HBPM type, for which calculation of sleep BP metrics is not recommended. If the supplied data should be ABPM type, please rerun process_data function with correct BP type specfication.")
-        }
-      }
-
-      # Check function for whether or not DATE_TIME values are proper date/time format
-      is.POSIXct <- function(x) inherits(x, "POSIXct")
-
-      if(is.POSIXct(data$DATE_TIME) == FALSE){
-
-        stop('DATE_TIME column not proper time format. Make sure to run process_data() for data processing.')
-
-      }
-
-      # If user supplies a vector corresponding to a subset of multiple subjects (multi-subject only)
-      if(!is.null(subj)){
-
-        # check to ensure that supplied subject vector is compatible
-        subject_subset_check(data, subj)
-
-        if(length(unique(data$ID)) > 1){
-
-          # Filter data based on subset of subjects
-          data <- data %>%
-            dplyr::filter(ID %in% subj)
-        }
-      }
+  # Uppercase all column names
+  colnames(data) <- toupper( colnames(data) )
 
 
-      #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+  # Ensure SBP column is present
+  if( ("SBP" %in% colnames(data)) == FALSE ){
 
-      # Grouping variables
+    stop('Could not find SBP column in supplied data set. Make sure to run process_data() for data processing.')
 
-      grps = c("ID", "VISIT", "GROUP")
-      grps = grps[which( grps %in% colnames(data) == TRUE)]
+  }
 
-      #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
-      # Calculation of sleep counts table (table 1) based on WAKE column
+  # Ensure DBP column is present
+  if( ("DBP" %in% colnames(data)) == FALSE ){
 
-      sleep_counts = data %>%
-        dplyr::group_by_at(dplyr::vars(grps)) %>%
-        dplyr::summarize(N_total = dplyr::n(), # Total number of readings
-                         N_wake = sum(WAKE == 1), # Number of total readings while awake
-                         N_sleep = sum(WAKE == 0), # Number of total readings while asleep
-                         HRS_wake = dplyr::n_distinct(HOUR[WAKE == 1]), # Number of unique hours recorded while awake (for wSD calc)
-                         HRS_sleep = dplyr::n_distinct(HOUR[WAKE == 0]), # Number of unique hours recorded during sleep (for wSD calc)
-                         .groups = 'drop')
+    stop('Could not find DBP column in supplied data set. Make sure to run process_data() for data processing.')
+
+  }
+
+  # Ensure that both DATE_TIME column is present
+  if( ("DATE_TIME" %in% colnames(data)) == FALSE){
+
+    stop('No DATE_TIME column found. Cannot compute sleep stage metrics.')
+
+  }
+
+  # Ensure WAKE column is present
+  if( ("WAKE" %in% colnames(data)) == FALSE ){
+
+    stop('No WAKE column found. Cannot compute sleep stage metrics.')
+
+  }
+
+  # Ensure that both DATE_TIME column is present
+  if( ("ID" %in% colnames(data)) == FALSE){
+
+    stop('No ID column found. Cannot compute sleep stage metrics.')
+
+  }
+
+  # Check the data type
+  if ( ("BP_TYPE" %in% colnames(data)) == FALSE){
+    stop('No BP_TYPE column found. Cannot automatically identify the type of BP data. Make sure to process the data using process_data function.')
+  }
+
+  if (unique(data$BP_TYPE) != "ABPM"){
+    if (unique(data$BP_TYPE) == "HBPM"){
+      warning("The supplied data has HBPM type, for which calculation of sleep BP metrics is not recommended. If the supplied data should be ABPM type, please rerun process_data function with correct BP type specfication.")
+    }
+  }
+
+  # Check function for whether or not DATE_TIME values are proper date/time format
+  is.POSIXct <- function(x) inherits(x, "POSIXct")
+
+  if(is.POSIXct(data$DATE_TIME) == FALSE){
+
+    stop('DATE_TIME column not proper time format. Make sure to run process_data() for data processing.')
+
+  }
+
+  # If user supplies a vector corresponding to a subset of multiple subjects (multi-subject only)
+  if(!is.null(subj)){
+
+    # check to ensure that supplied subject vector is compatible
+    subject_subset_check(data, subj)
+
+    if(length(unique(data$ID)) > 1){
+
+      # Filter data based on subset of subjects
+      data <- data %>%
+        dplyr::filter(ID %in% subj)
+    }
+  }
+
+
+  #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+
+  # Grouping variables
+
+  grps = c("ID", "VISIT", "GROUP")
+  grps = grps[which( grps %in% colnames(data) == TRUE)]
+
+  #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+  # Calculation of sleep counts table (table 1) based on WAKE column
+
+  sleep_counts = data %>%
+    dplyr::group_by_at(dplyr::vars(grps)) %>%
+    dplyr::summarize(N_total = dplyr::n(), # Total number of readings
+                     N_wake = sum(WAKE == 1), # Number of total readings while awake
+                     N_sleep = sum(WAKE == 0), # Number of total readings while asleep
+                     HRS_wake = dplyr::n_distinct(HOUR[WAKE == 1]), # Number of unique hours recorded while awake (for wSD calc)
+                     HRS_sleep = dplyr::n_distinct(HOUR[WAKE == 0]), # Number of unique hours recorded during sleep (for wSD calc)
+                     .groups = 'drop')
 
 
 
-      # ******************************************************************************************************************************* #
-      #                                               BP Sleep Periods
-      # ******************************************************************************************************************************* #
+  # ******************************************************************************************************************************* #
+  #                                               BP Sleep Periods
+  # ******************************************************************************************************************************* #
 
-      # Order time from oldest to newest
-      data = data[order(data$DATE_TIME), ]
+  # Order time from oldest to newest
+  data = data[order(data$DATE_TIME), ]
 
-      # Calculate all summaries on SBP and DBP using get_summaries_SBP_DBP
-      output = data %>%
-        dplyr::group_by_at(dplyr::vars(grps)) %>%
-        dplyr::summarise(get_summaries_SBP_DBP(data.frame(ID, DATE_TIME, SBP, DBP, WAKE)))
+  # Calculate all summaries on SBP and DBP using get_summaries_SBP_DBP
+  output = data %>%
+    dplyr::group_by_at(dplyr::vars(grps)) %>%
+    dplyr::summarise(get_summaries_SBP_DBP(data.frame(ID, DATE_TIME, SBP, DBP, WAKE)))
 
-      # Extract ids of grouping variables in output
-      idgrps = which(names(output) %in% grps)
+  # Extract ids of grouping variables in output
+  idgrps = which(names(output) %in% grps)
 
-      #########################
-      ##    Systolic (SBP)   ##
-      #########################
+  #########################
+  ##    Systolic (SBP)   ##
+  #########################
 
-      # Extract positions of SBP summaries in output
-      idSBP = grep("SBP", names(output))
+  # Extract positions of SBP summaries in output
+  idSBP = grep("SBP", names(output))
 
-      # Create SBP table
-      sleep_summary_SBP = output[ , c(idgrps, idSBP)]
+  # Create SBP table
+  sleep_summary_SBP = output[ , c(idgrps, idSBP)]
 
-      ##########################
-      ##    Diastolic (DBP)   ##
-      ##########################
+  ##########################
+  ##    Diastolic (DBP)   ##
+  ##########################
 
-      # Extract positions of DBP summaries in output
-      idDBP = grep("DBP", names(output))
+  # Extract positions of DBP summaries in output
+  idDBP = grep("DBP", names(output))
 
-      # Create DBP table
-      sleep_summary_DBP = output[ , c(idgrps, idDBP)]
+  # Create DBP table
+  sleep_summary_DBP = output[ , c(idgrps, idDBP)]
 
 
-      #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
-      ### Calculation of Sleep Metrics (Table 4) based on SBP/DBP sleep summaries (Tables 2-3)
-      ####################################
+  #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+  ### Calculation of Sleep Metrics (Table 4) based on SBP/DBP sleep summaries (Tables 2-3)
+  ####################################
 
-      # Join the sleep_summary_SBP/DBP with the sleep counts to include the HRS_wake/sleep for the wSD calculation
-      sleep_summary_SBP_all <- suppressMessages(dplyr::left_join(sleep_summary_SBP, sleep_counts)) #suppressMessages ignores the "joining by: ..." message
-      sleep_summary_DBP_all <- suppressMessages(dplyr::left_join(sleep_summary_DBP, sleep_counts))
+  # Join the sleep_summary_SBP/DBP with the sleep counts to include the HRS_wake/sleep for the wSD calculation
+  sleep_summary_SBP_all <- suppressMessages(dplyr::left_join(sleep_summary_SBP, sleep_counts)) #suppressMessages ignores the "joining by: ..." message
+  sleep_summary_DBP_all <- suppressMessages(dplyr::left_join(sleep_summary_DBP, sleep_counts))
 
-      # Metrics based on SBP
-      sleep_metrics_SBP <- sleep_summary_SBP_all %>%
-        dplyr::group_by_at(dplyr::vars(grps)) %>%
-        dplyr::transmute(
-          # dip calculation (proportion)
-          dip_calc_SBP = 1 - sleep_SBP / wake_SBP,
-          # "Nocturnal BP Fall" (Kario et al 2002)
-          noct_fall_SBP = presleep_SBP / lowest_SBP,
-          # Sleep-Trough MBPS (Kario et al 2002)
-          ST_mbps_SBP = postwake_SBP - lowest_SBP,
-          # Prewake MBPS (Kario et al 2002)
-          PW_mbps_SBP = postwake_SBP - prewake_SBP,
-          # Morningness-Eveningness Average (Kario 2005)
-          ME_SBP_avg = (postwake_SBP + presleep_SBP) / 2,
-          # Morningness-Eveningness Difference (Kario 2005)
-          ME_SBP_diff = postwake_SBP - presleep_SBP,
-          # Weighted Standard Deviation (Bilo et al 2007)
-          wSD_SBP = ( ( (wake_SBP_sd * HRS_wake) + (sleep_SBP_sd * HRS_sleep) ) / (HRS_wake + HRS_sleep) )
-        )
+  # Metrics based on SBP
+  sleep_metrics_SBP <- sleep_summary_SBP_all %>%
+    dplyr::group_by_at(dplyr::vars(grps)) %>%
+    dplyr::transmute(
+      # dip calculation (proportion)
+      dip_calc_SBP = 1 - sleep_SBP / wake_SBP,
+      # "Nocturnal BP Fall" (Kario et al 2002)
+      noct_fall_SBP = presleep_SBP / lowest_SBP,
+      # Sleep-Trough MBPS (Kario et al 2002)
+      ST_mbps_SBP = postwake_SBP - lowest_SBP,
+      # Prewake MBPS (Kario et al 2002)
+      PW_mbps_SBP = postwake_SBP - prewake_SBP,
+      # Morningness-Eveningness Average (Kario 2005)
+      ME_SBP_avg = (postwake_SBP + presleep_SBP) / 2,
+      # Morningness-Eveningness Difference (Kario 2005)
+      ME_SBP_diff = postwake_SBP - presleep_SBP,
+      # Weighted Standard Deviation (Bilo et al 2007)
+      wSD_SBP = ( ( (wake_SBP_sd * HRS_wake) + (sleep_SBP_sd * HRS_sleep) ) / (HRS_wake + HRS_sleep) )
+    )
 
-      # Metrics based on DBP
-      sleep_metrics_DBP <- sleep_summary_DBP_all %>%
-        dplyr::group_by_at(dplyr::vars(grps)) %>%
-        dplyr::transmute(
-          # dip calculation (proportion)
-          dip_calc_DBP = 1 - sleep_DBP / wake_DBP,
-          # "Nocturnal BP Fall" (Kario et al 2002)
-          noct_fall_DBP = presleep_DBP / lowest_DBP,
-          # Sleep-Trough MBPS (Kario et al 2002)
-          ST_mbps_DBP = postwake_DBP - lowest_DBP,
-          # Prewake MBPS (Kario et al 2002)
-          PW_mbps_DBP = postwake_DBP - prewake_DBP,
-          # Morningness-Eveningness Average (Kario 2005)
-          ME_DBP_avg = (postwake_DBP + presleep_DBP) / 2,
-          # Morningness-Eveningness Difference (Kario 2005)
-          ME_DBP_diff = postwake_DBP - presleep_DBP,
-          # Weighted Standard Deviation (Bilo et al 2007)
-          wSD_DBP = ( ( (wake_DBP_sd * HRS_wake) + (sleep_DBP_sd * HRS_sleep) ) / (HRS_wake + HRS_sleep) )
-        )
+  # Metrics based on DBP
+  sleep_metrics_DBP <- sleep_summary_DBP_all %>%
+    dplyr::group_by_at(dplyr::vars(grps)) %>%
+    dplyr::transmute(
+      # dip calculation (proportion)
+      dip_calc_DBP = 1 - sleep_DBP / wake_DBP,
+      # "Nocturnal BP Fall" (Kario et al 2002)
+      noct_fall_DBP = presleep_DBP / lowest_DBP,
+      # Sleep-Trough MBPS (Kario et al 2002)
+      ST_mbps_DBP = postwake_DBP - lowest_DBP,
+      # Prewake MBPS (Kario et al 2002)
+      PW_mbps_DBP = postwake_DBP - prewake_DBP,
+      # Morningness-Eveningness Average (Kario 2005)
+      ME_DBP_avg = (postwake_DBP + presleep_DBP) / 2,
+      # Morningness-Eveningness Difference (Kario 2005)
+      ME_DBP_diff = postwake_DBP - presleep_DBP,
+      # Weighted Standard Deviation (Bilo et al 2007)
+      wSD_DBP = ( ( (wake_DBP_sd * HRS_wake) + (sleep_DBP_sd * HRS_sleep) ) / (HRS_wake + HRS_sleep) )
+    )
 
-      # Combine the two together
-      sleep_metrics <- dplyr::left_join(sleep_metrics_SBP, sleep_metrics_DBP, by = c(grps))
+  # Combine the two together
+  sleep_metrics <- dplyr::left_join(sleep_metrics_SBP, sleep_metrics_DBP, by = c(grps))
 
-      #
-      # # Weighted Standard Deviation (wSD)
-      # tmp1 <- sleep_summary_SBP %>%
-      #               dplyr::mutate( wSD_SBP = ( ( awake_SBP_sd * N_awake ) + ( sleep_SBP_sd * N_sleep ) ) / ( N_awake + N_sleep ) ) %>%
-      #               dplyr::select("wSD_SBP")
-      # tmp2 <- sleep_summary_DBP %>%
-      #               dplyr::mutate( wSD_DBP = ( ( awake_DBP_sd * N_awake ) + ( sleep_DBP_sd * N_sleep ) ) / ( N_awake + N_sleep ) ) %>%
-      #               dplyr::select("wSD_SBP")
-      #
-      # sleep_metrics <- dplyr::left_join(sleep_metrics, tmp1)
-      # sleep_metrics <- dplyr::left_join(sleep_metrics, tmp2)
-      #
+  #
+  # # Weighted Standard Deviation (wSD)
+  # tmp1 <- sleep_summary_SBP %>%
+  #               dplyr::mutate( wSD_SBP = ( ( awake_SBP_sd * N_awake ) + ( sleep_SBP_sd * N_sleep ) ) / ( N_awake + N_sleep ) ) %>%
+  #               dplyr::select("wSD_SBP")
+  # tmp2 <- sleep_summary_DBP %>%
+  #               dplyr::mutate( wSD_DBP = ( ( awake_DBP_sd * N_awake ) + ( sleep_DBP_sd * N_sleep ) ) / ( N_awake + N_sleep ) ) %>%
+  #               dplyr::select("wSD_SBP")
+  #
+  # sleep_metrics <- dplyr::left_join(sleep_metrics, tmp1)
+  # sleep_metrics <- dplyr::left_join(sleep_metrics, tmp2)
+  #
 
-      return(list("Sleep_Counts" = sleep_counts,
-                  "SBP_Sleep_Summary" = sleep_summary_SBP,
-                  "DBP_Sleep_Summary" = sleep_summary_DBP,
-                  "Sleep_Metrics" = sleep_metrics))
+  return(list("Sleep_Counts" = sleep_counts,
+              "SBP_Sleep_Summary" = sleep_summary_SBP,
+              "DBP_Sleep_Summary" = sleep_summary_DBP,
+              "Sleep_Metrics" = sleep_metrics))
 }
