@@ -39,8 +39,8 @@ The calculation of BP metrics related to sleep is based on averages of BP readin
 presleep or evening (2 hours before sleep start),
 prewake (2 hours before wake),
 postwake or morning (2 hours after wake),
-lowest (3 measurements centered at the minimal BP reading over sleep). T
-he function uses \code{WAKE} column to automatically allocate BP measurements to various periods. The following metrics are defined as a
+lowest (3 measurements centered at the minimal BP reading over sleep).
+The function uses \code{WAKE} column to automatically allocate BP measurements to various periods. The following metrics are defined as a
 function of the period averages (separately for SBP and DBP)
 
 \code{dip_calc} = 1 - mean_sleep_BP/mean_wake_BP (dip proportion)
