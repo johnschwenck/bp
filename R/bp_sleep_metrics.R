@@ -233,10 +233,16 @@ get_summaries_SBP_DBP <- function(data){
 }
 
 
-#' Blood Pressure Sleep Metrics
+#' Nocturnal Blood Pressure Metrics
 #'
-#' The \code{bp_sleep_metrics} function serves to calculate sleep-dependent metrics
+#' The \code{bp_sleep_metrics} function serves to calculate nocturnal metrics
 #' from relevant medical literature.
+#'
+#' NOTE: Any reference to "sleep" in the bp package refers to an individual's nocturnal period;
+#' "sleep" is used in an informal sense for intuitive purposes. Technically, from a clinical perspective,
+#' indication of sleep is currently obtained through means of EEG or other highly specialized equipment.
+#' For all intents and purposes, sleep in the context of this package refers to actigraphy-inferred
+#' nocturnal periods of rest.
 #'
 #' @param data User-supplied data set containing blood pressure data. Must
 #' contain a Systolic blood pressure (\code{SBP}), Diastolic blood pressure (\code{DBP})

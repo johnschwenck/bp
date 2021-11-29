@@ -76,6 +76,12 @@ Nocturnal blood pressure decline is an indicator of an individual's natural circ
 have shown that individuals with diminished circadian rhythms are more likely to exhibit target organ damage.
 There is a "U-shaped" relationship that exists among the magnitude of nocturnal blood pressure decline; the
 extreme dippers and the non-dippers (including reverse dippers) are both more prone to mortality risk than normal dippers.
+
+NOTE: Any reference to "sleep" in the bp package refers to an individual's nocturnal period;
+"sleep" is used in an informal sense for intuitive purposes. Technically, from a clinical perspective,
+indication of sleep is currently obtained through means of EEG or other highly specialized equipment.
+For all intents and purposes, sleep in the context of this package refers to actigraphy-inferred
+nocturnal periods of rest.
 }
 \examples{
 ## Load bp_hypnos

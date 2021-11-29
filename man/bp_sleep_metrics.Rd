@@ -2,7 +2,7 @@
 % Please edit documentation in R/bp_sleep_metrics.R
 \name{bp_sleep_metrics}
 \alias{bp_sleep_metrics}
-\title{Blood Pressure Sleep Metrics}
+\title{Nocturnal Blood Pressure Metrics}
 \usage{
 bp_sleep_metrics(data, subj = NULL)
 }
@@ -31,10 +31,17 @@ value during sleep}
 \item{[[4]]}{BP metrics associated with sleep as defined above, separately for SBP and DBP}
 }
 \description{
-The \code{bp_sleep_metrics} function serves to calculate sleep-dependent metrics
+The \code{bp_sleep_metrics} function serves to calculate nocturnal metrics
 from relevant medical literature.
 }
 \details{
+NOTE: Any reference to "sleep" in the bp package refers to an individual's nocturnal period;
+"sleep" is used in an informal sense for intuitive purposes. Technically, from a clinical perspective,
+indication of sleep is currently obtained through means of EEG or other highly specialized equipment.
+For all intents and purposes, sleep in the context of this package refers to actigraphy-inferred
+nocturnal periods of rest.
+
+
 The calculation of BP metrics related to sleep is based on averages of BP readings from four periods as identified in Kairo et al. (2003):
 presleep or evening (2 hours before sleep start),
 prewake (2 hours before wake),

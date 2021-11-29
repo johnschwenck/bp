@@ -11,6 +11,12 @@
 #' There is a "U-shaped" relationship that exists among the magnitude of nocturnal blood pressure decline; the
 #' extreme dippers and the non-dippers (including reverse dippers) are both more prone to mortality risk than normal dippers.
 #'
+#' NOTE: Any reference to "sleep" in the bp package refers to an individual's nocturnal period;
+#' "sleep" is used in an informal sense for intuitive purposes. Technically, from a clinical perspective,
+#' indication of sleep is currently obtained through means of EEG or other highly specialized equipment.
+#' For all intents and purposes, sleep in the context of this package refers to actigraphy-inferred
+#' nocturnal periods of rest.
+#'
 #' @param data
 #' User-supplied data set that must contain \code{SBP}, \code{DBP}, and either \code{DATE_TIME} or \code{WAKE}
 #' columns in order to distinguish between sleep and awake

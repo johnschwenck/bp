@@ -1,5 +1,14 @@
 #' Plot of Dipping Classifications
 #'
+#' @description
+#' Graphical visualization of the dip_calc output for categories of dipping percentages.
+#'
+#' NOTE: Any reference to "sleep" in the bp package refers to an individual's nocturnal period;
+#' "sleep" is used in an informal sense for intuitive purposes. Technically, from a clinical perspective,
+#' indication of sleep is currently obtained through means of EEG or other highly specialized equipment.
+#' For all intents and purposes, sleep in the context of this package refers to actigraphy-inferred
+#' nocturnal periods of rest.
+#'
 #' @param data
 #' User-supplied data set that must contain \code{SBP}, \code{DBP}, and either \code{DATE_TIME} or \code{WAKE}
 #' columns in order to distinguish between sleep and awake
