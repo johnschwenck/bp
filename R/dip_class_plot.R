@@ -99,6 +99,9 @@ dip_class_plot <- function(data, subj = NULL, dip_thresh = 0.1, extreme_thresh =
 
   }
 
+  # Remove NA values from data
+  data <- data %>% stats::na.omit()
+
   # Check compatibility of dip_thresh and extreme_thresh if not default (user-specified)
   if(dip_thresh != 0.10 | extreme_thresh != 0.20){
 

@@ -184,7 +184,7 @@ dip_calc <- function(data, sleep_start_end = NULL, dip_thresh = 0.10, extreme_th
 
   # Group data by whichever of the three above variables are present in the data
   dip <- data %>%
-    dplyr::group_by_at(dplyr::vars(grps) ) %>%
+    dplyr::group_by_at(dplyr::vars(grps) ) %>% stats::na.omit() %>%
     dplyr::summarise(avg_SBP = mean(SBP),
                      avg_DBP = mean(DBP),
                      N = dplyr::n() ) %>%
