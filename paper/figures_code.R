@@ -1,13 +1,23 @@
-#   bp: Blood Pressure Analysis in R -  Code  for Figures  ####
+############################################################
+#                                                          #
+#   bp: Blood Pressure Analysis in R -  Code  for Figures  #
 #        Authors: John Schwenck & Irina Gaynanova          #
 #                                                          #
 #       Plots, Figures, and Output for the Article         #
+#                  Replication Script                      #
+#                                                          #
+############################################################
 
-# Load bp package
+
+# Load bp and other necessary packages
 library(bp)
+library(ggplot2)
+library(patchwork)
+library(ggforce)
+library(dplyr)
+
 
 ### Section 3: Data Processing ##################
-
 
 # Names of JHS data set
 names(bp_jhs)
@@ -17,25 +27,26 @@ names(bp_hypnos)
 
 # Process JHS data set
 jhs_proc <- process_data(bp_jhs,
-                         bp_type = "HBPM",
+                         bp_type = "hbpm",
                          sbp = "Sys.mmHg.",
                          dbp = "Dias.mmHg.",
                          date_time = "DateTime",
-                         hr = "pulse.bpm.")
+                         hr = "Pulse.bpm.")
 
 # Process HYPNOS data set
 hypnos_proc <- process_data(bp_hypnos,
                             bp_type = "abpm",
-                            sbp = "syst",
-                            dbp = "diast",
-                            date_time = "date.time",
-                            hr = "hr",
+                            sbp = "SYST",
+                            dbp = "DIAST",
+                            date_time = "DATE.TIME",
+                            hr = "HR",
                             pp = "PP",
-                            map = "MaP",
-                            rpp = "Rpp",
-                            id = "id",
-                            visit = "Visit",
-                            wake = "wake")
+                            map = "MAP",
+                            rpp = "RPP",
+                            id = "ID",
+                            visit = "VISIT",
+                            wake = "WAKE")
+
 
 # Names of processed JHS data
 names(jhs_proc)
@@ -44,7 +55,9 @@ names(jhs_proc)
 names(hypnos_proc)
 
 
-### Section 4: Metrics and Visualizations ##########
+##### Section 4: Metrics and Visualizations ##########
+
+# Section 4.1
 
 # Figure 1: Scatter plot of blood pressure measurements
 p1 = bp_scatter(hypnos_proc,
@@ -55,10 +68,12 @@ pdf(file = "paper/scatterBP_hyp.pdf", width = 11, height = 8)
 print(p1)
 dev.off()
 
+# Section 4.2
+
+# ARV Calculation
+bp_arv(jhs_proc)
 
 # Figure 2: Sleep Periods identification
-# NOTE: Sleep period labels on figure in paper were added with photo editing software
-library(ggplot2)
 
 hypnos_proc$WAKE = as.factor(hypnos_proc$WAKE)
 
@@ -73,7 +88,7 @@ p2 = ggplot2::ggplot(fig2_data, ggplot2::aes(x = HOUR, y = SBP)) +
 p2 = p2 +
   geom_text(aes(x = 4, y = 158, label = 'Wake'), color = 'black', hjust = 0, vjust = 0, size = 8, check_overlap = TRUE) +
   geom_text(aes(x = 19, y = 158, label = 'Wake'), color = 'black', hjust = 0, vjust = 0, size = 8, check_overlap = TRUE) +
-  geom_text(aes(x = 13, y = 158, label = 'Sleep'), color = 'black', hjust = 0, vjust = 0, size = 8, check_overlap = TRUE)
+  geom_text(aes(x = 13, y = 158, label = 'Nocturnal'), color = 'black', hjust = 0, vjust = 0, size = 8, check_overlap = TRUE)
 
 p2 = p2 +
   annotate("rect", xmin = 9.5,
@@ -105,36 +120,48 @@ pdf(file = "paper/BP_sleep_periods.pdf", width = 11, height = 5)
 print(p2)
 dev.off()
 
+
+
 ### Section 5: Case Study I - JHS Data ################
 
 
 ## Section 5.1: Data Aggregation
 
+# Repeated from Section 3 for comparison purposes of function arguments
+# jhs_proc <- process_data(bp_jhs,
+#                          bp_type = "hbpm",
+#                          sbp = "Sys.mmHg.",
+#                          dbp = "Dias.mmHg.",
+#                          date_time = "DateTime",
+#                          hr = "Pulse.bpm.")
+
 # Display a few rows of selected columns without averaging
-head(jhs_proc[4:14, c(1:8, 13)], 10)
+head(jhs_proc[4:14, c("SBP", "DBP", "BP_CLASS", "ID", "GROUP", "DATE_TIME", "DATE", "DAY_OF_WEEK", "TIME_OF_DAY")], 10)
 
 # Re-process data but aggregate values
 jhs_proc_agg <- process_data(bp_jhs,
-                               sbp = "Sys.mmHg.",
-                               dbp = "Dias.mmHg.",
-                               date_time = "DateTime",
-                               hr = "pulse.bpm.",
-                               agg = TRUE)
+                             bp_type = "hbpm",
+                             sbp = "Sys.mmHg.",
+                             dbp = "Dias.mmHg.",
+                             date_time = "DateTime",
+                             hr = "pulse.bpm.",
+                             agg = TRUE)
 
 # Display averaged ones
-head(jhs_proc_agg[4:14, c(1:6, 8:9, 13:14)], 10)
+head(jhs_proc_agg[4:14, c("SBP", "DBP", "BP_CLASS", "ID", "GROUP", "DATE_TIME", "DATE", "DAY_OF_WEEK", "TIME_OF_DAY")], 10)
 
 # Re-process data but aggregate AND collapse values
 jhs_proc_agg_collapsed <- process_data(bp_jhs,
+                                       bp_type = "hbpm",
                                        sbp = "Sys.mmHg.",
                                        dbp = "Dias.mmHg.",
                                        date_time = "DateTime",
-                                       hr = "pulse.bpm.",
+                                       hr = "Pulse.bpm.",
                                        agg = TRUE,
                                        collapse_df = TRUE)
 
 # Display a few rows of selected columns with averaging AND collapse the data
-head(jhs_proc_agg_collapsed[3:14, c(1:6, 8:9, 13:14)], 6)
+head(jhs_proc_agg_collapsed[3:14, c("SBP", "DBP", "BP_CLASS", "ID", "GROUP", "DATE_TIME", "DATE", "DAY_OF_WEEK", "HOUR", "TIME_OF_DAY")], 6)
 
 
 ## Section 5.2: End-of-Day Determination
@@ -148,7 +175,7 @@ jhs_proc_eod <- process_data(bp_jhs,
                              eod = "0600")
 
 # Display the data with Dates adjusted for this cutoff
-head(jhs_proc_eod[4:14, c(1:8, 13)], 10)
+head(jhs_proc_eod[4:14, c("SBP", "DBP", "BP_CLASS", "ID", "GROUP", "DATE_TIME", "DATE", "DAY_OF_WEEK", "TIME_OF_DAY")], 10)
 
 ## Section 5.3: Generating a Report
 
@@ -174,11 +201,13 @@ dev.off()
 
 
 ## Section 6.1 - Time Series Plots
-library(patchwork)
 
 # Figure 4: time series plots
 # Time series plots for subjects 70435 and 70439
-out <- bp_ts_plots(hypnos_proc, first_hour = 11, wrap_var = 'visit', subj = c('70435', '70439') )
+out <- bp_ts_plots(hypnos_proc,
+                   first_hour = 11,
+                   wrap_var = 'visit',
+                   subj = c('70435', '70439') )
 pdf(file = "paper/ts_plots_dt_side_by_side.pdf", width = 14, height = 4)
 out[[1]][[1]] + out[[1]][[2]]
 dev.off()
@@ -198,49 +227,49 @@ dip_calc(hypnos_proc, subj = '70439')
 # Identify the outlier value
 hypnos_proc %>%
   dplyr::filter(ID =='70439') %>%
-  dplyr::arrange(desc(SBP)) %>%
+  dplyr::arrange(desc(DBP)) %>%
   head(3) %>%
   dplyr::select(SBP, DBP, BP_CLASS, DATE_TIME, MAP, HR, RPP, WAKE, VISIT)
 
 # Re-calculated HYPNOS data after screening out the outlier value
 hypnos_proc_recalc <- process_data(bp_hypnos,
                                    bp_type = "abpm",
-                                   sbp = "syst",
-                                   dbp = "diast",
-                                   date_time = "date.time",
-                                   hr = "hr",
+                                   sbp = "SYST",
+                                   dbp = "DIAST",
+                                   date_time = "DATE.TIME",
+                                   hr = "HR",
                                    pp = "PP",
-                                   map = "MaP",
-                                   rpp = "Rpp",
-                                   id = "id",
-                                   visit = "Visit",
-                                   wake = "wake",
+                                   map = "MAP",
+                                   rpp = "RPP",
+                                   id = "ID",
+                                   visit = "VISIT",
+                                   wake = "WAKE",
                                    DUL = 130)
 
 # Run dip calc again but with filtered HYPNOS data
 dip_calc(hypnos_proc_recalc, subj = c('70439') )
 
 # Figure 5 - dipping plots
-library(ggforce)
+
 # Dipping category plots before and after removing outlier
 p1 = dip_class_plot(hypnos_proc, subj = c('70435','70439'))
 p2 = dip_class_plot(hypnos_proc_recalc, subj = c('70435','70439'))
 
-p1 = p1 + geom_circle(aes(x0 = -4.4, y0 = 9.6, r = 3), inherit.aes = FALSE, col = "orange", size = 1.5)
-p2 = p2 + geom_circle(aes(x0 = -5.5, y0 = 2.7, r = 3), inherit.aes = FALSE, col = "orange", size = 1.5)
+p1 = p1 + ggforce::geom_circle(aes(x0 = -4.4, y0 = 9.6, r = 3), inherit.aes = FALSE, col = "orange", size = 1.5)
+p2 = p2 + ggforce::geom_circle(aes(x0 = -5.5, y0 = 2.7, r = 3), inherit.aes = FALSE, col = "orange", size = 1.5)
 
 pdf(file = "paper/side-by-side-dip-calc.pdf", width = 12, height = 6)
 p1 + p2
 dev.off()
 
-## Section 6.3 - Sleep-period Metrics
-bp_sleep_metrics(hypnos_proc_recalc, subj = c('70435','70439'))
+## Section 6.3 - Nocturnal Metrics
+# bp_sleep_metrics(hypnos_proc_recalc, subj = c('70435','70439'))
 
-# SBP-related sleep metrics
-bp_sleep_metrics(hypnos_proc_recalc, subj = c('70435','70439'))[[4]][,c(1:10)]
+# SBP-related Nocturnal metrics
+# bp_sleep_metrics(hypnos_proc_recalc, subj = c('70435','70439'))[[4]][,c(1:10)]
 
-# DBP-related sleep metrics
-bp_sleep_metrics(hypnos_proc_recalc, subj = c('70435','70439'))[[4]][,c(1:3, 11:17)]
+# DBP-related Nocturnal metrics
+# bp_sleep_metrics(hypnos_proc_recalc, subj = c('70435','70439'))[[4]][,c(1:3, 11:17)]
 
 
 # Section 6.4 - Weighted Standard Deviation (wSD)
