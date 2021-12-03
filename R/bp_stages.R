@@ -45,6 +45,9 @@
 #' paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure:
 #' Methodological Aspects
 #'
+#' @param adj_sbp_dbp Logical indicator to dictate whether or not to run helper functions that adjust / process
+#' SBP & DBP columns in supplied data set. Default set to: \code{adj_sbp_dbp = TRUE}
+#'
 #' @return A dataframe with additional columns corresponding to the stages of high blood pressure and the
 #' supplementary SBP / DBP categories
 #'
@@ -68,7 +71,7 @@
 #'
 #' bp_stages(bp_jhs, sbp = "sys.mmhg.", dbp = "dias.mmhg.")
 #'
-bp_stages <- function(data, sbp, dbp, inc_low = TRUE, inc_crisis = TRUE, data_screen = TRUE, SUL = 240, SLL = 50, DUL = 140, DLL = 40){
+bp_stages <- function(data, sbp, dbp, inc_low = TRUE, inc_crisis = TRUE, data_screen = TRUE, SUL = 240, SLL = 50, DUL = 140, DLL = 40, adj_sbp_dbp = TRUE){
 
   # BP Categories / Stages
   # Only require SBP and DBP
@@ -79,11 +82,16 @@ bp_stages <- function(data, sbp, dbp, inc_low = TRUE, inc_crisis = TRUE, data_sc
   # Convert all column names to upper case for consistency
   colnames(data) <- toupper(colnames(data))
 
-  # Adjust SBP
-  data <- sbp_adj(data = data, sbp = sbp, data_screen = data_screen, SUL = SUL, SLL = SLL)
+  # SBP / DBP Adjustments
+  if(adj_sbp_dbp == TRUE){
 
-  # Adjust DBP
-  data <- dbp_adj(data = data, dbp = dbp, data_screen = data_screen, DUL = DUL, DLL = DLL)
+      # Adjust SBP
+      data <- sbp_adj(data = data, sbp = sbp, data_screen = data_screen, SUL = SUL, SLL = SLL)
+
+      # Adjust DBP
+      data <- dbp_adj(data = data, dbp = dbp, data_screen = data_screen, DUL = DUL, DLL = DLL)
+
+  }
 
   # Compatibility Check for user-supplied stages if applicable
   #sbp_stages <- stage_check(sbp_stages_alt, dbp_stages_alt)[[1]]

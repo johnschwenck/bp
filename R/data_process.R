@@ -331,24 +331,14 @@ process_data <- function(data,
 
         }
 
-        # SBP Adjustment, DBP Adjustment, and BP Stages
-        data <- bp_stages(data = data,
-                          sbp = sbp,
-                          dbp = dbp,
-                          inc_low = inc_low,
-                          inc_crisis = inc_crisis,
-                          data_screen = data_screen,
-                          SUL = SUL,
-                          SLL = SLL,
-                          DUL = DUL,
-                          DLL = DLL)
+        # Convert all column names to upper case for consistency
+        colnames(data) <- toupper(colnames(data))
 
+        # Adjust SBP
+        data <- sbp_adj(data = data, sbp = sbp, data_screen = data_screen, SUL = SUL, SLL = SLL)
 
-        # Move Classification columns to correct positions
-        data <- data %>%
-          dplyr::relocate(BP_CLASS, .after = DBP) #%>%
-        #dplyr::relocate(SBP_CATEGORY, .after = BP_CLASS) %>%
-        #dplyr::relocate(DBP_CATEGORY, .after = SBP_CATEGORY)
+        # Adjust DBP
+        data <- dbp_adj(data = data, dbp = dbp, data_screen = data_screen, DUL = DUL, DLL = DLL)
 
         # Adjust ID
         data <- id_adj(data = data, id = id)
@@ -409,7 +399,25 @@ process_data <- function(data,
 
         }
 
+        # SBP Adjustment, DBP Adjustment, and BP Stages
+        data <- bp_stages(data = data,
+                          sbp = sbp,
+                          dbp = dbp,
+                          inc_low = inc_low,
+                          inc_crisis = inc_crisis,
+                          data_screen = data_screen,
+                          SUL = SUL,
+                          SLL = SLL,
+                          DUL = DUL,
+                          DLL = DLL,
+                          adj_sbp_dbp = FALSE)
 
+
+        # Move Classification columns to correct positions
+        data <- data %>%
+          dplyr::relocate(BP_CLASS, .after = DBP) #%>%
+        #dplyr::relocate(SBP_CATEGORY, .after = BP_CLASS) %>%
+        #dplyr::relocate(DBP_CATEGORY, .after = SBP_CATEGORY)
 
   }
 
