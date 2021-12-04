@@ -40,8 +40,15 @@
     - bp_ghana
     - bp_rats
     
-    
 ### Bug Fixes:
 * Set UTC time zone for bp_jhs for consistency of time conversion across systems
 * More flexible output of bp_report for either direct plotting or saving grob object for later
 * Renamed hypnos_data.rda to bp_hypnos.rda for consistency
+
+    
+# bp 2.0.1
+* Minor bug fixes related to user-supplied data with missing values
+    - Adjustments to process_data function (data_screen issue, various back-end helper functions, etc)
+    - Omits NA values in various metric calculations and nocturnal metrics
+    - Fixed various plotting issues
+* Corrected medical references surrounding sleep vs nocturnal language
