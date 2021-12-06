@@ -115,5 +115,5 @@ data_hypnos <- bp::process_data(bp::bp_hypnos,
                                           dbp = 'diast',
                                     date_time = 'date.time')
 
-bp::bp_ts_plots(data_hypnos, wrap_var = 'visit')
+bp::bp_ts_plots(data_hypnos, wrap_var = 'visit', subj = '70435')
 }

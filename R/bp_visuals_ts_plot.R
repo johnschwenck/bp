@@ -96,7 +96,7 @@
 #'                                           dbp = 'diast',
 #'                                     date_time = 'date.time')
 #'
-#' bp::bp_ts_plots(data_hypnos, wrap_var = 'visit')
+#' bp::bp_ts_plots(data_hypnos, wrap_var = 'visit', subj = '70435')
 bp_ts_plots <- function(data, index = NULL, subj = NULL, first_hour = 0, rotate_xlab = FALSE, wrap_var = NULL, wrap_row = NULL, wrap_col = NULL, method = NULL, formula = NULL){
 
   # All data sets must have ID, SBP, DBP
