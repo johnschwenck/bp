@@ -16,6 +16,8 @@ library(patchwork)
 library(ggforce)
 library(dplyr)
 
+# Path to save output (default set to "paper/" to reflect path within package). Change this to desired folder location
+path <- "paper/"
 
 ### Section 3: Data Processing ##################
 
@@ -64,7 +66,8 @@ p1 = bp_scatter(hypnos_proc,
                 subj = '70435',
                 group_var = "VISIT",
                 wrap_var = "TIME_OF_DAY")
-pdf(file = "paper/scatterBP_hyp.pdf", width = 11, height = 8)
+
+pdf(file = paste(path,"scatterBP_hyp.pdf", sep = ""), width = 11, height = 8)
 print(p1)
 dev.off()
 
@@ -116,7 +119,7 @@ p2 = p2 +
   geom_text(aes(x = 15, y = 136, label = 'Prewake BP'), color = 'black', hjust = 0, vjust = 0, size = 4, check_overlap = TRUE) +
   geom_text(aes(x = 17.5, y = 141, label = 'Postwake BP'), color = 'black', hjust = 0, vjust = 0, size = 4, check_overlap = TRUE)
 
-pdf(file = "paper/BP_sleep_periods.pdf", width = 11, height = 5)
+pdf(file = paste(path,"BP_sleep_periods.pdf", sep = ""), width = 11, height = 5)
 print(p2)
 dev.off()
 
@@ -192,7 +195,8 @@ jhs_proc_report <- process_data(bp_jhs,
 
 # Display the report
 out = bp_report(jhs_proc_report, group_var = "TIME_OF_DAY", save_report = FALSE)
-pdf(file = "paper/paper_report.pdf", width = 14, height = 9)
+
+pdf(file = paste(path,"paper_report.pdf", sep = ""), width = 14, height = 9)
 gridExtra::grid.arrange(out)
 dev.off()
 
@@ -208,11 +212,12 @@ out <- bp_ts_plots(hypnos_proc,
                    first_hour = 11,
                    wrap_var = 'visit',
                    subj = c('70435', '70439') )
-pdf(file = "paper/ts_plots_dt_side_by_side.pdf", width = 14, height = 4)
+
+pdf(file = paste(path,"ts_plots_dt_side_by_side.pdf", sep = ""), width = 14, height = 4)
 out[[1]][[1]] + out[[1]][[2]]
 dev.off()
 
-pdf(file = "paper/ts_plots_hour_side_by_side.pdf", width = 14, height = 4)
+pdf(file = paste(path,"ts_plots_hour_side_by_side.pdf", sep = ""), width = 14, height = 4)
 out[[2]][[1]] + out[[2]][[2]]
 dev.off()
 
@@ -258,7 +263,7 @@ p2 = dip_class_plot(hypnos_proc_recalc, subj = c('70435','70439'))
 p1 = p1 + ggforce::geom_circle(aes(x0 = -4.4, y0 = 9.6, r = 3), inherit.aes = FALSE, col = "orange", size = 1.5)
 p2 = p2 + ggforce::geom_circle(aes(x0 = -5.5, y0 = 2.7, r = 3), inherit.aes = FALSE, col = "orange", size = 1.5)
 
-pdf(file = "paper/side-by-side-dip-calc.pdf", width = 12, height = 6)
+pdf(file = paste(path,"side-by-side-dip-calc.pdf", sep = ""), width = 12, height = 6)
 p1 + p2
 dev.off()
 
@@ -286,4 +291,7 @@ cbind(
   bp_stats(hypnos_proc, subj = c('70439'), inc_wake = F)[,c(8:9)]
 )
 
+
+# Run session info
+sessionInfo()
 
