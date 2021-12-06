@@ -130,6 +130,7 @@ jhs_proc <- process_data(bp_jhs,
                          hr = "pulse.bpm.")
 rm(bp_hypnos, bp_jhs)
 
+\dontrun{
 # Single-subject Report
 # save_report = FALSE for illustrative purposes
 # plot = TRUE will automatically generate a plot
@@ -140,4 +141,5 @@ bp_report(jhs_proc, save_report = FALSE, plot = TRUE)
 # plot = FALSE will suppress the plot output and return a grob object
 out = bp_report(hyp_proc, group_var = 'VISIT', save_report = FALSE, plot = FALSE)
 gridExtra::grid.arrange(out)
+}
 }

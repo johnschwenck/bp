@@ -108,6 +108,7 @@
 #'                          hr = "pulse.bpm.")
 #' rm(bp_hypnos, bp_jhs)
 #'
+#'\dontrun{
 #' # Single-subject Report
 #' # save_report = FALSE for illustrative purposes
 #' # plot = TRUE will automatically generate a plot
@@ -118,6 +119,7 @@
 #' # plot = FALSE will suppress the plot output and return a grob object
 #' out = bp_report(hyp_proc, group_var = 'VISIT', save_report = FALSE, plot = FALSE)
 #' gridExtra::grid.arrange(out)
+#' }
 bp_report <- function(data,
                       subj = NULL,
                       inc_low = TRUE,
