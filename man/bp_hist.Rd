@@ -4,7 +4,7 @@
 \alias{bp_hist}
 \title{Blood Pressure Histograms}
 \usage{
-bp_hist(data, subj = NULL)
+bp_hist(data, subj = NULL, bins = 30, na.rm = TRUE)
 }
 \arguments{
 \item{data}{A processed dataframe resulting from the \code{process_data} function that
@@ -14,6 +14,11 @@ contains the \code{SBP}, \code{DBP}, \code{SBP_CATEGORY}, and \code{DBP_CATEGORY
 from the \code{ID} column of the supplied data set. The \code{subj} argument can be a single
 value or a vector of elements. The input type should be character, but the function will
 comply with integers so long as they are all present in the \code{ID} column of the data.}
+
+\item{bins}{An integer specifying how many bins to use for histogram plots. This is a ggplot parameter; default value set to 30}
+
+\item{na.rm}{An logical value specifying whether or not to remove empty values from data frame.
+This is a ggplot parameter; default value set to TRUE.}
 }
 \value{
 A list containing four objects: three histogram visual graphics corresponding to

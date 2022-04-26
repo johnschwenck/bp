@@ -12,6 +12,10 @@
 #' value or a vector of elements. The input type should be character, but the function will
 #' comply with integers so long as they are all present in the \code{ID} column of the data.
 #'
+#' @param bins An integer specifying how many bins to use for histogram plots. This is a ggplot parameter; default value set to 30
+#'
+#' @param na.rm An logical value specifying whether or not to remove empty values from data frame.
+#' This is a ggplot parameter; default value set to TRUE.
 #'
 #' @return A list containing four objects: three histogram visual graphics corresponding to
 #' the SBP / DBP totals, SBP frequency, and DBP frequency, and a fourth list element

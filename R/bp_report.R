@@ -80,6 +80,8 @@
 #'
 #' @param plot A logical value indicating whether to automatically produce the plot of bp_report, or suppress the output. The default value is TRUE. If false, the returned object is a grob that can be plotted using \code{\link{grid.arrange}}
 #'
+#' @param hist_bins An integer specifying how many bins to use for histogram plots. This is a ggplot parameter; default value set to 30
+#'
 #' @return If \code{plot = TRUE}, the function produces a plot of BP report that contains scatterplot of BP values by stages (see \code{\link{bp_scatter}}), histograms of BP values by stages (see \code{\link{bp_hist}}) and frequency tables of BP values by stages and day of the week/time of the day (see \code{\link{dow_tod_plots}}). If \code{plot = FALSE}, the function returns the grob object that can be plotted later using \code{\link{grid.arrange}}. If \code{save_report = TRUE}, the report will be automatically saved at the current working directory (can be checked using \code{getwd()}) or at specified file path.
 #'
 #' @export
@@ -133,7 +135,8 @@ bp_report <- function(data,
                       filetype = "pdf",
                       units = "in",
                       scale = 1.25,
-                      plot = TRUE){
+                      plot = TRUE,
+                      hist_bins = 30){
 
 
   ######################################################################################
@@ -188,7 +191,7 @@ bp_report <- function(data,
   # Run functions once to save time
   dow_tod_plots_all <- dow_tod_plots(data, subj = subj) # requires SBP, DBP, Weekday, Time_of_Day, SBP_Category, DBP_Category
   scat_all <- bp_scatter(data, subj = subj, inc_low = inc_low, inc_crisis = inc_crisis, group_var = group_var) # requires SBP, DBP, possibly VISIT
-  hist_all <- bp_hist(data, subj = subj) # requires SBP, DBP, SBP_Category, DBP_Category
+  hist_all <- bp_hist(data, subj = subj, bins = hist_bins) # requires SBP, DBP, SBP_Category, DBP_Category
 
 
   # Scatterplot combine with legend

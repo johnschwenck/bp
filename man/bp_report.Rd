@@ -18,7 +18,8 @@ bp_report(
   filetype = "pdf",
   units = "in",
   scale = 1.25,
-  plot = TRUE
+  plot = TRUE,
+  hist_bins = 30
 )
 }
 \arguments{
@@ -98,6 +99,8 @@ millimeters ("mm") are also available.}
 \item{scale}{A multiplicative scaling factor for the report output.}
 
 \item{plot}{A logical value indicating whether to automatically produce the plot of bp_report, or suppress the output. The default value is TRUE. If false, the returned object is a grob that can be plotted using \code{\link{grid.arrange}}}
+
+\item{hist_bins}{An integer specifying how many bins to use for histogram plots. This is a ggplot parameter; default value set to 30}
 }
 \value{
 If \code{plot = TRUE}, the function produces a plot of BP report that contains scatterplot of BP values by stages (see \code{\link{bp_scatter}}), histograms of BP values by stages (see \code{\link{bp_hist}}) and frequency tables of BP values by stages and day of the week/time of the day (see \code{\link{dow_tod_plots}}). If \code{plot = FALSE}, the function returns the grob object that can be plotted later using \code{\link{grid.arrange}}. If \code{save_report = TRUE}, the report will be automatically saved at the current working directory (can be checked using \code{getwd()}) or at specified file path.
