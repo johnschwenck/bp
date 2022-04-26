@@ -282,15 +282,8 @@ process_data <- function(data,
     }
   }
 
-
-  # Convert to data frame
-  if(!is.data.frame(data)){
-    stop('Error: did not convert to data frame\n')
-  }
-
   # Convert all column names to upper case for consistency
   colnames(data) <- toupper(colnames(data))
-
 
 
   # ************************************************************************************************************ #
