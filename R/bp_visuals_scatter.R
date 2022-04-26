@@ -181,6 +181,9 @@ bp_scatter <- function(data,
 
   }
 
+  # Remove NA / NULL values
+  data <- data[complete.cases(data[ , c('SBP', 'DBP')]), ]
+
   # Grouping Variable for WITHIN plots
   if(!is.null(group_var)){
 
