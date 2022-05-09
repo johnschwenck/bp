@@ -22,9 +22,10 @@
 #' argument is typically kept as FALSE, but the function will work regardless. Setting
 #' \code{inc_date = TRUE} will include these dates as a grouping level.
 #'
-#' @param bp_type Required argument. Determines whether to calculate magnitude for SBP
+#' @param bp_type Optional argument. Determines whether to calculate magnitude for SBP
 #' values or DBP values, or both. For \strong{both SBP and DBP} ARV values use bp_type = 'both',
 #' for \strong{SBP-only} use bp_type = 'sbp, and for \strong{DBP-only} use bp_type = 'dbp'.
+#' If no type specified, default will be set to 'both'
 #'
 #' @param add_groups Optional argument. Allows the user to aggregate the data by an
 #' additional "group" to further refine the output. The supplied input must be a
@@ -70,15 +71,15 @@
 #' data(bp_jhs)
 #'
 #' # Process bp_hypnos
-#' hypnos_proc <- process_data(bp_hypnos, sbp = "SYST", dbp = "DIAST", date_time = "date.time",
+#' hyp_proc <- process_data(bp_hypnos, sbp = "SYST", dbp = "DIAST", date_time = "date.time",
 #' id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp = "rpp")
 #' # Process bp_jhs data
 #' jhs_proc <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", date_time = "DateTime",
 #' hr = "Pulse.bpm.")
 #'
 #' # BP Stats Aggregated Table
-#' bp_stats(hypnos_proc, subj = c(70417, 70435), add_groups = c("SBP_Category"), bp_type = 'sbp')
-#' bp_stats(jhs_proc, add_groups = c("SBP_Category"), bp_type = 'both')
+#' bp_stats(hyp_proc, subj = c(70417, 70435), add_groups = c("SBP_Category"), bp_type = 'sbp')
+#' bp_stats(jhs_proc, add_groups = c("SBP_Category"))
 bp_stats <- function(data,
                      inc_date = FALSE,
                      subj = NULL,
@@ -88,10 +89,7 @@ bp_stats <- function(data,
 
   # Match argument for bp_type
   bp_type <- tolower(bp_type)
-  if(length(bp_type) > 1){
-    stop('bp_type can only take one character value of the following: both, sbp, or sbp')
-  }
-  type <- match.arg(bp_type)
+  bp_type <- match.arg(bp_type)
 
   ID = N = DATE = SBP_mean = DBP_mean = SBP_med = DBP_med = SD = SD_SBP = SD_DBP = CV_SBP = CV_DBP = SBP_max = DBP_max = SBP_min = DBP_min = SBP_range = DBP_range = . = NULL
   rm(list = c(ID, N, DATE, SBP_mean, DBP_mean, SBP_med, DBP_med, SD, SD_SBP, SD_DBP, CV_SBP, CV_DBP, SBP_range, DBP_range, SBP_max, SBP_min, DBP_max, DBP_min, .))
@@ -128,12 +126,12 @@ bp_stats <- function(data,
 
 
   # Pull in all necessary data from functions --> functions do not need subj argument because data is already filtered above
-  bp_center_tmp <- bp_center(data, inc_date = inc_date, add_groups = add_groups, inc_wake = inc_wake, bp_type = type)
-  arv_tmp       <- bp_arv(data, inc_date = inc_date, add_groups = add_groups, inc_wake = inc_wake, bp_type = type)
-  sv_tmp        <- bp_sv(data, inc_date = inc_date, add_groups = add_groups, inc_wake = inc_wake, bp_type = type)
-  cv_tmp        <- bp_cv(data, inc_date = inc_date, add_groups = add_groups, inc_wake = inc_wake, bp_type = type)
+  bp_center_tmp <- bp_center(data, inc_date = inc_date, add_groups = add_groups, inc_wake = inc_wake, bp_type = bp_type)
+  arv_tmp       <- bp_arv(data, inc_date = inc_date, add_groups = add_groups, inc_wake = inc_wake, bp_type = bp_type)
+  sv_tmp        <- bp_sv(data, inc_date = inc_date, add_groups = add_groups, inc_wake = inc_wake, bp_type = bp_type)
+  cv_tmp        <- bp_cv(data, inc_date = inc_date, add_groups = add_groups, inc_wake = inc_wake, bp_type = bp_type)
   bp_range_tmp  <- bp_range(data, inc_date = inc_date, add_groups = add_groups, inc_wake = inc_wake)
-  bp_mag_tmp    <- bp_mag(data, inc_date = inc_date, add_groups = add_groups, inc_wake = inc_wake, bp_type = type)
+  bp_mag_tmp    <- bp_mag(data, inc_date = inc_date, add_groups = add_groups, inc_wake = inc_wake, bp_type = bp_type)
 
   # Find all common column names to join by
   grps <- intersect(colnames(bp_center_tmp), colnames(arv_tmp))

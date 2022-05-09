@@ -20,9 +20,10 @@
 #' value or a vector of elements. The input type should be character, but the function will
 #' comply with integers so long as they are all present in the \code{ID} column of the data.
 #'
-#' @param bp_type Required argument. Determines whether to calculate ARV for SBP
+#' @param bp_type Optional argument. Determines whether to calculate ARV for SBP
 #' values or DBP values, or both. For \strong{both SBP and DBP} ARV values use bp_type = 'both',
 #' for \strong{SBP-only} use bp_type = 'sbp, and for \strong{DBP-only} use bp_type = 'dbp'.
+#' If no type specified, default will be set to 'both'
 #'
 #' @param add_groups Optional argument. Allows the user to aggregate the data by an
 #' additional "group" to further refine the output. The supplied input must be a
@@ -70,24 +71,21 @@
 #' data(bp_jhs)
 #'
 #' # Process bp_hypnos
-#' hypnos_proc <- process_data(bp_hypnos, sbp = "SYST", dbp = "DIAST", date_time = "date.time",
+#' hyp_proc <- process_data(bp_hypnos, sbp = "SYST", dbp = "DIAST", date_time = "date.time",
 #' id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp = "rpp")
 #' # Process bp_jhs data
 #' jhs_proc <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", date_time = "DateTime",
 #' hr = "Pulse.bpm.")
 #'
 #' # ARV Calculation
-#' bp_arv(hypnos_proc, add_groups = c("SBP_Category"), bp_type = 'sbp')
-#' bp_arv(jhs_proc, inc_date = TRUE, bp_type = 'both')
+#' bp_arv(hyp_proc, add_groups = c("SBP_Category"), bp_type = 'sbp')
+#' bp_arv(jhs_proc, inc_date = TRUE)
 #' @export
 bp_arv <- function(data, inc_date = FALSE, subj = NULL, bp_type = c('both', 'sbp', 'dbp'), add_groups = NULL, inc_wake = TRUE){
 
   # MAtch argument for bp_type
   bp_type <- tolower(bp_type)
-  if(length(bp_type) > 1){
-    stop('bp_type can only take one character value of the following: both, sbp, or sbp')
-  }
-  type <- match.arg(bp_type)
+  bp_type <- match.arg(bp_type)
 
   SBP = DBP = ID = . = NULL
   rm(list = c('SBP', 'DBP', 'ID', '.'))

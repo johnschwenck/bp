@@ -7,8 +7,10 @@
 #' contains the \code{SBP}, \code{DBP}, \code{DAY_OF_WEEK}, \code{Time_of_Day}, \code{SBP_CATEGORY},
 #' and \code{DBP_CATEGORY} columns.
 #'
-#' @param bp_type An indicator of the type of blood pressure data to output based on either
-#' 0 (both SBP and DBP), 1 (SBP only), or 2 (DBP only). Must be of type integer.
+#' @param bp_type Optional argument. Determines whether to calculate tables for SBP
+#' values or DBP values, or both. For \strong{both SBP and DBP} ARV values use bp_type = 'both',
+#' for \strong{SBP-only} use bp_type = 'sbp, and for \strong{DBP-only} use bp_type = 'dbp'.
+#' If no type specified, default will be set to 'both'
 #'
 #' @param bp_perc_margin An optional argument that determines which of the marginal totals
 #' to include in the raw count tables expressed as percentages. The argument can take on
@@ -26,7 +28,6 @@
 #'
 #'
 #' @return A list of table outputs for various subsets of the data based on which bp_type is selected
-#' (default is bp_type = 0 i.e. both SBP and DBP tables)
 #'
 #' @export
 #'
@@ -57,17 +58,19 @@
 #' bp_tables(jhs_proc)
 #' bp_tables(hyp_proc)
 #'
-bp_tables <- function(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin = 2, subj = NULL){
+bp_tables <- function(data, bp_type = c('both', 'sbp', 'dbp'), bp_perc_margin = NULL, wake_perc_margin = 2, subj = NULL){
 
   SBP_CATEGORY = DBP_CATEGORY = BP_CLASS = ID = Perc = NULL
   rm(list = c('SBP_CATEGORY', 'DBP_CATEGORY', 'BP_CLASS', 'ID', 'Perc'))
 
   # Check that bp_type, bp_perc_margin and wake_perc_margin have acceptable input
   ###############################################################################3
-  if(!(bp_type %in% c(0, 1, 2)) ){
-    stop('bp_type can only take on numeric values of either 0 (both SBP and DBP), 1 (SBP only), or 2 (DBP only).')
-  }
 
+  # Match argument for bp_type
+  bp_type <- tolower(bp_type)
+  bp_type <- match.arg(bp_type)
+
+  # Check bp_perc_margin argument
   if( !is.null(bp_perc_margin) ){
     if( !(bp_perc_margin %in% c(1, 2)) ){
       stop('bp_perc_margin can only take on either NULL (overall (no marginal) percentages), 1 (row margin percentages), or 2 (column margin percentages).')
@@ -103,9 +106,9 @@ bp_tables <- function(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin
   # 4) Contingency table of each bp type (SBP / DBP) and Time of Day
 
   # Number of Recordings in each BP stage and their respective percentages
-  stages_SBP <- data %>% dplyr::count(SBP_CATEGORY) %>% dplyr::mutate(Perc = prop.table((data %>% dplyr::count(SBP_CATEGORY))$n), bp_type = "SBP")
-  stages_DBP <- data %>% dplyr::count(DBP_CATEGORY) %>% dplyr::mutate(Perc = prop.table((data %>% dplyr::count(DBP_CATEGORY))$n), bp_type = "DBP")
-  stages_CLASS <- data %>% dplyr::count(BP_CLASS) %>% dplyr::mutate(Perc = prop.table((data %>% dplyr::count(BP_CLASS))$n), bp_type = "CLASS")
+  stages_SBP <- data %>% dplyr::count(SBP_CATEGORY) %>% dplyr::mutate(Perc = prop.table((data %>% dplyr::count(SBP_CATEGORY))$n), type = "SBP")
+  stages_DBP <- data %>% dplyr::count(DBP_CATEGORY) %>% dplyr::mutate(Perc = prop.table((data %>% dplyr::count(DBP_CATEGORY))$n), type = "DBP")
+  stages_CLASS <- data %>% dplyr::count(BP_CLASS) %>% dplyr::mutate(Perc = prop.table((data %>% dplyr::count(BP_CLASS))$n), type = "CLASS")
 
   # Rename the first column of each data frame to the same Category
   names(stages_SBP)[1] <- "Category"
@@ -206,7 +209,7 @@ bp_tables <- function(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin
 
 
   # Create list of tables to return
-  if(bp_type == 0){
+  if(bp_type == 'both'){
 
     # Both SBP and DBP tables
     bp_tables_list = list(
@@ -229,7 +232,7 @@ bp_tables <- function(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin
       'DBP_by_WAKE_perc'          = DBP_wake_perc
     )
 
-  }else if(bp_type == 1){
+  }else if(bp_type == 'sbp'){
 
     # SBP tables only
     bp_tables_list = list(
@@ -248,7 +251,7 @@ bp_tables <- function(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin
 
     )
 
-  }else if(bp_type == 2){
+  }else if(bp_type == 'dbp'){
 
     # DBP tables only
     bp_tables_list = list(
@@ -266,10 +269,6 @@ bp_tables <- function(data, bp_type = 0, bp_perc_margin = NULL, wake_perc_margin
       'DBP_by_WAKE_perc'          = DBP_wake_perc
 
     )
-
-  }else{
-
-    stop('Invalid bp_type function argument. Must either be 0 (both SBP & DBP - default), 1 (SBP only), or 2 (DBP only).')
 
   }
 

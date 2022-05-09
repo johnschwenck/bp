@@ -6,7 +6,7 @@
 \usage{
 bp_tables(
   data,
-  bp_type = 0,
+  bp_type = c("both", "sbp", "dbp"),
   bp_perc_margin = NULL,
   wake_perc_margin = 2,
   subj = NULL
@@ -17,8 +17,10 @@ bp_tables(
 contains the \code{SBP}, \code{DBP}, \code{DAY_OF_WEEK}, \code{Time_of_Day}, \code{SBP_CATEGORY},
 and \code{DBP_CATEGORY} columns.}
 
-\item{bp_type}{An indicator of the type of blood pressure data to output based on either
-0 (both SBP and DBP), 1 (SBP only), or 2 (DBP only). Must be of type integer.}
+\item{bp_type}{Optional argument. Determines whether to calculate tables for SBP
+values or DBP values, or both. For \strong{both SBP and DBP} ARV values use bp_type = 'both',
+for \strong{SBP-only} use bp_type = 'sbp, and for \strong{DBP-only} use bp_type = 'dbp'.
+If no type specified, default will be set to 'both'}
 
 \item{bp_perc_margin}{An optional argument that determines which of the marginal totals
 to include in the raw count tables expressed as percentages. The argument can take on
@@ -36,7 +38,6 @@ comply with integers so long as they are all present in the \code{ID} column of 
 }
 \value{
 A list of table outputs for various subsets of the data based on which bp_type is selected
-(default is bp_type = 0 i.e. both SBP and DBP tables)
 }
 \description{
 Generate a list of pertinent table outputs that detail various information

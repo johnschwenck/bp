@@ -28,9 +28,10 @@ from the \code{ID} column of the supplied data set. The \code{subj} argument can
 value or a vector of elements. The input type should be character, but the function will
 comply with integers so long as they are all present in the \code{ID} column of the data.}
 
-\item{bp_type}{Required argument. Determines whether to calculate CV for SBP
+\item{bp_type}{Optional argument. Determines whether to calculate CV for SBP
 values or DBP values, or both. For \strong{both SBP and DBP} ARV values use bp_type = 'both',
-for \strong{SBP-only} use bp_type = 'sbp, and for \strong{DBP-only} use bp_type = 'dbp'.}
+for \strong{SBP-only} use bp_type = 'sbp, and for \strong{DBP-only} use bp_type = 'dbp'.
+If no type specified, default will be set to 'both'}
 
 \item{add_groups}{Optional argument. Allows the user to aggregate the data by an
 additional "group" to further refine the output. The supplied input must be a
@@ -77,14 +78,14 @@ data(bp_hypnos)
 data(bp_jhs)
 
 # Process bp_hypnos
-hypnos_proc <- process_data(bp_hypnos, sbp = "SYST", dbp = "DIAST", date_time = "date.time",
+hyp_proc <- process_data(bp_hypnos, sbp = "SYST", dbp = "DIAST", date_time = "date.time",
 id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp = "rpp")
 # Process bp_jhs data
 jhs_proc <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", date_time = "DateTime",
 hr = "Pulse.bpm.")
 
 # CV Calculation
-bp_cv(hypnos_proc, inc_date = TRUE, add_groups = "SBP_Category", bp_type = 'sbp')
-bp_cv(jhs_proc, add_groups = c("meal_time"), bp_type = 'both')
+bp_cv(hyp_proc, inc_date = TRUE, add_groups = "SBP_Category", bp_type = 'sbp')
+bp_cv(jhs_proc, add_groups = c("meal_time"))
 # Notice that meal_time is not a column from process_data, but it still works
 }

@@ -53,11 +53,12 @@ bp_hist <- function(data, subj = NULL, bins = 30, na.rm = TRUE){
 
 
   # Primary variables needed: SBP, DBP, SBP_Category, DBP_Category
-  # Assumes bp_type = 0 (both) and bp_tables parameters as defaults
+  # Assumes bp_type = 'both', 'sbp', or 'dbp' and bp_tables parameters as defaults
   # Packages: ggplots2, cowplot
 
-  SBP = DBP = SBP_CATEGORY = DBP_CATEGORY = Category = n = bp_type = ID = NULL
-  rm(list = c("SBP", "DBP", "SBP_CATEGORY", "DBP_CATEGORY", "Category", "n", "bp_type", "ID"))
+  # Initialize variables
+  SBP = DBP = SBP_CATEGORY = DBP_CATEGORY = Category = n = ID = NULL
+  rm(list = c("SBP", "DBP", "SBP_CATEGORY", "DBP_CATEGORY", "Category", "n", "ID"))
 
 
   # If user supplies a vector corresponding to a subset of multiple subjects (multi-subject only)
