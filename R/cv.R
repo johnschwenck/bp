@@ -58,8 +58,6 @@
 #'
 #' }
 #'
-#' @export
-#'
 #' @examples
 #' # Load data
 #' data(bp_hypnos)

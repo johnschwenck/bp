@@ -65,8 +65,6 @@
 #'
 #' }
 #'
-#' @export
-#'
 #'
 #' @examples
 #' # Load data

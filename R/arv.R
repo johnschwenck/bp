@@ -82,7 +82,6 @@
 #' # ARV Calculation
 #' bp_arv(hypnos_proc, add_groups = c("SBP_Category"))
 #' bp_arv(jhs_proc, inc_date = TRUE)
-#' @export
 arv <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups = NULL, inc_wake = TRUE){
 
   .Deprecated("bp_arv")
