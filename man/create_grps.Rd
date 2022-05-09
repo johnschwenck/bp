@@ -30,3 +30,4 @@ will subset / group the data in dplyr functions
 Used in the following functions:
 \code{arv}, \code{bp_mag}, \code{bp_range}, \code{cv}, \code{sv}, \code{bp_center}, \code{bp_stats}
 }
+\keyword{internal}

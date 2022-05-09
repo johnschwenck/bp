@@ -19,3 +19,4 @@ or not (\code{FALSE})
 \description{
 Compatibility Check for User-Supplied Subject Subset Vector
 }
+\keyword{internal}

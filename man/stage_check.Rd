@@ -18,3 +18,4 @@ If the function returns no error, the supplied vectors are valid. Function argum
 \description{
 Used in \code{process_data} function
 }
+\keyword{internal}

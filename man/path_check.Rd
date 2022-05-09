@@ -23,4 +23,6 @@ Compatibility Check for \code{path} Argument
 path = "~dir/abpm/"
 path_check(path) # drops the trailing slash
 }
+
 }
+\keyword{internal}

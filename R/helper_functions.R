@@ -6,6 +6,8 @@
 #'
 #' @return Logical indicating whether the subj vector passes the checks (\code{TRUE}),
 #' or not (\code{FALSE})
+#'
+#' @keywords internal
 subject_subset_check <- function(data, subj = NULL){
 
   if(!"ID" %in% toupper(colnames(data))){
@@ -54,6 +56,8 @@ subject_subset_check <- function(data, subj = NULL){
 #'
 #' @return A list containing two vectors that each correspond to the SBP/DBP stages for use in further processing.
 #' If the function returns no error, the supplied vectors are valid. Function arguments are coerced to integer.
+#'
+#' @keywords internal
 stage_check <- function(sbp_stages = NULL, dbp_stages = NULL){
 
 
@@ -149,6 +153,8 @@ stage_check <- function(sbp_stages = NULL, dbp_stages = NULL){
 #'
 #' @return A vector of string values corresponding to the column names that
 #' will subset / group the data in dplyr functions
+#'
+#' @keywords internal
 create_grps <- function(data, inc_date, add_groups, inc_wake){
 
   # Verify that add_groups is valid
@@ -220,6 +226,8 @@ create_grps <- function(data, inc_date, add_groups, inc_wake){
 #' path = "~dir/abpm/"
 #' path_check(path) # drops the trailing slash
 #' }
+#'
+#' @keywords internal
 
 path_check <- function(path){
 
