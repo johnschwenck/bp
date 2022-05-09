@@ -87,8 +87,10 @@ id = "id", wake = "wake", visit = "visit", hr = "hr", pp ="pp", map = "map", rpp
 jhs_proc <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", date_time = "DateTime",
 hr = "Pulse.bpm.")
 
+\dontrun{
 # CV Calculation
 bp_cv(hypnos_proc, inc_date = TRUE, add_groups = "SBP_Category")
 bp_cv(jhs_proc, add_groups = c("meal_time"))
 # Notice that meal_time is not a column from process_data, but it still works
+}
 }

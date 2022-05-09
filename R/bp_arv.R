@@ -20,10 +20,9 @@
 #' value or a vector of elements. The input type should be character, but the function will
 #' comply with integers so long as they are all present in the \code{ID} column of the data.
 #'
-#' @param bp_type Optional argument. Determines whether to calculate ARV for SBP
-#' values or DBP values. Default is 0 corresponding to output for both SBP & DBP.
-#' For both SBP and DBP ARV values use bp_type = 0, for SBP-only use bp_type = 1,
-#' and for DBP-only use bp_type = 2
+#' @param bp_type Required argument. Determines whether to calculate ARV for SBP
+#' values or DBP values, or both. For \strong{both SBP and DBP} ARV values use bp_type = 'both',
+#' for \strong{SBP-only} use bp_type = 'sbp, and for \strong{DBP-only} use bp_type = 'dbp'.
 #'
 #' @param add_groups Optional argument. Allows the user to aggregate the data by an
 #' additional "group" to further refine the output. The supplied input must be a
@@ -78,10 +77,17 @@
 #' hr = "Pulse.bpm.")
 #'
 #' # ARV Calculation
-#' bp_arv(hypnos_proc, add_groups = c("SBP_Category"))
-#' bp_arv(jhs_proc, inc_date = TRUE)
+#' bp_arv(hypnos_proc, add_groups = c("SBP_Category"), bp_type = 'sbp')
+#' bp_arv(jhs_proc, inc_date = TRUE, bp_type = 'both')
 #' @export
-bp_arv <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups = NULL, inc_wake = TRUE){
+bp_arv <- function(data, inc_date = FALSE, subj = NULL, bp_type = c('both', 'sbp', 'dbp'), add_groups = NULL, inc_wake = TRUE){
+
+  # MAtch argument for bp_type
+  bp_type <- tolower(bp_type)
+  if(length(bp_type) > 1){
+    stop('bp_type can only take one character value of the following: both, sbp, or sbp')
+  }
+  type <- match.arg(bp_type)
 
   SBP = DBP = ID = . = NULL
   rm(list = c('SBP', 'DBP', 'ID', '.'))
@@ -104,16 +110,16 @@ bp_arv <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups 
   }
 
   # Check for missing values
-  if(bp_type == 0){
+  if(bp_type == 'both'){
 
-      if(nrow(data) != length(which(!is.na(data$SBP) & !is.na(data$DBP))) ){
+    if(nrow(data) != length(which(!is.na(data$SBP) & !is.na(data$DBP))) ){
 
-        message('Missing SBP and/or DBP values found in data set. Removing for calculation.')
-        data <- data[which(!is.na(data$SBP) & !is.na(data$DBP)),]
-        #data <- data %>% dplyr::filter( complete.cases(SBP, DBP) )
-      }
+      message('Missing SBP and/or DBP values found in data set. Removing for calculation.')
+      data <- data[which(!is.na(data$SBP) & !is.na(data$DBP)),]
+      #data <- data %>% dplyr::filter( complete.cases(SBP, DBP) )
+    }
 
-  }else if(bp_type == 1){
+  }else if(bp_type == 'sbp'){
 
     # SBP
     # check for missing values
@@ -121,7 +127,7 @@ bp_arv <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups 
       warning('Missing SBP values found in data set. Removing for calculation.')
       data <- data[which(!is.na(data$SBP)),]
     }
-  }else if(bp_type == 2){
+  }else if(bp_type == 'dbp'){
 
     # DBP
     # check for missing values
@@ -152,10 +158,10 @@ bp_arv <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups 
     dplyr::group_by_at(dplyr::vars(grps) ) %>%
 
     # ARV Calculation
-    { if (bp_type == 1) dplyr::summarise(., ARV = sum( abs( (SBP - dplyr::lag(SBP))[2:length(SBP - dplyr::lag(SBP))] ) ) / (dplyr::n() - 1), N = dplyr::n()) else . } %>% # SBP only
-    { if (bp_type == 2) dplyr::summarise(., ARV = sum( abs( (DBP - dplyr::lag(DBP))[2:length(DBP - dplyr::lag(DBP))] ) ) / (dplyr::n() - 1), N = dplyr::n()) else . } %>% # DBP only
-    { if (bp_type == 0) dplyr::summarise(., ARV_SBP = sum( abs( (SBP - dplyr::lag(SBP))[2:length(SBP - dplyr::lag(SBP))] ) ) / (dplyr::n() - 1),
-                                            ARV_DBP = sum( abs( (DBP - dplyr::lag(DBP))[2:length(DBP - dplyr::lag(DBP))] ) ) / (dplyr::n() - 1), N = dplyr::n()) else . } # both SBP and DBP
+    { if (bp_type == 'sbp') dplyr::summarise(., ARV = sum( abs( (SBP - dplyr::lag(SBP))[2:length(SBP - dplyr::lag(SBP))] ) ) / (dplyr::n() - 1), N = dplyr::n()) else . } %>% # SBP only
+    { if (bp_type == 'dbp') dplyr::summarise(., ARV = sum( abs( (DBP - dplyr::lag(DBP))[2:length(DBP - dplyr::lag(DBP))] ) ) / (dplyr::n() - 1), N = dplyr::n()) else . } %>% # DBP only
+    { if (bp_type == 'both') dplyr::summarise(., ARV_SBP = sum( abs( (SBP - dplyr::lag(SBP))[2:length(SBP - dplyr::lag(SBP))] ) ) / (dplyr::n() - 1),
+                                              ARV_DBP = sum( abs( (DBP - dplyr::lag(DBP))[2:length(DBP - dplyr::lag(DBP))] ) ) / (dplyr::n() - 1), N = dplyr::n()) else . } # both SBP and DBP
 
 
   return(out)

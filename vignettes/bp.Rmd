@@ -167,12 +167,12 @@ Function    | Metric Name                             | Source
 
 Let's say we are working with the `bp_hypnos` and would like to compare the time-dependent nature of the `bp_arv` with the `bp_sv` for each subject. 
 ```{r}
-head(bp_arv(hypnos_proc))
-head(bp_sv(hypnos_proc))
+head(bp_arv(hypnos_proc, bp_type = 'both'))
+head(bp_sv(hypnos_proc, bp_type = 'both'))
 ```
 Comparing vertically can be challenging, so with some help from `dplyr` we can obtain the following:
 ```{r}
-head(dplyr::left_join(bp_arv(hypnos_proc), bp_cv(hypnos_proc)))
+head(dplyr::left_join(bp_arv(hypnos_proc, bp_type = 'both'), bp_cv(hypnos_proc, bp_type = 'both')))
 ```
 Note that this is possible thanks to the work we did in standardizing column names from the processing step.
 
@@ -183,11 +183,11 @@ bp_sleep_metrics(hypnos_proc)
 
 Turning back to the `bp_jhs` data set, let's examine the peaks and troughs of the BP readings. We would call the `bp_mag` function on our data.
 ```{r}
-head(bp_mag(jhs_proc))
+head(bp_mag(jhs_proc, bp_type = 'both'))
 ```
 Here, we notice something different. Because there weren't `ID`, `VISIT`, or `WAKE` columns, the `bp_mag` aggregated everything together. This is technically correct, but say we wanted to glean more information by breaking our data down by `DATE` instead; we would need to include the `inc_date = TRUE` optional argument to the function.
 ```{r}
-tail(bp_mag(jhs_proc, inc_date = TRUE))
+tail(bp_mag(jhs_proc, inc_date = TRUE, bp_type = 'both'))
 ```
 ***Interpretation:*** While it may not seem obvious at first glance, the blood pressure magnitude (whether a peak or a trough) is calculated as $peak = max(BP) - mean(BP)$ and $trough = mean(BP) - min(BP)$ where BP could correspond to either SBP or DBP. If we manually inspect the data from `2019-07-31` we see that N = 2 measurements and within the `bp_jhs` data set we see the two measurements are 126 and 128 for SBP and 77, and 76 for DBP. $\bar{x}_{SBP} = \frac{(126+128)}{2} = 127$ and $\bar{x}_{DBP} = \frac{(78+76)}{2} = 76.5$ so the respective peak and trough values from our output make sense.
   

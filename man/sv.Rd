@@ -94,7 +94,9 @@ jhs_proc <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", date_tim
 hr = "Pulse.bpm.")
 
 # SV Calculation
+\dontrun{
 bp_sv(hypnos_proc)
 bp_sv(jhs_proc, add_groups = c("meal_time"))
 # Notice that meal_time is not a column from process_data, but it still works
+}
 }

@@ -79,9 +79,11 @@
 #' jhs_proc <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", date_time = "DateTime",
 #' hr = "Pulse.bpm.")
 #'
+#'\dontrun{
 #' # ARV Calculation
 #' bp_arv(hypnos_proc, add_groups = c("SBP_Category"))
 #' bp_arv(jhs_proc, inc_date = TRUE)
+#' }
 arv <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups = NULL, inc_wake = TRUE){
 
   .Deprecated("bp_arv")

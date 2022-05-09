@@ -22,10 +22,9 @@
 #' argument is typically kept as FALSE, but the function will work regardless. Setting
 #' \code{inc_date = TRUE} will include these dates as a grouping level.
 #'
-#' @param bp_type Optional argument. Determines whether to calculate ARV for SBP
-#' values or DBP values. Default is 0 corresponding to output for both SBP & DBP.
-#' For both SBP and DBP ARV values use bp_type = 0, for SBP-only use bp_type = 1,
-#' and for DBP-only use bp_type = 2
+#' @param bp_type Required argument. Determines whether to calculate magnitude for SBP
+#' values or DBP values, or both. For \strong{both SBP and DBP} ARV values use bp_type = 'both',
+#' for \strong{SBP-only} use bp_type = 'sbp, and for \strong{DBP-only} use bp_type = 'dbp'.
 #'
 #' @param add_groups Optional argument. Allows the user to aggregate the data by an
 #' additional "group" to further refine the output. The supplied input must be a
@@ -78,14 +77,21 @@
 #' hr = "Pulse.bpm.")
 #'
 #' # BP Stats Aggregated Table
-#' bp_stats(hypnos_proc, subj = c(70417, 70435), add_groups = c("SBP_Category"))
-#' bp_stats(jhs_proc, add_groups = c("SBP_Category"))
+#' bp_stats(hypnos_proc, subj = c(70417, 70435), add_groups = c("SBP_Category"), bp_type = 'sbp')
+#' bp_stats(jhs_proc, add_groups = c("SBP_Category"), bp_type = 'both')
 bp_stats <- function(data,
                      inc_date = FALSE,
                      subj = NULL,
-                     bp_type = 0,
+                     bp_type = c('both', 'sbp', 'dbp'),
                      add_groups = NULL,
                      inc_wake = TRUE){
+
+  # Match argument for bp_type
+  bp_type <- tolower(bp_type)
+  if(length(bp_type) > 1){
+    stop('bp_type can only take one character value of the following: both, sbp, or sbp')
+  }
+  type <- match.arg(bp_type)
 
   ID = N = DATE = SBP_mean = DBP_mean = SBP_med = DBP_med = SD = SD_SBP = SD_DBP = CV_SBP = CV_DBP = SBP_max = DBP_max = SBP_min = DBP_min = SBP_range = DBP_range = . = NULL
   rm(list = c(ID, N, DATE, SBP_mean, DBP_mean, SBP_med, DBP_med, SD, SD_SBP, SD_DBP, CV_SBP, CV_DBP, SBP_range, DBP_range, SBP_max, SBP_min, DBP_max, DBP_min, .))
@@ -122,12 +128,12 @@ bp_stats <- function(data,
 
 
   # Pull in all necessary data from functions --> functions do not need subj argument because data is already filtered above
-  bp_center_tmp <- bp_center(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups, inc_wake = inc_wake)
-  arv_tmp       <- bp_arv(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups, inc_wake = inc_wake)
-  sv_tmp        <- bp_sv(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups, inc_wake = inc_wake)
-  cv_tmp        <- bp_cv(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups, inc_wake = inc_wake)
+  bp_center_tmp <- bp_center(data, inc_date = inc_date, add_groups = add_groups, inc_wake = inc_wake, bp_type = type)
+  arv_tmp       <- bp_arv(data, inc_date = inc_date, add_groups = add_groups, inc_wake = inc_wake, bp_type = type)
+  sv_tmp        <- bp_sv(data, inc_date = inc_date, add_groups = add_groups, inc_wake = inc_wake, bp_type = type)
+  cv_tmp        <- bp_cv(data, inc_date = inc_date, add_groups = add_groups, inc_wake = inc_wake, bp_type = type)
   bp_range_tmp  <- bp_range(data, inc_date = inc_date, add_groups = add_groups, inc_wake = inc_wake)
-  bp_mag_tmp    <- bp_mag(data, inc_date = inc_date, bp_type = bp_type, add_groups = add_groups, inc_wake = inc_wake)
+  bp_mag_tmp    <- bp_mag(data, inc_date = inc_date, add_groups = add_groups, inc_wake = inc_wake, bp_type = type)
 
   # Find all common column names to join by
   grps <- intersect(colnames(bp_center_tmp), colnames(arv_tmp))
@@ -189,11 +195,11 @@ bp_stats <- function(data,
 
   # Reorder columns
   out <- out %>% dplyr::relocate(ID, N, DATE) %>%
-    {if (bp_type == 0) dplyr::relocate(., SD_SBP, .after = DBP_med) %>%
+    {if (bp_type == 'both') dplyr::relocate(., SD_SBP, .after = DBP_med) %>%
                        dplyr::relocate(., SD_DBP, .after = SD_SBP) %>%
                        dplyr::relocate(., SBP_range, .before = DBP_range) else . } %>%
-    {if (bp_type == 1) dplyr::relocate(., SD, .after = SBP_med) %>% dplyr::select(., -DBP_max, -DBP_min, -DBP_range) else . } %>%
-    {if (bp_type == 2) dplyr::relocate(., SD, .after = DBP_med) %>% dplyr::select(., -SBP_max, -SBP_min, -SBP_range) else . }
+    {if (bp_type == 'sbp') dplyr::relocate(., SD, .after = SBP_med) %>% dplyr::select(., -DBP_max, -DBP_min, -DBP_range) else . } %>%
+    {if (bp_type == 'dbp') dplyr::relocate(., SD, .after = DBP_med) %>% dplyr::select(., -SBP_max, -SBP_min, -SBP_range) else . }
 
 
 

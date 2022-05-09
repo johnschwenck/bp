@@ -18,10 +18,9 @@
 #' value or a vector of elements. The input type should be character, but the function will
 #' comply with integers so long as they are all present in the \code{ID} column of the data.
 #'
-#' @param bp_type Optional argument. Determines whether to calculate ARV for SBP
-#' values or DBP values. Default is 0 corresponding to output for both SBP & DBP.
-#' For \strong{both} SBP and DBP ARV values use bp_type = 0, for \strong{SBP-only}
-#' use bp_type = 1, and for \strong{DBP-only} use bp_type = 2
+#' @param bp_type Required argument. Determines whether to calculate center for SBP
+#' values or DBP values, or both. For \strong{both SBP and DBP} ARV values use bp_type = 'both',
+#' for \strong{SBP-only} use bp_type = 'sbp, and for \strong{DBP-only} use bp_type = 'dbp'.
 #'
 #' @param add_groups Optional argument. Allows the user to aggregate the data by an
 #' additional "group" to further refine the output. The supplied input must be a
@@ -70,8 +69,15 @@
 #' hr = "Pulse.bpm.")
 #'
 #' # BP Center Calculation
-#' bp_center(hypnos_proc, subj = c(70417, 70435))
-bp_center <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups = NULL, inc_wake = TRUE){
+#' bp_center(hypnos_proc, subj = c(70417, 70435), bp_type = 'both')
+bp_center <- function(data, inc_date = FALSE, subj = NULL, bp_type = c('both', 'sbp', 'dbp'), add_groups = NULL, inc_wake = TRUE){
+
+  # Match argument for bp_type
+  bp_type <- tolower(bp_type)
+  if(length(bp_type) > 1){
+    stop('bp_type can only take one character value of the following: both, sbp, or sbp')
+    }
+  type <- match.arg(bp_type)
 
   SBP = DBP = ID = grps = . = NULL
   rm(list = c('SBP', 'DBP', 'ID', 'grps', '.'))
@@ -94,7 +100,8 @@ bp_center <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_grou
   }
 
 
-  if(bp_type == 0){
+  # Both SBP and DBP
+  if(bp_type == 'both'){
 
     if(nrow(data) != length(which(!is.na(data$SBP) & !is.na(data$DBP))) ){
 
@@ -103,7 +110,8 @@ bp_center <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_grou
       #data <- data %>% dplyr::filter( complete.cases(SBP, DBP) )
     }
 
-  }else if(bp_type == 1){
+  # SBP Only
+  }else if(bp_type == 'sbp'){
 
     # SBP
     # check for missing values
@@ -111,7 +119,8 @@ bp_center <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_grou
       warning('Missing SBP values found in data set. Removing for calculation.')
       data <- data[which(!is.na(data$SBP)),]
     }
-  }else if(bp_type == 2){
+  # DBP Only
+  }else if(bp_type == 'dbp'){
 
     # DBP
     # check for missing values
@@ -142,9 +151,9 @@ bp_center <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_grou
     dplyr::group_by_at( dplyr::vars(grps) ) %>%
 
     # CV Calculation
-    { if (bp_type == 1) dplyr::summarise(., SBP_mean = mean(SBP, na.rm = TRUE), SBP_med = median(SBP, na.rm = TRUE), N = dplyr::n()) else . } %>% # SBP only
-    { if (bp_type == 2) dplyr::summarise(., DBP_mean = mean(DBP, na.rm = TRUE), DBP_med = median(DBP, na.rm = TRUE), N = dplyr::n()) else . } %>% # DBP only
-    { if (bp_type == 0) dplyr::summarise(., SBP_mean = mean(SBP, na.rm = TRUE),
+    { if (bp_type == 'sbp') dplyr::summarise(., SBP_mean = mean(SBP, na.rm = TRUE), SBP_med = median(SBP, na.rm = TRUE), N = dplyr::n()) else . } %>% # SBP only
+    { if (bp_type == 'dbp') dplyr::summarise(., DBP_mean = mean(DBP, na.rm = TRUE), DBP_med = median(DBP, na.rm = TRUE), N = dplyr::n()) else . } %>% # DBP only
+    { if (bp_type == 'both') dplyr::summarise(., SBP_mean = mean(SBP, na.rm = TRUE),
                                             DBP_mean = mean(DBP, na.rm = TRUE),
                                             SBP_med = median(SBP, na.rm = TRUE),
                                             DBP_med = median(DBP, na.rm = TRUE),

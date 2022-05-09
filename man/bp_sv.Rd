@@ -8,7 +8,7 @@ bp_sv(
   data,
   inc_date = FALSE,
   subj = NULL,
-  bp_type = 0,
+  bp_type = c("both", "sbp", "dbp"),
   add_groups = NULL,
   inc_wake = TRUE
 )
@@ -28,10 +28,9 @@ from the \code{ID} column of the supplied data set. The \code{subj} argument can
 value or a vector of elements. The input type should be character, but the function will
 comply with integers so long as they are all present in the \code{ID} column of the data.}
 
-\item{bp_type}{Optional argument. Determines whether to calculate ARV for SBP
-values or DBP values. Default is 0 corresponding to output for both SBP & DBP.
-For \strong{both} SBP and DBP ARV values use bp_type = 0, for \strong{SBP-only}
-use bp_type = 1, and for \strong{DBP-only} use bp_type = 2}
+\item{bp_type}{Required argument. Determines whether to calculate SV for SBP
+values or DBP values, or both. For \strong{both SBP and DBP} ARV values use bp_type = 'both',
+for \strong{SBP-only} use bp_type = 'sbp, and for \strong{DBP-only} use bp_type = 'dbp'.}
 
 \item{add_groups}{Optional argument. Allows the user to aggregate the data by an
 additional "group" to further refine the output. The supplied input must be a
@@ -92,7 +91,7 @@ jhs_proc <- process_data(bp_jhs, sbp = "Sys.mmHg.", dbp = "Dias.mmHg.", date_tim
 hr = "Pulse.bpm.")
 
 # SV Calculation
-bp_sv(hypnos_proc)
-bp_sv(jhs_proc, add_groups = c("meal_time"))
+bp_sv(hypnos_proc, bp_type = 'both')
+bp_sv(jhs_proc, add_groups = c("meal_time"), bp_type = 'both')
 # Notice that meal_time is not a column from process_data, but it still works
 }

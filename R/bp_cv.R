@@ -18,10 +18,9 @@
 #' value or a vector of elements. The input type should be character, but the function will
 #' comply with integers so long as they are all present in the \code{ID} column of the data.
 #'
-#' @param bp_type Optional argument. Determines whether to calculate ARV for SBP
-#' values or DBP values. Default is 0 corresponding to output for both SBP & DBP.
-#' For \strong{both} SBP and DBP ARV values use bp_type = 0, for \strong{SBP-only}
-#' use bp_type = 1, and for \strong{DBP-only} use bp_type = 2
+#' @param bp_type Required argument. Determines whether to calculate CV for SBP
+#' values or DBP values, or both. For \strong{both SBP and DBP} ARV values use bp_type = 'both',
+#' for \strong{SBP-only} use bp_type = 'sbp, and for \strong{DBP-only} use bp_type = 'dbp'.
 #'
 #' @param add_groups Optional argument. Allows the user to aggregate the data by an
 #' additional "group" to further refine the output. The supplied input must be a
@@ -71,10 +70,17 @@
 #' hr = "Pulse.bpm.")
 #'
 #' # CV Calculation
-#' bp_cv(hypnos_proc, inc_date = TRUE, add_groups = "SBP_Category")
-#' bp_cv(jhs_proc, add_groups = c("meal_time"))
+#' bp_cv(hypnos_proc, inc_date = TRUE, add_groups = "SBP_Category", bp_type = 'sbp')
+#' bp_cv(jhs_proc, add_groups = c("meal_time"), bp_type = 'both')
 #' # Notice that meal_time is not a column from process_data, but it still works
-bp_cv <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups = NULL, inc_wake = TRUE){
+bp_cv <- function(data, inc_date = FALSE, subj = NULL, bp_type = c('both', 'sbp', 'dbp'), add_groups = NULL, inc_wake = TRUE){
+
+  # Match argument for bp_type
+  bp_type <- tolower(bp_type)
+  if(length(bp_type) > 1){
+    stop('bp_type can only take one character value of the following: both, sbp, or sbp')
+  }
+  type <- match.arg(bp_type)
 
   SBP = DBP = ID = . = NULL
   rm(list = c('SBP', 'DBP', 'ID', '.'))
@@ -97,7 +103,8 @@ bp_cv <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups =
   }
 
 
-  if(bp_type == 0){
+  # SBP and DBP
+  if(bp_type == 'both'){
 
     if(nrow(data) != length(which(!is.na(data$SBP) & !is.na(data$DBP))) ){
 
@@ -105,8 +112,8 @@ bp_cv <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups =
       data <- data[which(!is.na(data$SBP) & !is.na(data$DBP)),]
       #data <- data %>% dplyr::filter( complete.cases(SBP, DBP) )
     }
-
-  }else if(bp_type == 1){
+  # SBP Only
+  }else if(bp_type == 'sbp'){
 
     # SBP
     # check for missing values
@@ -114,7 +121,8 @@ bp_cv <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups =
       warning('Missing SBP values found in data set. Removing for calculation.')
       data <- data[which(!is.na(data$SBP)),]
     }
-  }else if(bp_type == 2){
+  # DBP Only
+  }else if(bp_type == 'dbp'){
 
     # DBP
     # check for missing values
@@ -144,9 +152,9 @@ bp_cv <- function(data, inc_date = FALSE, subj = NULL, bp_type = 0, add_groups =
     dplyr::group_by_at( dplyr::vars(grps) ) %>%
 
     # CV Calculation
-    { if (bp_type == 1) dplyr::summarise(., CV = sd(SBP, na.rm = TRUE) / mean(SBP, na.rm = TRUE) * 100, SD = sd(SBP),N = dplyr::n()) else . } %>% # SBP only
-    { if (bp_type == 2) dplyr::summarise(., CV = sd(DBP, na.rm = TRUE) / mean(DBP, na.rm = TRUE) * 100, SD = sd(DBP),N = dplyr::n()) else . } %>% # DBP only
-    { if (bp_type == 0) dplyr::summarise(., CV_SBP = sd(SBP, na.rm = TRUE) / mean(SBP, na.rm = TRUE) * 100,
+    { if (bp_type == 'sbp') dplyr::summarise(., CV = sd(SBP, na.rm = TRUE) / mean(SBP, na.rm = TRUE) * 100, SD = sd(SBP),N = dplyr::n()) else . } %>% # SBP only
+    { if (bp_type == 'dbp') dplyr::summarise(., CV = sd(DBP, na.rm = TRUE) / mean(DBP, na.rm = TRUE) * 100, SD = sd(DBP),N = dplyr::n()) else . } %>% # DBP only
+    { if (bp_type == 'both') dplyr::summarise(., CV_SBP = sd(SBP, na.rm = TRUE) / mean(SBP, na.rm = TRUE) * 100,
                                             CV_DBP = sd(DBP, na.rm = TRUE) / mean(DBP, na.rm = TRUE) * 100,
                                             SD_SBP = sd(SBP),
                                             SD_DBP = sd(DBP),
