@@ -52,3 +52,11 @@
     - Omits NA values in various metric calculations and nocturnal metrics
     - Fixed various plotting issues
 * Corrected medical references surrounding sleep vs nocturnal language
+
+
+# bp 2.1.0
+* Restructuring of bp_type argument in various functions to consist of 'both', 'sbp', 'dbp' instead of 0, 1, 2
+    - NOTE: This may affect legacy functionality / backward compatibility
+* Removed deprecated functions from documentation: arv, cv, sv (replaced with bp_arv, bp_cv, bp_sv)
+* Fixed histogram binning for missing / Null values
+
