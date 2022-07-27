@@ -941,7 +941,7 @@ date_time_adj <- function(data, date_time = NULL, dt_fmt = "ymd HMS", ToD_int = 
     data <- data[, c(col_idx, (1:ncol(data))[-col_idx])]
 
     #data$DATE_TIME <- as.POSIXct(data$DATE_TIME, tz = "UTC") # coerce to proper time format
-    data$DATE_TIME <- lubridate::parse_date_time(data$DATE_TIME, orders = dt_fmt, tz = tz)
+    data$DATE_TIME <- lubridate::parse_date_time(data$DATE_TIME, orders = dt_fmt, tz = tz) # add exact = TRUE ?
 
     # Year
     data$YEAR <- lubridate::year(data$DATE_TIME)
@@ -954,6 +954,12 @@ date_time_adj <- function(data, date_time = NULL, dt_fmt = "ymd HMS", ToD_int = 
 
     # Hour
     data$HOUR <- lubridate::hour(data$DATE_TIME)
+
+    # Minute
+    data$MINUTE <- lubridate::minute(data$DATE_TIME)
+
+    #Second
+    data$SECOND <- lubridate::second(data$DATE_TIME)
 
     # Ordering of date time values
     # Possible groupings for dplyr
@@ -970,7 +976,7 @@ date_time_adj <- function(data, date_time = NULL, dt_fmt = "ymd HMS", ToD_int = 
                 dplyr::group_by_at(dplyr::vars(grps) ) %>%
                 dplyr::arrange(DATE_TIME, .by_group = TRUE)
 
-            ### Reverse Chronological Order: Most recent date/times at the top / first ###
+    ### Reverse Chronological Order: Most recent date/times at the top / first ###
     }else{
 
       #data <- data[order(data$DATE_TIME, decreasing = TRUE),] # old code
@@ -1094,6 +1100,12 @@ agg_adj <- function(data, bp_type, agg = TRUE, agg_thresh = 3, collap = FALSE, c
     stop('The aggregation feature does not currently support Arterial Pressure (AP) data.')
   }
 
+  # agg_thresh must be integer representing number of minutes between observations to aggregate together
+  if( !is.na(as.numeric(agg_thresh)) == FALSE){
+    stop('agg_thresh input must be an integer representing the number of minutes between observations to aggregate.')
+  }else{
+    agg_thresh = as.numeric(agg_thresh)
+  }
 
   # Possible groupings for dplyr
   grps = c("ID", "VISIT", "GROUP")
@@ -1111,7 +1123,7 @@ agg_adj <- function(data, bp_type, agg = TRUE, agg_thresh = 3, collap = FALSE, c
     dplyr::group_by_at(dplyr::vars(grps) ) %>%
 
     # Create a TIME_DIFF column that takes difference in minutes between rows starting with 1 (last row is 0)
-    dplyr::mutate(TIME_DIFF = abs(DATE_TIME - dplyr::lead(DATE_TIME)) ) %>%
+    dplyr::mutate(TIME_DIFF = abs( difftime(DATE_TIME, dplyr::lead(DATE_TIME), units = 'min') ) )%>%
     dplyr::relocate(TIME_DIFF, .after = DATE_TIME) %>%
 
     # Use zero for last row as there is no differencing
@@ -1157,7 +1169,7 @@ agg_adj <- function(data, bp_type, agg = TRUE, agg_thresh = 3, collap = FALSE, c
     dplyr::mutate(dplyr::across(!c(TIME_DIFF) & inc_vars[inc_vars %in% colnames(data)], as.integer)) %>%
 
     # Rearrange columns for consistency
-    dplyr::relocate(ID, GROUP, DATE_TIME, TIME_DIFF, DATE, DAY_OF_WEEK, YEAR, MONTH, DAY, HOUR, TIME_OF_DAY, SBP, DBP)
+    dplyr::relocate(ID, GROUP, DATE_TIME, DATE, DAY_OF_WEEK, YEAR, MONTH, DAY, HOUR, TIME_OF_DAY, SBP, DBP)
 
 
   # Collapse repeating rows
