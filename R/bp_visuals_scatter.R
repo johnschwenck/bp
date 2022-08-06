@@ -108,7 +108,7 @@
 #' data("bp_hypnos")
 #' data("bp_ghana")
 #' hypnos_proc <- process_data(bp_hypnos,
-#'                          bp_type = 'abpm',
+#'                          bp_type = 'ABPM',
 #'                          sbp = "syst",
 #'                          dbp = "DIAST",
 #'                          date_time = "date.time",

@@ -85,7 +85,7 @@ data("bp_hypnos")
 
 ## Assign the output of the process_data function to a new dataframe object
 hypnos_proc <- process_data(bp_hypnos,
-                     bp_type = "abpm",
+                     bp_type = "ABPM",
                      sbp = 'syst',
                      dbp = 'diast',
                      date_time = 'date.time',

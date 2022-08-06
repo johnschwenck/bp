@@ -18,7 +18,7 @@
 #'
 #' data("bp_hypnos")
 #' hyp_proc <- process_data(bp_hypnos,
-#'                          bp_type = 'abpm',
+#'                          bp_type = 'ABPM',
 #'                          sbp = "syst",
 #'                          dbp = "DIAST",
 #'                          date_time = "date.time",
