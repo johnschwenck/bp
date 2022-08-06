@@ -6,7 +6,9 @@
 \usage{
 process_data(
   data,
-  bp_type = c("hbpm", "abpm", "ap"),
+  bp_type = c("HBPM", "ABPM", "AP", "OBP"),
+  guidelines = c("Lee_2020", "AHA", "Custom"),
+  bp_cutoffs = list(c(100, 120, 130, 140, 180), c(60, 80, 90, 120)),
   ap = NULL,
   time_elap = NULL,
   sbp = NULL,
@@ -45,10 +47,17 @@ process_data(
 contain data for Systolic blood pressure and Diastolic blood pressure at a
 minimum.}
 
-\item{bp_type}{Required argument specifying which of the three BP data types
-("HBPM", "ABPM", or "AP") the input data is. Default \code{bp_type} set to "HBPM".
+\item{bp_type}{Required argument specifying which of the four BP data types
+("HBPM", "ABPM", "OBP", or "AP") the input data is. Default \code{bp_type} set to "HBPM".
 This argument determines which processing steps are necessary to yield sensible
-output.}
+output.
+
+HBPM - Home Blood Pressure Monitor | ABPM - Ambulatory Blood Pressure |
+OBP - Office Blood Pressure | AP - Arterial Pressure}
+
+\item{guidelines}{temporary}
+
+\item{bp_cutoffs}{temporary}
 
 \item{ap}{(For AP data only) Required column name (character string) corresponding
 to continuous Arterial Pressure (AP) (mmHg). Note that this is a required argument
@@ -208,7 +217,7 @@ data("bp_hypnos")
 
 # Process data for bp_hypnos
 hypnos_proc <- process_data(bp_hypnos,
-                              bp_type = 'abpm',
+                              bp_type = 'ABPM',
                               sbp = 'syst',
                               dbp = 'diast',
                               date_time = 'date.time',

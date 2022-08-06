@@ -8,6 +8,7 @@ bp_stages(
   data,
   sbp,
   dbp,
+  bp_type = c("HBPM", "ABPM", "OBP"),
   inc_low = TRUE,
   inc_crisis = TRUE,
   data_screen = TRUE,
@@ -15,7 +16,9 @@ bp_stages(
   SLL = 50,
   DUL = 140,
   DLL = 40,
-  adj_sbp_dbp = TRUE
+  adj_sbp_dbp = TRUE,
+  guidelines = c("Lee_2020", "AHA", "Custom"),
+  bp_cutoffs = list(c(100, 120, 130, 140, 180), c(60, 80, 90, 120))
 )
 }
 \arguments{
@@ -26,6 +29,8 @@ minimum.}
 \item{sbp}{column name corresponding to systolic blood pressure (SBP)}
 
 \item{dbp}{column name corresponding to diastolic blood pressure (DBP)}
+
+\item{bp_type}{temporary}
 
 \item{inc_low}{A TRUE / FALSE indicator of whether or not to include the "Low" (Hypotension)
 category to the scatter plot. The range for Hypotension is set from a minimum of 25 for DBP or 80
@@ -62,6 +67,10 @@ Methodological Aspects}
 
 \item{adj_sbp_dbp}{Logical indicator to dictate whether or not to run helper functions that adjust / process
 SBP & DBP columns in supplied data set. Default set to: \code{adj_sbp_dbp = TRUE}}
+
+\item{guidelines}{temporary}
+
+\item{bp_cutoffs}{temporary}
 }
 \value{
 A dataframe with additional columns corresponding to the stages of high blood pressure and the
@@ -87,8 +96,7 @@ bp_stages(bp_jhs, sbp = "sys.mmhg.", dbp = "dias.mmhg.")
 
 }
 \references{
-Omboni, S., Parati, G*., Zanchetti, A., Mancia, G. Calculation of trough: peak ratio of
-antihypertensive treatment from ambulatory blood pressure: methodological aspects
-\emph{Journal of Hypertension}. October 1995 - Volume 13 - Issue 10 - p 1105-1112
-\doi{10.1097/00004872-199510000-00005}
+Lee H, Yano Y, Cho SMJ, Park JH, Park S, Lloyd-Jones DM, et al. Cardiovascular risk of isolated systolic
+or diastolic hypertension in young adults. \emph{Circulation}. 2020;141(22):1778–1786.
+\doi{0.1161/CIRCULATIONAHA.119.044838}
 }

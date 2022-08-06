@@ -8,10 +8,13 @@
 #' contain data for Systolic blood pressure and Diastolic blood pressure at a
 #' minimum.
 #'
-#' @param bp_type Required argument specifying which of the three BP data types
-#' ("HBPM", "ABPM", or "AP") the input data is. Default \code{bp_type} set to "HBPM".
+#' @param bp_type Required argument specifying which of the four BP data types
+#' ("HBPM", "ABPM", "OBP", or "AP") the input data is. Default \code{bp_type} set to "HBPM".
 #' This argument determines which processing steps are necessary to yield sensible
 #' output.
+#'
+#' HBPM - Home Blood Pressure Monitor | ABPM - Ambulatory Blood Pressure |
+#' OBP - Office Blood Pressure | AP - Arterial Pressure
 #'
 #' @param ap (For AP data only) Required column name (character string) corresponding
 #' to continuous Arterial Pressure (AP) (mmHg). Note that this is a required argument
@@ -58,6 +61,10 @@
 #' @param rpp Optional column name (character string) corresponding to Rate Pulse
 #' Pressure (SBP * HR). If not supplied, but HR column available, then
 #' RPP will be calculated automatically.
+#'
+#' @param guidelines temporary
+#'
+#' @param bp_cutoffs temporary
 #'
 #' @param DoW Optional column name (character string) corresponding to the Day of the Week.
 #' If not supplied, but DATE or DATE_TIME columns available, then DoW will be created
@@ -182,7 +189,7 @@
 #'
 #' # Process data for bp_hypnos
 #' hypnos_proc <- process_data(bp_hypnos,
-#'                               bp_type = 'abpm',
+#'                               bp_type = 'ABPM',
 #'                               sbp = 'syst',
 #'                               dbp = 'diast',
 #'                               date_time = 'date.time',
@@ -214,7 +221,9 @@
 process_data <- function(data,
 
                              # Home Blood Pressure Monitor (HBPM) | Ambulatory Blood Pressure Monitor (ABPM) | Arterial Pressure (AP)
-                             bp_type = c("hbpm", "abpm", "ap"),
+                             bp_type = c("HBPM", "ABPM", "AP", "OBP"),
+                             guidelines = c("Lee_2020", "AHA", "Custom"),
+                             bp_cutoffs = list( c(100, 120, 130, 140, 180), c(60, 80, 90, 120)),
 
                              # For AP data
                              ap = NULL,
@@ -252,7 +261,7 @@ process_data <- function(data,
                              collapse_df = FALSE,
                              dt_fmt = "ymd HMS",
                              chron_order = FALSE,
-                             tz = "UTC"){
+                             tz = "UTC" ){
 
 
   # Prepare all variables used via dplyr
@@ -261,9 +270,10 @@ process_data <- function(data,
 
 
 
-  # Match BP Type: Home Blood Pressure Monitor (HBPM) | Ambulatory Blood Pressure Monitor (ABPM) | Arterial Pressure (AP)
-  bp_type <- tolower(bp_type)
-  bp_type <- toupper( match.arg(bp_type) )
+  # Match BP Type: Home Blood Pressure Monitor (HBPM) | Ambulatory Blood Pressure Monitor (ABPM) | Arterial Pressure (AP) | Office Blood Pressure (OBP)
+  bp_type = match.arg(bp_type)
+  # bp_type <- tolower(bp_type)
+  # bp_type <- toupper( match.arg(bp_type) )
 
 
   # Ensure that data is either data.frame or matrix
@@ -314,7 +324,7 @@ process_data <- function(data,
   # ************************************************************************************************************ #
 
 
-  if(toupper(bp_type) == "ABPM" | toupper(bp_type) == "HBPM"){
+  if(toupper(bp_type) == "ABPM" | toupper(bp_type) == "HBPM" | toupper(bp_type) == "OBP"){
 
 
         # Throw error if SBP and DBP columns aren't specified
@@ -392,8 +402,13 @@ process_data <- function(data,
 
         }
 
+        # Create column indicating blood pressure type (bp_type)
+        data$BP_TYPE <- bp_type
+
+
         # SBP Adjustment, DBP Adjustment, and BP Stages
         data <- bp_stages(data = data,
+                          bp_type = bp_type,
                           sbp = sbp,
                           dbp = dbp,
                           inc_low = inc_low,
@@ -403,7 +418,9 @@ process_data <- function(data,
                           SLL = SLL,
                           DUL = DUL,
                           DLL = DLL,
-                          adj_sbp_dbp = FALSE)
+                          adj_sbp_dbp = FALSE,
+                          guidelines = guidelines,
+                          bp_cutoffs = bp_cutoffs)
 
 
         # Move Classification columns to correct positions
@@ -414,9 +431,6 @@ process_data <- function(data,
 
   }
 
-
-  # Create column indicating blood pressure type (bp_type)
-  data$BP_TYPE <- bp_type
 
   # Sanity check for any future additions to this function to ensure all columns are capitalized for consistency
   colnames(data) <- toupper( colnames(data) )

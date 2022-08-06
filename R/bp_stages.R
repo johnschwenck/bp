@@ -1,3 +1,187 @@
+
+# Compatibility Checks for user-defined bp_cutoffs function input
+cutoff_input_check <- function(SUL, DUL, bp_cutoffs){
+
+      # Check SUL, DUL limits
+
+      if(SUL < max(bp_cutoffs[[1]]) ){
+        stop('SUL less than highest bp_cutoff value for SBP within bp_stages function. To adjust highest SBP limit, set guidelines = "Custom" and adjust bp_cutoffs argument')
+      }
+
+      if(DUL < max(bp_cutoffs[[2]]) ){
+        stop('DUL less than highest bp_cutoff value for DBP within bp_stages function. To adjust highest DBP limit, set guidelines = "Custom" and adjust bp_cutoffs argument')
+      }
+
+      if( any( c(SUL, DUL, bp_cutoffs[[1]], bp_cutoffs[[2]]) < 0) ){
+        stop('Cannot have negative values for SLL, SUL, DLL, DUL, or elements of bp_cutoffs list')
+      }
+
+      # Check compatibility of supplied bp_cutoffs threshold values
+
+      # Length check
+      if ( (length( bp_cutoffs[[1]] ) != 5) | (length( bp_cutoffs[[2]] ) != 4) ){
+        stop("Five threshold values should be supplied to first element of bp_cutoffs, and four treshold values should be supplied to second element")
+      }
+      # Numerical value check
+      if ( (!is.numeric( bp_cutoffs[[1]] )) | (!is.numeric( bp_cutoffs[[2]] )) ){
+        stop("Numeric values should be supplied as thresholds to bp_cutoffs elements")
+      }
+      # Range check
+      if ((min(bp_cutoffs[[1]]) < 0)|(min(bp_cutoffs[[2]]) < 0) |(max(bp_cutoffs[[1]]) > SUL) | (max(bp_cutoffs[[2]]) > DUL)){
+        stop("Thresholds for bp_cutoffs elements must be between [SLL, SUL] and [DLL, DUL] range, respectively")
+      }
+      # Sorting check
+      if ( (!identical( bp_cutoffs[[1]], sort( bp_cutoffs[[1]] ) )) | (!identical(bp_cutoffs[[2]], sort( bp_cutoffs[[2]] ) )) ){
+        stop("Thresholds for bp_cutoffs elements must be supplied from smallest to largest")
+      }
+      #
+      if( ( all(bp_cutoffs[[1]] == cummax(bp_cutoffs[[1]])) & all(bp_cutoffs[[2]] == cummax(bp_cutoffs[[2]])) ) == FALSE){
+        stop('bp_cutoffs elements must be increasing vectors of integers.')
+      }
+
+  return(bp_cutoffs)
+}
+
+
+
+# Create documentation once cutoff format issue is resolved
+# stage_lookup creates the lookup table for comparing input data to
+
+stage_lookup_v1 <- function(bp_type = c("OBP", "HBPM", "ABPM"),
+                            guidelines = c("Lee_2020", "AHA", "Custom"),
+                            bp_cutoffs = list( c(100, 120, 130, 140, 180), c(60, 80, 90, 120)),
+                            SUL = 240, DUL = 140, inc_low = TRUE, inc_crisis = TRUE){
+
+
+  # Match guidelines & bp_type specified in function arguments
+  guidelines = match.arg(guidelines)
+  bp_type = match.arg(bp_type)
+  #print(guidelines)
+
+
+
+  # Default Lee_2020 stages for reference in compatibility checks
+  default_stages = c( "Low", "Normal", "Elevated", "Stage 1", "ISH - S1", "IDH - S1", "Stage 2", "ISH - S2", "IDH - S2", "Crisis" )
+  default_cutoffs = list( c(100, 120, 130, 140, 180), c(60, 80, 90, 120))
+  default_sbp_dbp_ops = c("&", "&", "&", "&", "&", "&", "&", "&", "&", "|")
+
+
+  # Lee 2020 cutoffs are fixed according to paper, cannot change
+
+  if( (guidelines == "Lee_2020" ) & (identical(bp_cutoffs, default_cutoffs) == FALSE ) ){
+
+        warning('bp_cutoffs input ignored since guidelines set to "Lee_2020". To set custom bp_cutoffs, set guidelines = "Custom"')
+
+  }
+
+
+  # bp_cutoff Adjustment - Return output based on guidelines chosen above:
+
+  # Custom implies a custom input vector list for bp_cutoffs whereas Lee/AHA implies pre-determined inputs based on bp_type
+  # i.e. bp_type only matters for AHA guidelines --> Lee is fixed, Custom is assumed to be pre-specified to the associated bp_type
+
+  if(guidelines == "Custom"){
+
+        # Different thresholds, possibly different stages
+
+        if( identical(bp_cutoffs, default_cutoffs) == TRUE ){
+          message('guidelines = "Custom", but bp_cutoffs unchanged (set to default values). Proceeding with Lee 2020 guidelines.')
+        }
+
+        bp_cutoffs = cutoff_input_check(SUL, DUL, bp_cutoffs)
+
+  }else{
+
+
+        # If not custom, then either Lee or AHA
+        # Lee ==> AHA
+
+        if(guidelines == "Lee_2020"){
+          bp_cutoffs = default_cutoffs #list( c(100, 120, 130, 140, 180), c(60, 80, 90, 120))
+
+
+        }else if(guidelines == "AHA"){
+
+            # if bp_cutoffs differ from default_cutoffs it implies that the user changed the bp_cutoffs input argument
+            if( identical(bp_cutoffs, default_cutoffs) == FALSE ){
+
+                # Indicate that bp_cutoffs changed from default
+                user_change = TRUE
+
+                # Run checks for bp_cutoff supplied by user
+                bp_cutoffs = cutoff_input_check(SUL, DUL, bp_cutoffs)
+
+            }else{user_change = FALSE}
+
+            # User did not change the bp_cutoffs argument --> use the cutoffs specified by AHA
+            if(user_change == FALSE){
+
+                if(bp_type == "OBP"){
+                  bp_cutoffs = list( c(100, 120, 130, 140, 160), c(60, 80, 90, 100))
+
+                }else if(bp_type == "HBPM"){
+                  bp_cutoffs = list( c(100, 120, 130, 135, 145), c(60, 80, 85, 90))
+
+                }else if(bp_type == "ABPM"){
+                  bp_cutoffs = list( c(100, 115, 125, 130, 145), c(60, 75, 80, 90))
+                }
+
+            }else{
+                message('AHA guidelines specified, but bp_cutoffs changed by user.
+bp_cutoffs will override AHA guidelines for the respective bp_type.
+If this is a mistake, leave bp_cutoffs to default values and keep guidelines = "AHA".')
+              }
+
+        }
+
+  }
+
+  # specify each of the 4 LL/UL vectors using user input
+  sbp_LL  = c( 0, 0, bp_cutoffs[[1]][2], bp_cutoffs[[1]][3], bp_cutoffs[[1]][3], 0, bp_cutoffs[[1]][4], bp_cutoffs[[1]][4], 0, bp_cutoffs[[1]][5] )
+  sbp_UL = c( bp_cutoffs[[1]][1], bp_cutoffs[[1]][2], bp_cutoffs[[1]][3], bp_cutoffs[[1]][4], bp_cutoffs[[1]][4], bp_cutoffs[[1]][3], bp_cutoffs[[1]][5], bp_cutoffs[[1]][5], bp_cutoffs[[1]][4], SUL )
+  dbp_LL =  c( 0, 0, 0, bp_cutoffs[[2]][2], 0, bp_cutoffs[[2]][2],   bp_cutoffs[[2]][3], 0, bp_cutoffs[[2]][3], bp_cutoffs[[2]][4] )
+  dbp_UL = c( bp_cutoffs[[2]][1], bp_cutoffs[[2]][2], bp_cutoffs[[2]][2], bp_cutoffs[[2]][3], bp_cutoffs[[2]][2], bp_cutoffs[[2]][3], bp_cutoffs[[2]][4], bp_cutoffs[[2]][3], bp_cutoffs[[2]][4], DUL )
+
+  # Output including all 10 stages from Lee et al. 2020
+  out = data.frame(default_stages, sbp_LL, sbp_UL, default_sbp_dbp_ops, dbp_LL, dbp_UL)
+
+  colnames(out)[1] <- "Stages"
+  colnames(out)[4] <- "Operation"
+
+  if(guidelines == "AHA"){
+
+    out = out[ out[ , 1] %in% default_stages[c(2,3,4,7,10)] , ]
+    row.names(out) <- NULL
+
+    out$Operation[c(3,4)] <- c("|", "|")
+
+  }
+
+
+  if(inc_low == FALSE){
+
+    out = out[ out[ , 1] %in% default_stages[!(default_stages %in% "Low")] , ]
+    row.names(out) <- NULL
+
+  }
+
+  if(inc_crisis == FALSE){
+
+    out = out[ out[ , 1] %in% default_stages[!(default_stages %in% "Crisis")] , ]
+    row.names(out) <- NULL
+
+  }
+
+
+  return(out)
+
+}
+
+
+
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
+
+
 #' Alternative Blood Pressure Stages
 #'
 #' Adds BP_CLASS, SBP_Category, and DBP_Category columns to supplied dataframe.
@@ -11,6 +195,12 @@
 #' @param sbp column name corresponding to systolic blood pressure (SBP)
 #'
 #' @param dbp column name corresponding to diastolic blood pressure (DBP)
+#'
+#' @param bp_type temporary
+#'
+#' @param guidelines temporary
+#'
+#' @param bp_cutoffs temporary
 #'
 #' @param inc_low A TRUE / FALSE indicator of whether or not to include the "Low" (Hypotension)
 #' category to the scatter plot. The range for Hypotension is set from a minimum of 25 for DBP or 80
@@ -52,10 +242,9 @@
 #' supplementary SBP / DBP categories
 #'
 #' @references
-#' Omboni, S., Parati, G*., Zanchetti, A., Mancia, G. Calculation of trough: peak ratio of
-#' antihypertensive treatment from ambulatory blood pressure: methodological aspects
-#' \emph{Journal of Hypertension}. October 1995 - Volume 13 - Issue 10 - p 1105-1112
-#' \doi{10.1097/00004872-199510000-00005}
+#' Lee H, Yano Y, Cho SMJ, Park JH, Park S, Lloyd-Jones DM, et al. Cardiovascular risk of isolated systolic
+#' or diastolic hypertension in young adults. \emph{Circulation}. 2020;141(22):1778–1786.
+#' \doi{0.1161/CIRCULATIONAHA.119.044838}
 #'
 #' @export
 #'
@@ -71,13 +260,18 @@
 #'
 #' bp_stages(bp_jhs, sbp = "sys.mmhg.", dbp = "dias.mmhg.")
 #'
-bp_stages <- function(data, sbp, dbp, inc_low = TRUE, inc_crisis = TRUE, data_screen = TRUE, SUL = 240, SLL = 50, DUL = 140, DLL = 40, adj_sbp_dbp = TRUE){
+bp_stages <- function(data, sbp, dbp, bp_type = c("HBPM", "ABPM", "OBP"), inc_low = TRUE, inc_crisis = TRUE, data_screen = TRUE,
+                      SUL = 240, SLL = 50, DUL = 140, DLL = 40, adj_sbp_dbp = TRUE,
+                      guidelines = c("Lee_2020", "AHA", "Custom"),
+                      bp_cutoffs = list( c(100, 120, 130, 140, 180), c(60, 80, 90, 120)) ){
 
-  # BP Categories / Stages
-  # Only require SBP and DBP
+  SBP = DBP = BP_CLASS = . = NULL
+  rm(list = c('SBP', 'DBP', 'BP_CLASS', '.'))
 
-  SBP = DBP = BP_CLASS = HOUR = DATE_TIME = . = NULL
-  rm(list = c("SBP", "DBP", "BP_CLASS", "HOUR", "DATE_TIME", "."))
+  # Set bp_type and guidelines
+  bp_type = match.arg(bp_type)
+  guidelines = match.arg(guidelines)
+
 
   # Convert all column names to upper case for consistency
   colnames(data) <- toupper(colnames(data))
@@ -85,17 +279,13 @@ bp_stages <- function(data, sbp, dbp, inc_low = TRUE, inc_crisis = TRUE, data_sc
   # SBP / DBP Adjustments
   if(adj_sbp_dbp == TRUE){
 
-      # Adjust SBP
-      data <- sbp_adj(data = data, sbp = sbp, data_screen = data_screen, SUL = SUL, SLL = SLL)
+    # Adjust SBP
+    data <- sbp_adj(data = data, sbp = sbp, data_screen = data_screen, SUL = SUL, SLL = SLL)
 
-      # Adjust DBP
-      data <- dbp_adj(data = data, dbp = dbp, data_screen = data_screen, DUL = DUL, DLL = DLL)
+    # Adjust DBP
+    data <- dbp_adj(data = data, dbp = dbp, data_screen = data_screen, DUL = DUL, DLL = DLL)
 
   }
-
-  # Compatibility Check for user-supplied stages if applicable
-  #sbp_stages <- stage_check(sbp_stages_alt, dbp_stages_alt)[[1]]
-  #dbp_stages <- stage_check(sbp_stages_alt, dbp_stages_alt)[[2]]
 
 
   # If all SBP/DBP values are NA (due to data screening), change BP_CLASS to NA and avoid all future computation to avoid min/max warning
@@ -110,272 +300,67 @@ bp_stages <- function(data, sbp, dbp, inc_low = TRUE, inc_crisis = TRUE, data_sc
     # Throw warning to inform user that all SBP or DBP values were screened out due to data_screen argument
     warning('All SBP values or all DBP values are NA. \n\nThis is most likely due to data being filtered out by data_screen argument in process_data(). \nEnsure that upper and lower limits for SBP/DBP are correct.')
 
-  }else{
-
-      # Initialize IDH - S1, Elevated, and ISH - S1 as they never change
-      xlim_breaks <- c(80, 90)
-      ylim_breaks <- c(120, 130, 140)
-
-      opts <- "NONE" # include neither low nor crisis category
-
-      # Check whether user wants to include a 'Low (Hypotension)' category
-      if( inc_low == TRUE ){
-
-        low_x_lim <- c( floor(min(25, min(data$DBP, na.rm = TRUE) - 10)), 60)
-        low_y_lim <- c( floor(min(80, min(data$SBP, na.rm = TRUE) - 10)), 100)
-
-        norm_x_lim <- c(60, 80)
-        norm_y_lim <- c(100, 120)
-
-        xlim_breaks <- c(low_x_lim, xlim_breaks)
-        ylim_breaks <- c(low_y_lim, ylim_breaks)
-
-        opts <- "LOW" # include only low category
-
-      }else{
-
-        xlim_breaks <- c( floor(min(25, min(data$DBP, na.rm = TRUE) - 10)), xlim_breaks )
-        ylim_breaks <- c( floor(min(80, min(data$SBP, na.rm = TRUE) - 10)), ylim_breaks )
-
-      }
-
-
-      # Check whether user wants to include a hypertensive 'Crisis' category
-      if( inc_crisis == TRUE ){
-
-        crisis_x_lim <- c(120, max(140, max(data$DBP, na.rm = TRUE) + 10) )
-        crisis_y_lim <- c(180, max(200, max(data$SBP, na.rm = TRUE) + 10) )
-
-        s2_x_lim <- c(90, 120)
-        s2_y_lim <- c(140, 180)
-
-        xlim_breaks <- c( xlim_breaks, crisis_x_lim)
-        xlim_breaks <- ceiling(xlim_breaks)
-
-        ylim_breaks <- c( ylim_breaks, crisis_y_lim)
-        ylim_breaks <- ceiling(ylim_breaks)
-
-        if(opts == "LOW"){
-          opts <- "LOW_CRISIS" # include both low and crisis categories
-        }else{
-          opts <- "CRISIS" # include only crisis category
-        }
-
-      }else{
-
-        xlim_breaks <- c(xlim_breaks, max(120, max(data$DBP, na.rm = TRUE) + 10) )
-        xlim_breaks <- ceiling(xlim_breaks)
-
-        ylim_breaks <- c(ylim_breaks, max(140, max(data$SBP, na.rm = TRUE) + 10) )
-        ylim_breaks <- ceiling(ylim_breaks)
-
-      }
-
-
-
-
-      # Categorize data by stage
-      data <- data %>%
-        dplyr::mutate( BP_CLASS = dplyr::case_when(
-
-          # Include neither Low nor Crisis categories
-          opts == "NONE" ~ dplyr::case_when(
-
-                # Original categories
-                 SBP < ylim_breaks[2] & DBP < xlim_breaks[2] ~ "Normal",
-                (SBP >= ylim_breaks[2] & SBP < ylim_breaks[3]) & (DBP < xlim_breaks[2]) ~ "Elevated",
-                (SBP >= ylim_breaks[3] & SBP < ylim_breaks[4]) & (DBP >= xlim_breaks[2] & DBP < xlim_breaks[3]) ~ "Stage 1",
-                (SBP >= ylim_breaks[4]) & (DBP >= xlim_breaks[3]) ~ "Stage 2",
-
-                # Isolated categories
-
-                # Stage 1
-                (SBP >= ylim_breaks[3] & SBP < ylim_breaks[4]) & (DBP < xlim_breaks[2]) ~ "ISH - S1",
-                (SBP < ylim_breaks[3]) & (DBP >= xlim_breaks[2] & DBP < xlim_breaks[3]) ~ "IDH - S1",
-
-                # Stage 2
-                (SBP >= ylim_breaks[4]) & (DBP < xlim_breaks[3]) ~ "ISH - S2",
-                (SBP < ylim_breaks[4]) & (DBP >= xlim_breaks[3]) ~ "IDH - S2"
-
-          ),
-
-
-          # Include Low only
-          opts == "LOW" ~ dplyr::case_when(
-
-                # Original categories
-                 SBP < ylim_breaks[2] & DBP < xlim_breaks[2] ~ "Low",
-
-                # All possibilities of normal
-                (SBP >= ylim_breaks[2] & SBP < ylim_breaks[3]) & (DBP >= xlim_breaks[2] & DBP < xlim_breaks[3]) |
-                (SBP >= ylim_breaks[2] & SBP < ylim_breaks[3]) & (DBP < xlim_breaks[2]) |
-                (SBP < ylim_breaks[2]) & (DBP >= xlim_breaks[2] & DBP < xlim_breaks[3]) ~ "Normal",
-
-                (SBP >= ylim_breaks[3] & SBP < ylim_breaks[4]) & (DBP < xlim_breaks[3]) ~ "Elevated",
-                (SBP >= ylim_breaks[4] & SBP < ylim_breaks[5]) & (DBP >= xlim_breaks[3] & DBP < xlim_breaks[4]) ~ "Stage 1",
-                (SBP >= ylim_breaks[5]) & (DBP >= xlim_breaks[4]) ~ "Stage 2",
-
-                # Isolated categories
-
-                # Stage 1
-                (SBP >= ylim_breaks[4] & SBP < ylim_breaks[5]) & (DBP < xlim_breaks[3]) ~ "ISH - S1",
-                (SBP < ylim_breaks[4]) & (DBP >= xlim_breaks[3] & DBP < xlim_breaks[4]) ~ "IDH - S1",
-
-                # Stage 2
-                (SBP >= ylim_breaks[5]) & (DBP < xlim_breaks[4]) ~ "ISH - S2",
-                (SBP < ylim_breaks[5]) & (DBP >= xlim_breaks[4]) ~ "IDH - S2"
-
-          ),
-
-
-          # Include Crisis only
-          opts == "CRISIS" ~ dplyr::case_when(
-
-                # Original categories
-                 SBP < ylim_breaks[2] & DBP < xlim_breaks[2] ~ "Normal",
-                (SBP >= ylim_breaks[2] & SBP < ylim_breaks[3]) & (DBP < xlim_breaks[2]) ~ "Elevated",
-                (SBP >= ylim_breaks[3] & SBP < ylim_breaks[4]) & (DBP >= xlim_breaks[2] & DBP < xlim_breaks[3]) ~ "Stage 1",
-                (SBP >= ylim_breaks[4] & SBP < ylim_breaks[5]) & (DBP >= xlim_breaks[3] & DBP < xlim_breaks[4]) ~ "Stage 2",
-
-                # Isolated categories
-
-                # Stage 1
-                (SBP >= ylim_breaks[3] & SBP < ylim_breaks[4]) & (DBP < xlim_breaks[2]) ~ "ISH - S1",
-                (SBP < ylim_breaks[3]) & (DBP >= xlim_breaks[2] & DBP < xlim_breaks[3]) ~ "IDH - S1",
-
-                # Stage 2
-                (SBP >= ylim_breaks[4] & SBP < ylim_breaks[5]) & (DBP < xlim_breaks[3]) ~ "ISH - S2",
-                (SBP < ylim_breaks[4]) & (DBP >= xlim_breaks[3] & DBP < xlim_breaks[4]) ~ "IDH - S2",
-
-                SBP >= ylim_breaks[5] | DBP >= xlim_breaks[4] ~ "Crisis"
-
-          ),
-
-
-          # Include both Low and Crisis
-          opts == "LOW_CRISIS" ~ dplyr::case_when(
-
-                # Original categories
-
-                # Low
-                SBP < ylim_breaks[2] & DBP < xlim_breaks[2] ~ "Low",
-
-                # All possibilities of normal
-                (SBP >= ylim_breaks[2]  &  SBP <  ylim_breaks[3]) & (DBP >= xlim_breaks[2] & DBP < xlim_breaks[3]) |
-                (SBP >= ylim_breaks[2]  &  SBP <  ylim_breaks[3]) & (DBP <  xlim_breaks[2]) |
-                (SBP <  ylim_breaks[2]) & (DBP >= xlim_breaks[2]  &  DBP <  xlim_breaks[3]) ~ "Normal",
-
-                (SBP >= ylim_breaks[3] & SBP < ylim_breaks[4]) & (DBP <  xlim_breaks[3]) ~ "Elevated",
-                (SBP >= ylim_breaks[4] & SBP < ylim_breaks[5]) & (DBP >= xlim_breaks[3] & DBP < xlim_breaks[4]) ~ "Stage 1",
-                (SBP >= ylim_breaks[5] & SBP < ylim_breaks[6]) & (DBP >= xlim_breaks[4] & DBP < xlim_breaks[5]) ~ "Stage 2",
-
-                # Isolated categories
-
-                # Stage 1
-                (SBP >= ylim_breaks[4]  & SBP  <  ylim_breaks[5]) & (DBP < xlim_breaks[3]) ~ "ISH - S1",
-                (SBP <  ylim_breaks[4]) & (DBP >= xlim_breaks[3]  &  DBP < xlim_breaks[4]) ~ "IDH - S1",
-
-                # Stage 2
-                (SBP >= ylim_breaks[5]  &  SBP  < ylim_breaks[6]) & (DBP < xlim_breaks[4]) ~ "ISH - S2",
-                (SBP <  ylim_breaks[5]) & (DBP >= xlim_breaks[4]  & DBP  < xlim_breaks[5]) ~ "IDH - S2",
-
-                SBP >= ylim_breaks[6] | DBP >= xlim_breaks[5] ~ "Crisis"
-
-          ),
-
-          TRUE ~ "ERROR"
-
-        )) %>%
-
-        # Move BP_CLASS column to front after DBP
-        dplyr::relocate(BP_CLASS, .after = DBP)
-
-
-
-        # data %>%
-        #   dplyr::mutate(
-        #       BP_CLASS = dplyr::case_when(
-        #         opts == "NONE" ~ factor(BP_CLASS, ordered = TRUE, levels = c("Normal", "Elevated", "Stage 1", "IDH - S1", "ISH - S1", "Stage 2", "IDH - S2", "ISH - S2")),
-        #         opts == "LOW" ~ factor(BP_CLASS, ordered = TRUE, levels = c("Low", "Normal", "Elevated", "Stage 1", "IDH - S1", "ISH - S1", "Stage 2", "IDH - S2", "ISH - S2")),
-        #         opts == "CRISIS" ~ factor(BP_CLASS, ordered = TRUE, levels = c("Normal", "Elevated", "Stage 1", "IDH - S1", "ISH - S1", "Stage 2", "IDH - S2", "ISH - S2", "Crisis")),
-        #         opts == "LOW_CRISIS" ~ factor(BP_CLASS, ordered = TRUE, levels = low_cris_lev[which(low_cris_lev %in% unique(tmp$BP_CLASS) == TRUE)] )
-        #   ))
-
-
-
-        all_stage_options <- c("Low", "Normal", "Elevated", "Stage 1", "IDH - S1", "ISH - S1", "Stage 2", "IDH - S2", "ISH - S2", "Crisis")
-        data$BP_CLASS <- factor(data$BP_CLASS, ordered = TRUE, levels = all_stage_options[which(all_stage_options %in% unique(data$BP_CLASS) == TRUE)] )
-
-
-
-      # Old code for SBP/DBP categories
-
-        # SBP Category - Not a 2-to-1 mapping like BP_CLASS, but serves to isolate where most of the values for SBP fall
-        data <- data %>% dplyr::mutate(SBP_CATEGORY = dplyr::case_when(
-
-                        opts == "NONE" ~ dplyr::case_when(SBP < ylim_breaks[2] ~ "Normal",
-                                                          SBP >=  ylim_breaks[2] & SBP < ylim_breaks[3] ~ "Elevated",
-                                                          SBP >=  ylim_breaks[3] & SBP < ylim_breaks[4] ~ "Stage 1",
-                                                          SBP >=  ylim_breaks[4] & SBP < ylim_breaks[5] ~ "Stage 2"),
-
-                        opts == "LOW" ~ dplyr::case_when(SBP < ylim_breaks[2] ~ "Low",
-                                                         SBP >=  ylim_breaks[2] & SBP < ylim_breaks[3] ~ "Normal",
-                                                         SBP >=  ylim_breaks[3] & SBP < ylim_breaks[4] ~ "Elevated",
-                                                         SBP >=  ylim_breaks[4] & SBP < ylim_breaks[5] ~ "Stage 1",
-                                                         SBP >=  ylim_breaks[5] & SBP < ylim_breaks[6] ~ "Stage 2"),
-
-                        opts == "CRISIS" ~ dplyr::case_when(SBP < ylim_breaks[2] ~ "Normal",
-                                                            SBP >=  ylim_breaks[2] & SBP < ylim_breaks[3] ~ "Elevated",
-                                                            SBP >=  ylim_breaks[3] & SBP < ylim_breaks[4] ~ "Stage 1",
-                                                            SBP >=  ylim_breaks[4] & SBP < ylim_breaks[5] ~ "Stage 2",
-                                                            SBP >=  ylim_breaks[5] & SBP < ylim_breaks[6] ~ "Crisis"),
-
-                        opts == "LOW_CRISIS" ~ dplyr::case_when(SBP < ylim_breaks[2] ~ "Low",
-                                                                SBP >=  ylim_breaks[2] & SBP < ylim_breaks[3] ~ "Normal",
-                                                                SBP >=  ylim_breaks[3] & SBP < ylim_breaks[4] ~ "Elevated",
-                                                                SBP >=  ylim_breaks[4] & SBP < ylim_breaks[5] ~ "Stage 1",
-                                                                SBP >=  ylim_breaks[5] & SBP < ylim_breaks[6] ~ "Stage 2",
-                                                                SBP >=  ylim_breaks[6] & SBP < ylim_breaks[7] ~ "Crisis"),
-
-                        TRUE ~ "ERROR"
-
-        ))
-
-        data$SBP_CATEGORY <- factor(data$SBP_CATEGORY, ordered = TRUE, levels = all_stage_options[which(all_stage_options %in% unique(data$SBP_CATEGORY) == TRUE)] )
-
-
-
-        # DBP Category - Not a 2-to-1 mapping like BP_CLASS, but serves to isolate where most of the values for DBP fall
-        data <- data %>% dplyr::mutate(DBP_CATEGORY = dplyr::case_when(
-
-                        opts == "NONE" ~ dplyr::case_when(DBP < xlim_breaks[2] ~ "Normal",
-                                                          DBP >=  xlim_breaks[2] & DBP < xlim_breaks[3] ~ "Stage 1",
-                                                          DBP >=  xlim_breaks[3] & DBP < xlim_breaks[4] ~ "Stage 2"),
-
-                        opts == "LOW" ~ dplyr::case_when(DBP < xlim_breaks[2] ~ "Low",
-                                                         DBP >=  xlim_breaks[2] & DBP < xlim_breaks[3] ~ "Normal",
-                                                         DBP >=  xlim_breaks[3] & DBP < xlim_breaks[4] ~ "Stage 1",
-                                                         DBP >=  xlim_breaks[4] & DBP < xlim_breaks[5] ~ "Stage 2"),
-
-                        opts == "CRISIS" ~ dplyr::case_when(DBP < xlim_breaks[2] ~ "Normal",
-                                                            DBP >=  xlim_breaks[2] & DBP < xlim_breaks[3] ~ "Stage 1",
-                                                            DBP >=  xlim_breaks[3] & DBP < xlim_breaks[4] ~ "Stage 2",
-                                                            DBP >=  xlim_breaks[4] & DBP < xlim_breaks[5] ~ "Crisis"),
-
-                        opts == "LOW_CRISIS" ~ dplyr::case_when(DBP < xlim_breaks[2] ~ "Low",
-                                                                DBP >=  xlim_breaks[2] & DBP < xlim_breaks[3] ~ "Normal",
-                                                                DBP >=  xlim_breaks[3] & DBP < xlim_breaks[4] ~ "Stage 1",
-                                                                DBP >=  xlim_breaks[4] & DBP < xlim_breaks[5] ~ "Stage 2",
-                                                                DBP >=  xlim_breaks[5] & DBP < xlim_breaks[6] ~ "Crisis"),
-
-                        TRUE ~ "ERROR"
-
-        ))
-
-        data$DBP_CATEGORY <- factor(data$DBP_CATEGORY, ordered = TRUE, levels = all_stage_options[which(all_stage_options %in% unique(data$DBP_CATEGORY) == TRUE)] )
-
   }
 
+
+  # Initiate lookup table for stage cutoffs
+  bp_lookup <- stage_lookup_v1(bp_type = bp_type, guidelines = guidelines, bp_cutoffs = bp_cutoffs,
+                               SUL = SUL, DUL = DUL, inc_low = inc_low, inc_crisis = inc_crisis)
+
+  stages <- bp_lookup$Stages
+
+  # Initiate BP_CLASS column in data
+  if( "BP_CLASS" %in% colnames(data) ){
+
+    colnames(data)[colnames(data) == "BP_CLASS"] <- "BP_CLASS_OLD"
+  }
+
+  data$BP_CLASS <- NA
+  data$SBP_CATEGORY <- NA
+  data$DBP_CATEGORY <- NA
+
+
+  ### BP_CLASS Column
+
+  # Loop through conditions, match BP stage
+  for ( i in 1:(length( unique(bp_lookup$Stages) ) ) ){
+    if( eval(parse(text = paste( "nrow(data[ which( ( (data$SBP >= bp_lookup$sbp_LL[",i,"]) & (data$SBP < bp_lookup$sbp_UL[",i,"])", bp_lookup$Operation[i], "( (data$DBP >= bp_lookup$dbp_LL[",i,"]) & (data$DBP < bp_lookup$dbp_UL[",i,"]) ) )), ]) != 0 " ) )) ){
+      data[ which( eval(parse(text = paste( "( (data$SBP >= bp_lookup$sbp_LL[",i,"]) & (data$SBP < bp_lookup$sbp_UL[",i,"])", bp_lookup$Operation[i], "( (data$DBP >= bp_lookup$dbp_LL[",i,"]) & (data$DBP < bp_lookup$dbp_UL[",i,"]) ) )")))), ]$BP_CLASS <- stages[i]
+    }else{
+      next
+    }
+  }
+
+  # Re-factor BP_CLASS column in order of hypertension stages
+  data$BP_CLASS <- factor(data$BP_CLASS, ordered = TRUE, levels = stages[which(stages %in% unique(data$BP_CLASS) == TRUE)] )
+
+  # Move BP_CLASS column to front after DBP
+  data <- data %>% dplyr::relocate(BP_CLASS, .after = DBP)
+
+
+  ### SBP_CATEGORY / DBP_CATEGORY for plots
+
+  AHA_lookup <- stage_lookup_v1(bp_type = "OBP", guidelines = "AHA",
+                                SUL = SUL, DUL = DUL, inc_low = inc_low, inc_crisis = inc_crisis)
+  AHA_stages <- AHA_lookup$Stages
+
+  # SBP_Category
+  for ( i in 1:(length( unique(AHA_lookup$Stages) ) ) ){
+    if( eval(parse(text = paste( "nrow(data[ which( ( (data$SBP >= AHA_lookup$sbp_LL[",i,"]) & (data$SBP < AHA_lookup$sbp_UL[",i,"]) ) ), ]) != 0 " ) )) ){
+      data[ which( eval(parse(text = paste( "( (data$SBP >= AHA_lookup$sbp_LL[",i,"]) & (data$SBP < AHA_lookup$sbp_UL[",i,"]) )") )) ), ]$SBP_CATEGORY <- AHA_stages[i]
+    }
+  }
+
+  # DBP_Category
+  for ( i in which(AHA_lookup$Stages %in% c("Normal", "Stage 1", "Stage 2", "Crisis")) ){
+    if( eval(parse(text = paste( "nrow(data[ which( ( (data$DBP >= AHA_lookup$dbp_LL[",i,"]) & (data$DBP < AHA_lookup$dbp_UL[",i,"]) ) ), ]) != 0 " ) )) ){
+      data[ which( eval(parse(text = paste( "( (data$DBP >= AHA_lookup$dbp_LL[",i,"]) & (data$DBP < AHA_lookup$dbp_UL[",i,"]) )") )) ), ]$DBP_CATEGORY <- AHA_stages[i]
+    }
+  }
+
+
   return(data)
+
 }
+
 
