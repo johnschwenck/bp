@@ -210,7 +210,7 @@ If this is a mistake, leave bp_cutoffs to default values and keep guidelines = "
 #'
 #' bp_stages(bp_jhs, sbp = "sys.mmhg.", dbp = "dias.mmhg.")
 #'
-bp_stages <- function(data, sbp, dbp, bp_type = c("hbpm", "abpm", "ap"), inc_low = FALSE, inc_crisis = TRUE, data_screen = TRUE,
+bp_stages <- function(data, sbp, dbp, bp_type = c("hbpm", "abpm", "ap"), inc_low = TRUE, inc_crisis = TRUE, data_screen = TRUE,
                       SUL = 240, SLL = 50, DUL = 140, DLL = 40, adj_sbp_dbp = TRUE,
                       guidelines = c("Lee_2020", "AHA", "Custom"),
                       bp_cutoffs = list( c(100, 120, 130, 140, 180), c(60, 80, 80, 90, 120)) ){
@@ -290,20 +290,21 @@ bp_stages <- function(data, sbp, dbp, bp_type = c("hbpm", "abpm", "ap"), inc_low
 
 
   ### SBP_CATEGORY / DBP_CATEGORY for plots
-
-  AHA_lookup <- stage_lookup_v1(bp_type = bp_type, guidelines = "AHA",
-                                SUL = SUL, DUL = DUL, inc_low = inc_low, inc_crisis = inc_crisis)
+  current_stages <- bp_lookup$Stages
+  selected_stages <- which(!(current_stages %in% c("ISH - S1", "ISH - S2", "IDH - S1", "IDH - S2")))
+  AHA_lookup <- bp_lookup[selected_stages, ]
+  AHA_lookup$Operation[AHA_lookup$Stages %in% c("Stage 1", "Stage 2")] = "|"
   AHA_stages <- AHA_lookup$Stages
 
   # SBP_Category
-  for ( i in 1:(length( unique(AHA_lookup$Stages) ) ) ){
+  for ( i in 1:length(AHA_stages) ){
     if( eval(parse(text = paste( "nrow(data[ which( ( (data$SBP >= AHA_lookup$sbp_LL[",i,"]) & (data$SBP < AHA_lookup$sbp_UL[",i,"]) ) ), ]) != 0 " ) )) ){
       data[ which( eval(parse(text = paste( "( (data$SBP >= AHA_lookup$sbp_LL[",i,"]) & (data$SBP < AHA_lookup$sbp_UL[",i,"]) )") )) ), ]$SBP_CATEGORY <- AHA_stages[i]
     }
   }
 
   # DBP_Category
-  for ( i in which(AHA_lookup$Stages %in% c("Normal", "Stage 1", "Stage 2", "Crisis")) ){
+  for ( i in which(AHA_stages != "Elevated")){
     if( eval(parse(text = paste( "nrow(data[ which( ( (data$DBP >= AHA_lookup$dbp_LL[",i,"]) & (data$DBP < AHA_lookup$dbp_UL[",i,"]) ) ), ]) != 0 " ) )) ){
       data[ which( eval(parse(text = paste( "( (data$DBP >= AHA_lookup$dbp_LL[",i,"]) & (data$DBP < AHA_lookup$dbp_UL[",i,"]) )") )) ), ]$DBP_CATEGORY <- AHA_stages[i]
     }
