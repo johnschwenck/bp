@@ -9,7 +9,7 @@ bp_stages(
   sbp,
   dbp,
   bp_type = c("hbpm", "abpm", "ap"),
-  inc_low = FALSE,
+  inc_low = TRUE,
   inc_crisis = TRUE,
   data_screen = TRUE,
   SUL = 240,
@@ -77,41 +77,34 @@ SBP & DBP columns in supplied data set. Default set to: \code{adj_sbp_dbp = TRUE
 
 \item{guidelines}{A string designation for the guidelines to follow when mapping BP
 readings to a respective BP stage. \code{guidelines} can take on either "Lee_2020" corresponding to staging in Lee et al (2020), "AHA" corresponding to
-guidelines by the American Heart Association, or "Custom" which utilize user-definted cutoffs in \code{bp_cutoffs}.}
+guidelines by the American Heart Association, or "Custom" based on user-defined cutoffs in \code{bp_cutoffs}. By default, AHA guidelines adjust bp cutoffs depending on the BP type.}
 
 \item{bp_cutoffs}{A list containing two vectors corresponding to SBP and DBP cutoffs, respectively.
-The vectors both contain 5 integer values that each represent an upper limit cutoff for each SBP / DBP
-stage. If \code{guidelines = "Lee_2020"}, this argument is ignored; if \code{guidelines = "AHA"} and
-if the \code{bp_cutoffs} is manually adjusted (i.e. not the default list), then the manually adjusted
-list will override the default AHA guidelines. The default AHA guidelines depend on the bp_type and will
-adjust automatically based on the specification of \cde{bp_type}. If \code{guidelines = "Custom"},
-the \code{bp_cutoffs} argument dictates the cutoffs for the respective stages as expected.
+Each vector contains 5 values.
 
 The SBP vector (100, 120, 130, 140, 180) corresponds to the upper limits for the following stages:
 Low (0-100), Normal (100-120), Elevated (120-130), Stage 1 Hypertension (130-140), Stage 2 Hypertension
-(140-180) according to the American Heart Association (AHA). When utilizing Lee et al (2020) guidelines,
-the following additional stages will be automatically derived and included: Isolated Systolic Hypertension
+(140-180). When utilizing Lee et al (2020) guidelines,
+additional stages are included: Isolated Systolic Hypertension
 for Stage 1 (ISH - S1) (130-140), Isolated Diastolic Hypertension for Stage 1 (IDH - S1) (0-130), ISH - S2
 (140-180), and IDH - S2 (0-140).
 
 The DBP vector (60, 80, 80, 90, 120) corresponds to the upper limits for the following stages:
 Low (0-60), Normal (60-80), Elevated (0-80), Stage 1 Hypertension (80-90), Stage 2 Hypertension
-(90-120) according to the American Heart Association (AHA). When utilizing Lee et al (2020) guidelines,
-the following additional stages will be automatically derived and included: Isolated Systolic Hypertension
+(90-120). The upper limit of the "Elevated" category repeats in the DBP vector and matches that of Normal.
+This because according to most guidelines, there is no distinction between DBP cutoffs for Normal and
+Elevated - these stages are discerned by SBP, not DBP. When utilizing Lee et al (2020) guidelines,
+additional stages are included: Isolated Diastolic Hypertension
 for Stage 1 (ISH - S1) (0-80), Isolated Diastolic Hypertension for Stage 1 (IDH - S1) (80-90), ISH - S2
 (0-90), and IDH - S2 (90-120).
 
-NOTE: The upper limit of the "Elevated" category repeats in the DBP vector and matches that of Normal.
-This because according to most guidelines, there is no distinction between DBP cutoffs for Normal and
-Elevated - these stages are discerned by SBP, not DBP. Should the user decide to manually change these
-\code{bp_cutoffs} values, the stages will reflect accordingly.
-
-Any manual adjustment to these SBP / DBP vectors by the user will be assumed to be "Custom" and will
-classify readings accordingly. If no manual adjustments made, stage classification will conform to either
-"Lee_2020" or "AHA" protocol (where Lee is pre-determined and AHA is determined by bp_type).
-
 Any SBP reading below 100 or DBP reading below 60 is considered Hypotension ("Low").
 Any SBP reading above 180 or DBP reading above 120 is considered a Crisis.
+
+When \code{guidelines = "AHA"}, the cutoffs are automatically adjusted to match BP type without user input, For \code{bp_type = "hbpm"},
+SBP = (100, 120, 130, 135, 160),  DBP = (60, 80, 80, 85, 110). For\code{bp_type = "abpm"}, SBP = (100, 115, 125, 130, 160), DBP = (60, 75, 75, 80, 105). An adjustment of default cutoffs by the user
+These choices can be overwritten by directly changing \code{bp_cutoffs}, in which case the guidelines are ignored and automatically treated as "Custom".
+
 
 If \code{inc_low = FALSE}, although an upper limit value is still required in the SBP vector, the "Low"
 stage will be omitted in the final output. Similarly, if \code{inc_crisis = FALSE}, then the "Crisis"
