@@ -47,7 +47,7 @@ cutoff_input_check <- function(SUL, DUL, bp_cutoffs){
 # Create documentation once cutoff format issue is resolved
 # stage_lookup creates the lookup table for comparing input data to
 
-stage_lookup_v1 <- function(bp_type = c("OBP", "HBPM", "ABPM"),
+stage_lookup_v1 <- function(bp_type = c("HBPM", "ABPM", "AP"),
                             guidelines = c("Lee_2020", "AHA", "Custom"),
                             bp_cutoffs = list( c(100, 120, 130, 140, 180), c(60, 80, 80, 90, 120)),
                             SUL = 240, DUL = 140, inc_low = TRUE, inc_crisis = TRUE){
@@ -68,62 +68,44 @@ stage_lookup_v1 <- function(bp_type = c("OBP", "HBPM", "ABPM"),
 
   # Lee 2020 cutoffs are fixed according to paper, cannot change
 
-  if( (guidelines == "Lee_2020" ) & (identical(bp_cutoffs, default_cutoffs) == FALSE ) ){
-
-    warning('bp_cutoffs input ignored since guidelines set to "Lee_2020". To set custom bp_cutoffs, set guidelines = "Custom"')
-
-  }
-
-
-  # bp_cutoff Adjustment - Return output based on guidelines chosen above:
-
-  # Custom implies a custom input vector list for bp_cutoffs whereas Lee/AHA implies pre-determined inputs based on bp_type
-  # i.e. bp_type only matters for AHA guidelines --> Lee is fixed, Custom is assumed to be pre-specified to the associated bp_type
-
-  if(guidelines == "Custom"){
-
-    # Different thresholds, possibly different stages
-
-    if( identical(bp_cutoffs, default_cutoffs) == TRUE ){
-      message('guidelines = "Custom", but bp_cutoffs unchanged (set to default values). Proceeding with Lee 2020 guidelines.')
+  if(guidelines == "Lee_2020"){
+    if (identical(bp_cutoffs, default_cutoffs) == FALSE){
+      # Different thresholds are supplied, check for correctness
+      bp_cutoffs = cutoff_input_check(SUL, DUL, bp_cutoffs)
+      # Assuming correct, display warning
+      message('Supplied bp_cutoffs differ from default values in Lee_2020, the staging will rely on user-provided cutoffs.')
     }
+  }else if(guidelines == "AHA"){
 
-    bp_cutoffs = cutoff_input_check(SUL, DUL, bp_cutoffs)
+    # if bp_cutoffs differ from default_cutoffs it implies that the user changed the bp_cutoffs input argument
+    if( identical(bp_cutoffs, default_cutoffs) == FALSE ){
 
-  }else{
+      # Run checks for bp_cutoff supplied by user
+      bp_cutoffs = cutoff_input_check(SUL, DUL, bp_cutoffs)
 
-
-    # If not custom, then either Lee or AHA
-    # Lee ==> AHA
-
-    if(guidelines == "Lee_2020"){
-      bp_cutoffs = default_cutoffs #list( c(100, 120, 130, 140, 180), c(60, 80, 80, 90, 120))
-
-
-    }else if(guidelines == "AHA"){
-
-      # if bp_cutoffs differ from default_cutoffs it implies that the user changed the bp_cutoffs input argument
-      if( identical(bp_cutoffs, default_cutoffs) == FALSE ){
-
-        # Run checks for bp_cutoff supplied by user
-        bp_cutoffs = cutoff_input_check(SUL, DUL, bp_cutoffs)
-
-        message('AHA guidelines specified, but bp_cutoffs changed by user.
+      message('AHA guidelines specified, but bp_cutoffs changed by user.
 bp_cutoffs will override AHA guidelines for the respective bp_type.
 If this is a mistake, leave bp_cutoffs to default values and keep guidelines = "AHA".')
 
-      }else{
-        # User did not change the bp_cutoffs argument --> use the cutoffs specified by AHA
-        if(bp_type == "OBP"){
-          bp_cutoffs = list( c(100, 120, 130, 140, 160), c(60, 80, 80, 90, 100))
+    }else{
+      # User did not change the bp_cutoffs argument --> use the cutoffs specified by AHA
+      if(bp_type == "AP"){
+        bp_cutoffs = list( c(100, 120, 130, 140, 180), c(60, 80, 80, 90, 120))
 
-        }else if(bp_type == "HBPM"){
-          bp_cutoffs = list( c(100, 120, 130, 135, 145), c(60, 80, 80, 85, 90))
+      }else if(bp_type == "HBPM"){
+        bp_cutoffs = list( c(100, 120, 130, 135, 160), c(60, 80, 80, 85, 110))
 
-        }else if(bp_type == "ABPM"){
-          bp_cutoffs = list( c(100, 115, 125, 130, 145), c(60, 75, 75, 80, 90))
-        }
+      }else if(bp_type == "ABPM"){
+        bp_cutoffs = list( c(100, 115, 125, 130, 160), c(60, 75, 75, 80, 105))
       }
+    }
+  }else{
+    # bp_cutoff Adjustment - Return output based on guidelines chosen above:
+    if( identical(bp_cutoffs, default_cutoffs) == TRUE ){
+      message('guidelines = "Custom", but bp_cutoffs unchanged (set to default values). Proceeding with Lee 2020 guidelines and default cutoffs.')
+    }else{
+      # check supplied cutoffs
+      bp_cutoffs = cutoff_input_check(SUL, DUL, bp_cutoffs)
     }
   }
 
@@ -148,7 +130,6 @@ If this is a mistake, leave bp_cutoffs to default values and keep guidelines = "
     out[ out[ , 1] %in% default_stages[ which( default_stages %in% c("Stage 1", "Stage 2") )] , ]$Operation <- c("|", "|")
 
   }
-
 
   if(inc_low == FALSE){
 
@@ -280,10 +261,10 @@ bp_stages <- function(data, sbp, dbp, bp_type = c("hbpm", "abpm", "ap"), inc_low
   stages <- bp_lookup$Stages
 
   # Initiate BP_CLASS column in data
-  if( "BP_CLASS" %in% colnames(data) ){
+  #if( "BP_CLASS" %in% colnames(data) ){
 
-    colnames(data)[colnames(data) == "BP_CLASS"] <- "BP_CLASS_OLD"
-  }
+  #  colnames(data)[colnames(data) == "BP_CLASS"] <- "BP_CLASS_OLD"
+  #}
 
   data$BP_CLASS <- NA
   data$SBP_CATEGORY <- NA
