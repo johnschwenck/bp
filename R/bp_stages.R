@@ -196,6 +196,9 @@ If this is a mistake, leave bp_cutoffs to default values and keep guidelines = "
 #' or diastolic hypertension in young adults. \emph{Circulation}. 2020;141(22):1778–1786.
 #' \doi{0.1161/CIRCULATIONAHA.119.044838}
 #'
+#' Muntner, P., Carey, R. M., Jamerson, K., Wright Jr, J. T., & Whelton, P. K. (2019). Rationale for ambulatory and home blood pressure monitoring thresholds in the 2017 American College of Cardiology/American Heart Association Guideline. Hypertension, 73(1), 33-38.
+#'\doi{10.1161/HYPERTENSIONAHA.118.11946}
+#'
 #' @export
 #'
 #' @examples

@@ -66,7 +66,7 @@
 #'
 #' @param guidelines A string designation for the guidelines to follow when mapping BP
 #' readings to a respective BP stage. \code{guidelines} can take on either "Lee_2020" corresponding to staging in Lee et al (2020), "AHA" corresponding to
-#' guidelines by the American Heart Association, or "Custom" based on user-defined cutoffs in \code{bp_cutoffs}. By default, AHA guidelines adjust bp cutoffs depending on the BP type.
+#' guidelines by the American Heart Association, see e.g. Muntner et al (2019), or "Custom" based on user-defined cutoffs in \code{bp_cutoffs}. By default, AHA guidelines adjust \code{bp_cutoffs} depending on the BP type.
 #'
 #' @param bp_cutoffs A list containing two vectors corresponding to SBP and DBP cutoffs, respectively.
 #' Each vector contains 5 values.
@@ -203,6 +203,9 @@
 #' Lee H, Yano Y, Cho SMJ, Park JH, Park S, Lloyd-Jones DM, Kim HC. Cardiovascular risk of isolated
 #' systolic or diastolic hypertension in young adults. \emph{Circulation}. 2020; 141:1778–1786.
 #' \doi{10.1161/CIRCULATIONAHA.119.044838}
+#'
+#' Muntner, P., Carey, R. M., Jamerson, K., Wright Jr, J. T., & Whelton, P. K. (2019). Rationale for ambulatory and home blood pressure monitoring thresholds in the 2017 American College of Cardiology/American Heart Association Guideline. Hypertension, 73(1), 33-38. \doi{10.1161/HYPERTENSIONAHA.118.11946}
+#'
 #'
 #' Omboni, S., Parati, G*., Zanchetti, A., Mancia, G. Calculation of trough: peak ratio of
 #' antihypertensive treatment from ambulatory blood pressure: methodological aspects
