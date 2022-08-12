@@ -50,7 +50,7 @@ cutoff_input_check <- function(SUL, DUL, bp_cutoffs){
 stage_lookup_v1 <- function(bp_type = c("OBP", "HBPM", "ABPM"),
                             guidelines = c("Lee_2020", "AHA", "Custom"),
                             bp_cutoffs = list( c(100, 120, 130, 140, 180), c(60, 80, 80, 90, 120)),
-                            SUL = 240, DUL = 140, inc_low = FALSE, inc_crisis = TRUE){
+                            SUL = 240, DUL = 140, inc_low = TRUE, inc_crisis = TRUE){
 
 
   # Match guidelines & bp_type specified in function arguments
@@ -202,103 +202,12 @@ If this is a mistake, leave bp_cutoffs to default values and keep guidelines = "
 #'
 #' Supplied dataframe must adhere to the unified format using the \code{process_data} function.
 #'
-#' @param data User-supplied dataset containing blood pressure data. Must
-#' contain data for Systolic blood pressure and Diastolic blood pressure at a
-#' minimum.
-#'
-#' @param sbp column name corresponding to systolic blood pressure (SBP)
-#'
-#' @param dbp column name corresponding to diastolic blood pressure (DBP)
-#'
-#' @param bp_type A string designation for the blood pressure type of the underlying SBP / DBP data. \code{bp_type}
-#' may be one of the following: "HBPM", "ABPM", or "OBP" where HBPM corresponds to home blood pressure
-#' monitoring, ABPM corresponds to ambulatory blood pressure monitoring, and OBP corresponds to office
-#' blood pressure data. By default, \code{bp_type} is set to "HBPM". \code{bp_type} only impacts \code{bp_stages}
-#' if \code{guidelines = "AHA"}, for which the cutoffs for each blood pressure stage will be adjusted
-#' according to its respective blood pressure type. If guidelines argument set to either "Lee" or
-#' "Custom", the \code{bp_type} will have no effect since the Lee guidelines are pre-determined from a
-#' recent academic paper and Custom implies that the user is already aware of the bp_type.
-#'
-#' @param guidelines A string designation for the health / medical guidelines to follow when mapping BP
-#' readings to a respective BP stage. \code{guidelines} can take on either "Lee_2020" corresponding to an
-#' academic paper by Lee et al (2020) (see references for function), "AHA" corresponding to published
-#' guidelines by the American Heart Association, or "Custom" which the user sets their own BP cutoffs.
-#'
-#' @param bp_cutoffs A list containing two vectors corresponding to SBP and DBP cutoffs, respectively.
-#' The vectors both contain 5 integer values that each represent an upper limit cutoff for each SBP / DBP
-#' stage. If \code{guidelines = "Lee_2020"}, this argument is ignored; if \code{guidelines = "AHA"} and
-#' if the \code{bp_cutoffs} is manually adjusted (i.e. not the default list), then the manually adjusted
-#' list will override the default AHA guidelines. The default AHA guidelines depend on the bp_type and will
-#' adjust automatically based on the specification of \cde{bp_type}. If \code{guidelines = "Custom"},
-#' the \code{bp_cutoffs} argument dictates the cutoffs for the respective stages as expected.
-#'
-#' The SBP vector (100, 120, 130, 140, 180) corresponds to the upper limits for the following stages:
-#' Low (0-100), Normal (100-120), Elevated (120-130), Stage 1 Hypertension (130-140), Stage 2 Hypertension
-#' (140-180) according to the American Heart Association (AHA). When utilizing Lee et al (2020) guidelines,
-#' the following additional stages will be automatically derived and included: Isolated Systolic Hypertension
-#' for Stage 1 (ISH - S1) (130-140), Isolated Diastolic Hypertension for Stage 1 (IDH - S1) (0-130), ISH - S2
-#' (140-180), and IDH - S2 (0-140).
-#'
-#' The DBP vector (60, 80, 80, 90, 120) corresponds to the upper limits for the following stages:
-#' Low (0-60), Normal (60-80), Elevated (0-80), Stage 1 Hypertension (80-90), Stage 2 Hypertension
-#' (90-120) according to the American Heart Association (AHA). When utilizing Lee et al (2020) guidelines,
-#' the following additional stages will be automatically derived and included: Isolated Systolic Hypertension
-#' for Stage 1 (ISH - S1) (0-80), Isolated Diastolic Hypertension for Stage 1 (IDH - S1) (80-90), ISH - S2
-#' (0-90), and IDH - S2 (90-120).
-#'
-#' NOTE: The upper limit of the "Elevated" category repeats in the DBP vector and matches that of Normal.
-#' This because according to most guidelines, there is no distinction between DBP cutoffs for Normal and
-#' Elevated - these stages are discerned by SBP, not DBP. Should the user decide to manually change these
-#' \code{bp_cutoffs} values, the stages will reflect accordingly.
-#'
-#' Any manual adjustment to these SBP / DBP vectors by the user will be assumed to be "Custom" and will
-#' classify readings accordingly. If no manual adjustments made, stage classification will conform to either
-#' "Lee_2020" or "AHA" protocol (where Lee is pre-determined and AHA is determined by bp_type).
-#'
-#' Any SBP reading below 100 or DBP reading below 60 is considered Hypotension ("Low").
-#' Any SBP reading above 180 or DBP reading above 120 is considered a Crisis.
-#'
-#' If \code{inc_low = FALSE}, although an upper limit value is still required in the SBP vector, the "Low"
-#' stage will be omitted in the final output. Similarly, if \code{inc_crisis = FALSE}, then the "Crisis"
-#' category will be omitted from the final output.
-#'
-#' @param inc_low A TRUE / FALSE indicator of whether or not to include the "Low" (Hypotension)
-#' category to the scatter plot. The range for Hypotension is set from a minimum of 25 for DBP or 80
-#' for SBP, or the corresponding minimum value for either category from the data until 60 for DBP and
-#' 100 for SBP.
-#'
-#' @param inc_crisis A TRUE / FALSE indicator of whether or not to include the Hypertensive "Crisis"
-#' category to the scatter plot. The range for crisis is any value above 180 for SBP or above 120 for
-#' DBP.
-#'
-#' @param data_screen Default to TRUE. data_screens for extreme values in the data for both \code{SBP} and \code{DBP}
-#' according to Omboni, et al (1995) paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment
-#' from Ambulatory Blood Pressure: Methodological Aspects
-#'
-#' @param SUL Systolic Upper Limit (SUL). If \code{data_screen = TRUE}, then \code{SUL} sets the upper limit by which
-#' to exclude any \code{SBP} values that exceed this threshold. The default is set to 240 per Omboni, et al (1995)
-#' paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure:
-#' Methodological Aspects
-#'
-#' @param SLL Systolic Lower Limit (SLL). If \code{data_screen = TRUE}, then \code{SLL} sets the lower limit by which
-#' to exclude any \code{SBP} values that fall below this threshold. The default is set to 50 per Omboni, et al (1995)
-#' paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure:
-#' Methodological Aspects
-#'
-#' @param DUL Diastolic Upper Limit (DUL). If \code{data_screen = TRUE}, then \code{DUL} sets the upper limit by which
-#' to exclude any \code{DBP} values that exceed this threshold. The default is set to 140 per Omboni, et al (1995)
-#' paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure:
-#' Methodological Aspects
-#'
-#' @param DLL Diastolic Lower Limit (DLL). If \code{data_screen = TRUE}, then \code{DLL} sets the lower limit by which
-#' to exclude any \code{DBP} values that fall below this threshold. The default is set to 40 per Omboni, et al (1995)
-#' paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure:
-#' Methodological Aspects
+#' @inheritParams process_data
 #'
 #' @param adj_sbp_dbp Logical indicator to dictate whether or not to run helper functions that adjust / process
 #' SBP & DBP columns in supplied data set. Default set to: \code{adj_sbp_dbp = TRUE}
 #'
-#' @return A dataframe with additional columns corresponding to the stages of high blood pressure and the
+#' @return A dataframe with additional columns corresponding to the stages of blood pressure and the
 #' supplementary SBP / DBP categories
 #'
 #' @references
@@ -320,7 +229,7 @@ If this is a mistake, leave bp_cutoffs to default values and keep guidelines = "
 #'
 #' bp_stages(bp_jhs, sbp = "sys.mmhg.", dbp = "dias.mmhg.")
 #'
-bp_stages <- function(data, sbp, dbp, bp_type = c("HBPM", "ABPM", "OBP"), inc_low = FALSE, inc_crisis = TRUE, data_screen = TRUE,
+bp_stages <- function(data, sbp, dbp, bp_type = c("hbpm", "abpm", "ap"), inc_low = FALSE, inc_crisis = TRUE, data_screen = TRUE,
                       SUL = 240, SLL = 50, DUL = 140, DLL = 40, adj_sbp_dbp = TRUE,
                       guidelines = c("Lee_2020", "AHA", "Custom"),
                       bp_cutoffs = list( c(100, 120, 130, 140, 180), c(60, 80, 80, 90, 120)) ){
@@ -329,7 +238,8 @@ bp_stages <- function(data, sbp, dbp, bp_type = c("HBPM", "ABPM", "OBP"), inc_lo
   rm(list = c('SBP', 'DBP', 'BP_CLASS', '.'))
 
   # Set bp_type and guidelines
-  bp_type = match.arg(bp_type)
+  bp_type <- tolower(bp_type)
+  bp_type <- toupper( match.arg(bp_type) )
   guidelines = match.arg(guidelines)
 
 
@@ -400,7 +310,7 @@ bp_stages <- function(data, sbp, dbp, bp_type = c("HBPM", "ABPM", "OBP"), inc_lo
 
   ### SBP_CATEGORY / DBP_CATEGORY for plots
 
-  AHA_lookup <- stage_lookup_v1(bp_type = "OBP", guidelines = "AHA",
+  AHA_lookup <- stage_lookup_v1(bp_type = bp_type, guidelines = "AHA",
                                 SUL = SUL, DUL = DUL, inc_low = inc_low, inc_crisis = inc_crisis)
   AHA_stages <- AHA_lookup$Stages
 

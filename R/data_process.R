@@ -8,19 +8,15 @@
 #' contain data for Systolic blood pressure and Diastolic blood pressure at a
 #' minimum.
 #'
-#' @param bp_type Required argument specifying which of the four BP data types
-#' ("HBPM", "ABPM", "OBP", or "AP") the input data is. Default \code{bp_type} set to "HBPM".
+#' @param bp_type Required argument specifying which of the three BP data types
+#' ("HBPM", "ABPM", or "AP") the input data is. Default \code{bp_type} set to "HBPM".
 #' This argument determines which processing steps are necessary to yield sensible
 #' output.
 #'
-#' HBPM - Home Blood Pressure Monitor | ABPM - Ambulatory Blood Pressure |
-#' OBP - Office Blood Pressure | AP - Arterial Pressure
+#' HBPM - Home Blood Pressure Monitor | ABPM - Ambulatory Blood Pressure | AP - Arterial Pressure
 #'
-#' NOTE: \code{bp_type} only impacts \code{bp_stages} if \code{guidelines = "AHA"}, for which the
-#' cutoffs for each blood pressure stage will be adjusted according to its respective blood pressure
-#' type. If guidelines argument set to either "Lee" or "Custom", the \code{bp_type} will have no effect
-#' since the Lee guidelines are pre-determined from a recent academic paper and Custom implies that the
-#' user is already aware of the bp_type.
+#' NOTE: \code{bp_type} impacts blood pressure staging in \code{bp_stages} if \code{guidelines = "AHA"}, for which the
+#' cutoffs for each blood pressure stage are automatically adjusted according to \code{bp_type}.
 #'
 #' @param ap (For AP data only) Required column name (character string) corresponding
 #' to continuous Arterial Pressure (AP) (mmHg). Note that this is a required argument
@@ -68,10 +64,9 @@
 #' Pressure (SBP * HR). If not supplied, but HR column available, then
 #' RPP will be calculated automatically.
 #'
-#' @param guidelines A string designation for the health / medical guidelines to follow when mapping BP
-#' readings to a respective BP stage. \code{guidelines} can take on either "Lee_2020" corresponding to an
-#' academic paper by Lee et al (2020) (see references for function), "AHA" corresponding to published
-#' guidelines by the American Heart Association, or "Custom" which the user sets their own BP cutoffs.
+#' @param guidelines A string designation for the guidelines to follow when mapping BP
+#' readings to a respective BP stage. \code{guidelines} can take on either "Lee_2020" corresponding to staging in Lee et al (2020), "AHA" corresponding to
+#' guidelines by the American Heart Association, or "Custom" which utilize user-definted cutoffs in \code{bp_cutoffs}.
 #'
 #' @param bp_cutoffs A list containing two vectors corresponding to SBP and DBP cutoffs, respectively.
 #' The vectors both contain 5 integer values that each represent an upper limit cutoff for each SBP / DBP
@@ -234,7 +229,7 @@
 #'
 #' # Process data for bp_hypnos
 #' hypnos_proc <- process_data(bp_hypnos,
-#'                               bp_type = 'ABPM',
+#'                               bp_type = 'abpm',
 #'                               sbp = 'syst',
 #'                               dbp = 'diast',
 #'                               date_time = 'date.time',
@@ -266,8 +261,7 @@
 process_data <- function(data,
 
                          # Home Blood Pressure Monitor (HBPM) | Ambulatory Blood Pressure Monitor (ABPM) | Arterial Pressure (AP)
-                         # bp_type = c("HBPM", "ABPM", "AP", "OBP"), # Need to revisit AP processing - omit for now
-                         bp_type = c("HBPM", "ABPM", "OBP"),
+                         bp_type = c("hbpm", "abpm", "ap"),
                          guidelines = c("Lee_2020", "AHA", "Custom"),
                          bp_cutoffs = list( c(100, 120, 130, 140, 180), c(60, 80, 80, 90, 120)),
 
@@ -300,7 +294,7 @@ process_data <- function(data,
                          DLL = 40,
                          HRUL = 220,
                          HRLL = 27,
-                         inc_low = FALSE,
+                         inc_low = TRUE,
                          inc_crisis = TRUE,
                          agg = FALSE,
                          agg_thresh = 3,
@@ -316,10 +310,9 @@ process_data <- function(data,
 
 
 
-  # Match BP Type: Home Blood Pressure Monitor (HBPM) | Ambulatory Blood Pressure Monitor (ABPM) | Arterial Pressure (AP) | Office Blood Pressure (OBP)
-  bp_type = match.arg(bp_type)
-  # bp_type <- tolower(bp_type)
-  # bp_type <- toupper( match.arg(bp_type) )
+  # Match BP Type: Home Blood Pressure Monitor (HBPM) | Ambulatory Blood Pressure Monitor (ABPM) | Arterial Pressure (AP)
+  bp_type <- tolower(bp_type)
+  bp_type <- toupper( match.arg(bp_type) )
 
 
   # Ensure that data is either data.frame or matrix
@@ -370,7 +363,7 @@ process_data <- function(data,
   # ************************************************************************************************************ #
 
 
-  if(toupper(bp_type) == "ABPM" | toupper(bp_type) == "HBPM" | toupper(bp_type) == "OBP"){
+  if(toupper(bp_type) == "ABPM" | toupper(bp_type) == "HBPM"){
 
 
     # Throw error if SBP and DBP columns aren't specified

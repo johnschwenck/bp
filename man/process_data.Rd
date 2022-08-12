@@ -6,9 +6,9 @@
 \usage{
 process_data(
   data,
-  bp_type = c("HBPM", "ABPM", "AP", "OBP"),
+  bp_type = c("hbpm", "abpm", "ap"),
   guidelines = c("Lee_2020", "AHA", "Custom"),
-  bp_cutoffs = list(c(100, 120, 130, 140, 180), c(60, 80, 90, 120)),
+  bp_cutoffs = list(c(100, 120, 130, 140, 180), c(60, 80, 80, 90, 120)),
   ap = NULL,
   time_elap = NULL,
   sbp = NULL,
@@ -47,17 +47,57 @@ process_data(
 contain data for Systolic blood pressure and Diastolic blood pressure at a
 minimum.}
 
-\item{bp_type}{Required argument specifying which of the four BP data types
-("HBPM", "ABPM", "OBP", or "AP") the input data is. Default \code{bp_type} set to "HBPM".
+\item{bp_type}{Required argument specifying which of the three BP data types
+("HBPM", "ABPM", or "AP") the input data is. Default \code{bp_type} set to "HBPM".
 This argument determines which processing steps are necessary to yield sensible
 output.
 
-HBPM - Home Blood Pressure Monitor | ABPM - Ambulatory Blood Pressure |
-OBP - Office Blood Pressure | AP - Arterial Pressure}
+HBPM - Home Blood Pressure Monitor | ABPM - Ambulatory Blood Pressure | AP - Arterial Pressure
 
-\item{guidelines}{temporary}
+NOTE: \code{bp_type} impacts blood pressure staging in \code{bp_stages} if \code{guidelines = "AHA"}, for which the
+cutoffs for each blood pressure stage are automatically adjusted according to \code{bp_type}.}
 
-\item{bp_cutoffs}{temporary}
+\item{guidelines}{A string designation for the guidelines to follow when mapping BP
+readings to a respective BP stage. \code{guidelines} can take on either "Lee_2020" corresponding to staging in Lee et al (2020), "AHA" corresponding to
+guidelines by the American Heart Association, or "Custom" which utilize user-definted cutoffs in \code{bp_cutoffs}.}
+
+\item{bp_cutoffs}{A list containing two vectors corresponding to SBP and DBP cutoffs, respectively.
+The vectors both contain 5 integer values that each represent an upper limit cutoff for each SBP / DBP
+stage. If \code{guidelines = "Lee_2020"}, this argument is ignored; if \code{guidelines = "AHA"} and
+if the \code{bp_cutoffs} is manually adjusted (i.e. not the default list), then the manually adjusted
+list will override the default AHA guidelines. The default AHA guidelines depend on the bp_type and will
+adjust automatically based on the specification of \cde{bp_type}. If \code{guidelines = "Custom"},
+the \code{bp_cutoffs} argument dictates the cutoffs for the respective stages as expected.
+
+The SBP vector (100, 120, 130, 140, 180) corresponds to the upper limits for the following stages:
+Low (0-100), Normal (100-120), Elevated (120-130), Stage 1 Hypertension (130-140), Stage 2 Hypertension
+(140-180) according to the American Heart Association (AHA). When utilizing Lee et al (2020) guidelines,
+the following additional stages will be automatically derived and included: Isolated Systolic Hypertension
+for Stage 1 (ISH - S1) (130-140), Isolated Diastolic Hypertension for Stage 1 (IDH - S1) (0-130), ISH - S2
+(140-180), and IDH - S2 (0-140).
+
+The DBP vector (60, 80, 80, 90, 120) corresponds to the upper limits for the following stages:
+Low (0-60), Normal (60-80), Elevated (0-80), Stage 1 Hypertension (80-90), Stage 2 Hypertension
+(90-120) according to the American Heart Association (AHA). When utilizing Lee et al (2020) guidelines,
+the following additional stages will be automatically derived and included: Isolated Systolic Hypertension
+for Stage 1 (ISH - S1) (0-80), Isolated Diastolic Hypertension for Stage 1 (IDH - S1) (80-90), ISH - S2
+(0-90), and IDH - S2 (90-120).
+
+NOTE: The upper limit of the "Elevated" category repeats in the DBP vector and matches that of Normal.
+This because according to most guidelines, there is no distinction between DBP cutoffs for Normal and
+Elevated - these stages are discerned by SBP, not DBP. Should the user decide to manually change these
+\code{bp_cutoffs} values, the stages will reflect accordingly.
+
+Any manual adjustment to these SBP / DBP vectors by the user will be assumed to be "Custom" and will
+classify readings accordingly. If no manual adjustments made, stage classification will conform to either
+"Lee_2020" or "AHA" protocol (where Lee is pre-determined and AHA is determined by bp_type).
+
+Any SBP reading below 100 or DBP reading below 60 is considered Hypotension ("Low").
+Any SBP reading above 180 or DBP reading above 120 is considered a Crisis.
+
+If \code{inc_low = FALSE}, although an upper limit value is still required in the SBP vector, the "Low"
+stage will be omitted in the final output. Similarly, if \code{inc_crisis = FALSE}, then the "Crisis"
+category will be omitted from the final output.}
 
 \item{ap}{(For AP data only) Required column name (character string) corresponding
 to continuous Arterial Pressure (AP) (mmHg). Note that this is a required argument
@@ -217,7 +257,7 @@ data("bp_hypnos")
 
 # Process data for bp_hypnos
 hypnos_proc <- process_data(bp_hypnos,
-                              bp_type = 'ABPM',
+                              bp_type = 'abpm',
                               sbp = 'syst',
                               dbp = 'diast',
                               date_time = 'date.time',
