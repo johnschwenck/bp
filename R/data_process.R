@@ -16,6 +16,12 @@
 #' HBPM - Home Blood Pressure Monitor | ABPM - Ambulatory Blood Pressure |
 #' OBP - Office Blood Pressure | AP - Arterial Pressure
 #'
+#' NOTE: \code{bp_type} only impacts \code{bp_stages} if \code{guidelines = "AHA"}, for which the
+#' cutoffs for each blood pressure stage will be adjusted according to its respective blood pressure
+#' type. If guidelines argument set to either "Lee" or "Custom", the \code{bp_type} will have no effect
+#' since the Lee guidelines are pre-determined from a recent academic paper and Custom implies that the
+#' user is already aware of the bp_type.
+#'
 #' @param ap (For AP data only) Required column name (character string) corresponding
 #' to continuous Arterial Pressure (AP) (mmHg). Note that this is a required argument
 #' so long as bp_type = "AP". Ensure that bp_type is set accordingly.
@@ -62,9 +68,48 @@
 #' Pressure (SBP * HR). If not supplied, but HR column available, then
 #' RPP will be calculated automatically.
 #'
-#' @param guidelines temporary
+#' @param guidelines A string designation for the health / medical guidelines to follow when mapping BP
+#' readings to a respective BP stage. \code{guidelines} can take on either "Lee_2020" corresponding to an
+#' academic paper by Lee et al (2020) (see references for function), "AHA" corresponding to published
+#' guidelines by the American Heart Association, or "Custom" which the user sets their own BP cutoffs.
 #'
-#' @param bp_cutoffs temporary
+#' @param bp_cutoffs A list containing two vectors corresponding to SBP and DBP cutoffs, respectively.
+#' The vectors both contain 5 integer values that each represent an upper limit cutoff for each SBP / DBP
+#' stage. If \code{guidelines = "Lee_2020"}, this argument is ignored; if \code{guidelines = "AHA"} and
+#' if the \code{bp_cutoffs} is manually adjusted (i.e. not the default list), then the manually adjusted
+#' list will override the default AHA guidelines. The default AHA guidelines depend on the bp_type and will
+#' adjust automatically based on the specification of \cde{bp_type}. If \code{guidelines = "Custom"},
+#' the \code{bp_cutoffs} argument dictates the cutoffs for the respective stages as expected.
+#'
+#' The SBP vector (100, 120, 130, 140, 180) corresponds to the upper limits for the following stages:
+#' Low (0-100), Normal (100-120), Elevated (120-130), Stage 1 Hypertension (130-140), Stage 2 Hypertension
+#' (140-180) according to the American Heart Association (AHA). When utilizing Lee et al (2020) guidelines,
+#' the following additional stages will be automatically derived and included: Isolated Systolic Hypertension
+#' for Stage 1 (ISH - S1) (130-140), Isolated Diastolic Hypertension for Stage 1 (IDH - S1) (0-130), ISH - S2
+#' (140-180), and IDH - S2 (0-140).
+#'
+#' The DBP vector (60, 80, 80, 90, 120) corresponds to the upper limits for the following stages:
+#' Low (0-60), Normal (60-80), Elevated (0-80), Stage 1 Hypertension (80-90), Stage 2 Hypertension
+#' (90-120) according to the American Heart Association (AHA). When utilizing Lee et al (2020) guidelines,
+#' the following additional stages will be automatically derived and included: Isolated Systolic Hypertension
+#' for Stage 1 (ISH - S1) (0-80), Isolated Diastolic Hypertension for Stage 1 (IDH - S1) (80-90), ISH - S2
+#' (0-90), and IDH - S2 (90-120).
+#'
+#' NOTE: The upper limit of the "Elevated" category repeats in the DBP vector and matches that of Normal.
+#' This because according to most guidelines, there is no distinction between DBP cutoffs for Normal and
+#' Elevated - these stages are discerned by SBP, not DBP. Should the user decide to manually change these
+#' \code{bp_cutoffs} values, the stages will reflect accordingly.
+#'
+#' Any manual adjustment to these SBP / DBP vectors by the user will be assumed to be "Custom" and will
+#' classify readings accordingly. If no manual adjustments made, stage classification will conform to either
+#' "Lee_2020" or "AHA" protocol (where Lee is pre-determined and AHA is determined by bp_type).
+#'
+#' Any SBP reading below 100 or DBP reading below 60 is considered Hypotension ("Low").
+#' Any SBP reading above 180 or DBP reading above 120 is considered a Crisis.
+#'
+#' If \code{inc_low = FALSE}, although an upper limit value is still required in the SBP vector, the "Low"
+#' stage will be omitted in the final output. Similarly, if \code{inc_crisis = FALSE}, then the "Crisis"
+#' category will be omitted from the final output.
 #'
 #' @param DoW Optional column name (character string) corresponding to the Day of the Week.
 #' If not supplied, but DATE or DATE_TIME columns available, then DoW will be created
@@ -220,48 +265,49 @@
 #'
 process_data <- function(data,
 
-                             # Home Blood Pressure Monitor (HBPM) | Ambulatory Blood Pressure Monitor (ABPM) | Arterial Pressure (AP)
-                             bp_type = c("HBPM", "ABPM", "AP", "OBP"),
-                             guidelines = c("Lee_2020", "AHA", "Custom"),
-                             bp_cutoffs = list( c(100, 120, 130, 140, 180), c(60, 80, 90, 120)),
+                         # Home Blood Pressure Monitor (HBPM) | Ambulatory Blood Pressure Monitor (ABPM) | Arterial Pressure (AP)
+                         # bp_type = c("HBPM", "ABPM", "AP", "OBP"), # Need to revisit AP processing - omit for now
+                         bp_type = c("HBPM", "ABPM", "OBP"),
+                         guidelines = c("Lee_2020", "AHA", "Custom"),
+                         bp_cutoffs = list( c(100, 120, 130, 140, 180), c(60, 80, 80, 90, 120)),
 
-                             # For AP data
-                             ap = NULL,
-                             time_elap = NULL,
+                         # For AP data
+                         ap = NULL,
+                         time_elap = NULL,
 
-                             # For all other data (HBPM, ABPM)
-                             sbp = NULL,
-                             dbp = NULL,
-                             date_time = NULL,
-                             id = NULL,
-                             group = NULL,
-                             wake = NULL,
-                             visit = NULL,
-                             hr = NULL,
-                             pp = NULL,
-                             map = NULL,
-                             rpp = NULL,
+                         # For all other data (HBPM, ABPM)
+                         sbp = NULL,
+                         dbp = NULL,
+                         date_time = NULL,
+                         id = NULL,
+                         group = NULL,
+                         wake = NULL,
+                         visit = NULL,
+                         hr = NULL,
+                         pp = NULL,
+                         map = NULL,
+                         rpp = NULL,
 
 
-                             # Options
-                             DoW = NULL,
-                             ToD_int = NULL,
-                             eod = NULL,
-                             data_screen = TRUE,
-                             SUL = 240,
-                             SLL = 50,
-                             DUL = 140,
-                             DLL = 40,
-                             HRUL = 220,
-                             HRLL = 27,
-                             inc_low = TRUE,
-                             inc_crisis = TRUE,
-                             agg = FALSE,
-                             agg_thresh = 3,
-                             collapse_df = FALSE,
-                             dt_fmt = "ymd HMS",
-                             chron_order = FALSE,
-                             tz = "UTC" ){
+                         # Options
+                         DoW = NULL,
+                         ToD_int = NULL,
+                         eod = NULL,
+                         data_screen = TRUE,
+                         SUL = 240,
+                         SLL = 50,
+                         DUL = 140,
+                         DLL = 40,
+                         HRUL = 220,
+                         HRLL = 27,
+                         inc_low = FALSE,
+                         inc_crisis = TRUE,
+                         agg = FALSE,
+                         agg_thresh = 3,
+                         collapse_df = FALSE,
+                         dt_fmt = "ymd HMS",
+                         chron_order = FALSE,
+                         tz = "UTC" ){
 
 
   # Prepare all variables used via dplyr
@@ -327,107 +373,107 @@ process_data <- function(data,
   if(toupper(bp_type) == "ABPM" | toupper(bp_type) == "HBPM" | toupper(bp_type) == "OBP"){
 
 
-        # Throw error if SBP and DBP columns aren't specified
-        if(is.null(sbp) | is.null(dbp)){
+    # Throw error if SBP and DBP columns aren't specified
+    if(is.null(sbp) | is.null(dbp)){
 
-          stop('Both "SBP" and "DBP" column names must be specified.\n')
+      stop('Both "SBP" and "DBP" column names must be specified.\n')
 
-        }
+    }
 
-        # Convert all column names to upper case for consistency
-        colnames(data) <- toupper(colnames(data))
+    # Convert all column names to upper case for consistency
+    colnames(data) <- toupper(colnames(data))
 
-        # Adjust SBP
-        data <- sbp_adj(data = data, sbp = sbp, data_screen = data_screen, SUL = SUL, SLL = SLL)
+    # Adjust SBP
+    data <- sbp_adj(data = data, sbp = sbp, data_screen = data_screen, SUL = SUL, SLL = SLL)
 
-        # Adjust DBP
-        data <- dbp_adj(data = data, dbp = dbp, data_screen = data_screen, DUL = DUL, DLL = DLL)
+    # Adjust DBP
+    data <- dbp_adj(data = data, dbp = dbp, data_screen = data_screen, DUL = DUL, DLL = DLL)
 
-        # Adjust ID
-        data <- id_adj(data = data, id = id)
+    # Adjust ID
+    data <- id_adj(data = data, id = id)
 
-        # Adjust Group
-        data <- group_adj(data = data, group = group)
+    # Adjust Group
+    data <- group_adj(data = data, group = group)
 
-        # Adjust Visit
-        data <- visit_adj(data = data, visit = visit)
+    # Adjust Visit
+    data <- visit_adj(data = data, visit = visit)
 
-        # Adjust Date/Time values
-        if(!is.null(date_time)){
+    # Adjust Date/Time values
+    if(!is.null(date_time)){
 
-            data <- date_time_adj(data = data, date_time = date_time, dt_fmt = dt_fmt, ToD_int = ToD_int, chron_order = chron_order, tz = tz)
+      data <- date_time_adj(data = data, date_time = date_time, dt_fmt = dt_fmt, ToD_int = ToD_int, chron_order = chron_order, tz = tz)
 
-        }
+    }
 
-        # Adjust eod / dates
-        if(!is.null(eod)){
+    # Adjust eod / dates
+    if(!is.null(eod)){
 
-              # Incorporate End-of-Day argument and calibrate dates
-              data <- eod_adj(data = data, eod = eod)
+      # Incorporate End-of-Day argument and calibrate dates
+      data <- eod_adj(data = data, eod = eod)
 
-        }
+    }
 
-        # Adjust WAKE indicator
-        data <- wake_adj(data = data, wake = wake, bp_type = bp_type)
+    # Adjust WAKE indicator
+    data <- wake_adj(data = data, wake = wake, bp_type = bp_type)
 
-        # Adjust Day of Week
-        data <- dow_adj(data = data, DoW = DoW)
+    # Adjust Day of Week
+    data <- dow_adj(data = data, DoW = DoW)
 
-        # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
+    # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
 
-        # Adjust Heart Rate (HR)
-        data <- hr_adj(data = data, hr = hr, data_screen = data_screen, HRUL = HRUL, HRLL = HRLL)
+    # Adjust Heart Rate (HR)
+    data <- hr_adj(data = data, hr = hr, data_screen = data_screen, HRUL = HRUL, HRLL = HRLL)
 
-        # Adjust Pulse Pressure (PP)
-        data <- pp_adj(data = data, pp = pp)
+    # Adjust Pulse Pressure (PP)
+    data <- pp_adj(data = data, pp = pp)
 
-        # Adjust Rate Pressure Product (RPP)
-        data <- rpp_adj(data = data, rpp = rpp)
+    # Adjust Rate Pressure Product (RPP)
+    data <- rpp_adj(data = data, rpp = rpp)
 
-        # Adjust Mean Arterial Pressure (MAP)
-        data <- map_adj(data = data, map = map)
-
-
-        # Relocate HR to after DBP column
-        if("HR" %in% colnames(data)){
-          data <- data %>% dplyr::relocate(HR, .after = DBP)
-        }
-
-        # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
-
-        # Aggregate data if selected
-        if(agg == TRUE){
-
-          data <- agg_adj(data = data, bp_type = bp_type, agg_thresh = agg_thresh, collapse_df = collapse_df)
-
-        }
-
-        # Create column indicating blood pressure type (bp_type)
-        data$BP_TYPE <- bp_type
+    # Adjust Mean Arterial Pressure (MAP)
+    data <- map_adj(data = data, map = map)
 
 
-        # SBP Adjustment, DBP Adjustment, and BP Stages
-        data <- bp_stages(data = data,
-                          bp_type = bp_type,
-                          sbp = sbp,
-                          dbp = dbp,
-                          inc_low = inc_low,
-                          inc_crisis = inc_crisis,
-                          data_screen = data_screen,
-                          SUL = SUL,
-                          SLL = SLL,
-                          DUL = DUL,
-                          DLL = DLL,
-                          adj_sbp_dbp = FALSE,
-                          guidelines = guidelines,
-                          bp_cutoffs = bp_cutoffs)
+    # Relocate HR to after DBP column
+    if("HR" %in% colnames(data)){
+      data <- data %>% dplyr::relocate(HR, .after = DBP)
+    }
+
+    # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
+
+    # Aggregate data if selected
+    if(agg == TRUE){
+
+      data <- agg_adj(data = data, bp_type = bp_type, agg_thresh = agg_thresh, collapse_df = collapse_df)
+
+    }
+
+    # Create column indicating blood pressure type (bp_type)
+    data$BP_TYPE <- bp_type
 
 
-        # Move Classification columns to correct positions
-        data <- data %>%
-          dplyr::relocate(BP_CLASS, .after = DBP) #%>%
-        #dplyr::relocate(SBP_CATEGORY, .after = BP_CLASS) %>%
-        #dplyr::relocate(DBP_CATEGORY, .after = SBP_CATEGORY)
+    # SBP Adjustment, DBP Adjustment, and BP Stages
+    data <- bp_stages(data = data,
+                      bp_type = bp_type,
+                      sbp = sbp,
+                      dbp = dbp,
+                      inc_low = inc_low,
+                      inc_crisis = inc_crisis,
+                      data_screen = data_screen,
+                      SUL = SUL,
+                      SLL = SLL,
+                      DUL = DUL,
+                      DLL = DLL,
+                      adj_sbp_dbp = FALSE,
+                      guidelines = guidelines,
+                      bp_cutoffs = bp_cutoffs)
+
+
+    # Move Classification columns to correct positions
+    data <- data %>%
+      dplyr::relocate(BP_CLASS, .after = DBP) #%>%
+    #dplyr::relocate(SBP_CATEGORY, .after = BP_CLASS) %>%
+    #dplyr::relocate(DBP_CATEGORY, .after = SBP_CATEGORY)
 
   }
 

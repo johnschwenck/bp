@@ -2,42 +2,42 @@
 # Compatibility Checks for user-defined bp_cutoffs function input
 cutoff_input_check <- function(SUL, DUL, bp_cutoffs){
 
-      # Check SUL, DUL limits
+  # Check SUL, DUL limits
 
-      if(SUL < max(bp_cutoffs[[1]]) ){
-        stop('SUL less than highest bp_cutoff value for SBP within bp_stages function. To adjust highest SBP limit, set guidelines = "Custom" and adjust bp_cutoffs argument')
-      }
+  if(SUL < max(bp_cutoffs[[1]]) ){
+    stop('SUL less than highest bp_cutoff value for SBP within bp_stages function. To adjust highest SBP limit, set guidelines = "Custom" and adjust bp_cutoffs argument')
+  }
 
-      if(DUL < max(bp_cutoffs[[2]]) ){
-        stop('DUL less than highest bp_cutoff value for DBP within bp_stages function. To adjust highest DBP limit, set guidelines = "Custom" and adjust bp_cutoffs argument')
-      }
+  if(DUL < max(bp_cutoffs[[2]]) ){
+    stop('DUL less than highest bp_cutoff value for DBP within bp_stages function. To adjust highest DBP limit, set guidelines = "Custom" and adjust bp_cutoffs argument')
+  }
 
-      if( any( c(SUL, DUL, bp_cutoffs[[1]], bp_cutoffs[[2]]) < 0) ){
-        stop('Cannot have negative values for SLL, SUL, DLL, DUL, or elements of bp_cutoffs list')
-      }
+  if( any( c(SUL, DUL, bp_cutoffs[[1]], bp_cutoffs[[2]]) < 0) ){
+    stop('Cannot have negative values for SLL, SUL, DLL, DUL, or elements of bp_cutoffs list')
+  }
 
-      # Check compatibility of supplied bp_cutoffs threshold values
+  # Check compatibility of supplied bp_cutoffs threshold values
 
-      # Length check
-      if ( (length( bp_cutoffs[[1]] ) != 5) | (length( bp_cutoffs[[2]] ) != 4) ){
-        stop("Five threshold values should be supplied to first element of bp_cutoffs, and four treshold values should be supplied to second element")
-      }
-      # Numerical value check
-      if ( (!is.numeric( bp_cutoffs[[1]] )) | (!is.numeric( bp_cutoffs[[2]] )) ){
-        stop("Numeric values should be supplied as thresholds to bp_cutoffs elements")
-      }
-      # Range check
-      if ((min(bp_cutoffs[[1]]) < 0)|(min(bp_cutoffs[[2]]) < 0) |(max(bp_cutoffs[[1]]) > SUL) | (max(bp_cutoffs[[2]]) > DUL)){
-        stop("Thresholds for bp_cutoffs elements must be between [SLL, SUL] and [DLL, DUL] range, respectively")
-      }
-      # Sorting check
-      if ( (!identical( bp_cutoffs[[1]], sort( bp_cutoffs[[1]] ) )) | (!identical(bp_cutoffs[[2]], sort( bp_cutoffs[[2]] ) )) ){
-        stop("Thresholds for bp_cutoffs elements must be supplied from smallest to largest")
-      }
-      #
-      if( ( all(bp_cutoffs[[1]] == cummax(bp_cutoffs[[1]])) & all(bp_cutoffs[[2]] == cummax(bp_cutoffs[[2]])) ) == FALSE){
-        stop('bp_cutoffs elements must be increasing vectors of integers.')
-      }
+  # Length check
+  if ( (length( bp_cutoffs[[1]] ) != 5) | (length( bp_cutoffs[[2]] ) != 5) ){
+    stop("Five threshold values should be supplied to first element of bp_cutoffs, and five treshold values should be supplied to second element")
+  }
+  # Numerical value check
+  if ( (!is.numeric( bp_cutoffs[[1]] )) | (!is.numeric( bp_cutoffs[[2]] )) ){
+    stop("Numeric values should be supplied as thresholds to bp_cutoffs elements")
+  }
+  # Range check
+  if ((min(bp_cutoffs[[1]]) < 0)|(min(bp_cutoffs[[2]]) < 0) |(max(bp_cutoffs[[1]]) > SUL) | (max(bp_cutoffs[[2]]) > DUL)){
+    stop("Thresholds for bp_cutoffs elements must be between [SLL, SUL] and [DLL, DUL] range, respectively")
+  }
+  # Sorting check
+  if ( (!identical( bp_cutoffs[[1]], sort( bp_cutoffs[[1]] ) )) | (!identical(bp_cutoffs[[2]], sort( bp_cutoffs[[2]] ) )) ){
+    stop("Thresholds for bp_cutoffs elements must be supplied from smallest to largest")
+  }
+  #
+  if( ( all(bp_cutoffs[[1]] == cummax(bp_cutoffs[[1]])) & all(bp_cutoffs[[2]] == cummax(bp_cutoffs[[2]])) ) == FALSE){
+    stop('bp_cutoffs elements must be increasing vectors of integers.')
+  }
 
   return(bp_cutoffs)
 }
@@ -49,8 +49,8 @@ cutoff_input_check <- function(SUL, DUL, bp_cutoffs){
 
 stage_lookup_v1 <- function(bp_type = c("OBP", "HBPM", "ABPM"),
                             guidelines = c("Lee_2020", "AHA", "Custom"),
-                            bp_cutoffs = list( c(100, 120, 130, 140, 180), c(60, 80, 90, 120)),
-                            SUL = 240, DUL = 140, inc_low = TRUE, inc_crisis = TRUE){
+                            bp_cutoffs = list( c(100, 120, 130, 140, 180), c(60, 80, 80, 90, 120)),
+                            SUL = 240, DUL = 140, inc_low = FALSE, inc_crisis = TRUE){
 
 
   # Match guidelines & bp_type specified in function arguments
@@ -62,15 +62,15 @@ stage_lookup_v1 <- function(bp_type = c("OBP", "HBPM", "ABPM"),
 
   # Default Lee_2020 stages for reference in compatibility checks
   default_stages = c( "Low", "Normal", "Elevated", "Stage 1", "ISH - S1", "IDH - S1", "Stage 2", "ISH - S2", "IDH - S2", "Crisis" )
-  default_cutoffs = list( c(100, 120, 130, 140, 180), c(60, 80, 90, 120))
-  default_sbp_dbp_ops = c("&", "&", "&", "&", "&", "&", "&", "&", "&", "|")
+  default_cutoffs = list( c(100, 120, 130, 140, 180), c(60, 80, 80, 90, 120))
+  default_sbp_dbp_ops = c("|", "&", "&", "&", "&", "&", "&", "&", "&", "|")
 
 
   # Lee 2020 cutoffs are fixed according to paper, cannot change
 
   if( (guidelines == "Lee_2020" ) & (identical(bp_cutoffs, default_cutoffs) == FALSE ) ){
 
-        warning('bp_cutoffs input ignored since guidelines set to "Lee_2020". To set custom bp_cutoffs, set guidelines = "Custom"')
+    warning('bp_cutoffs input ignored since guidelines set to "Lee_2020". To set custom bp_cutoffs, set guidelines = "Custom"')
 
   }
 
@@ -82,78 +82,70 @@ stage_lookup_v1 <- function(bp_type = c("OBP", "HBPM", "ABPM"),
 
   if(guidelines == "Custom"){
 
-        # Different thresholds, possibly different stages
+    # Different thresholds, possibly different stages
 
-        if( identical(bp_cutoffs, default_cutoffs) == TRUE ){
-          message('guidelines = "Custom", but bp_cutoffs unchanged (set to default values). Proceeding with Lee 2020 guidelines.')
-        }
+    if( identical(bp_cutoffs, default_cutoffs) == TRUE ){
+      message('guidelines = "Custom", but bp_cutoffs unchanged (set to default values). Proceeding with Lee 2020 guidelines.')
+    }
 
-        bp_cutoffs = cutoff_input_check(SUL, DUL, bp_cutoffs)
+    bp_cutoffs = cutoff_input_check(SUL, DUL, bp_cutoffs)
 
   }else{
 
 
-        # If not custom, then either Lee or AHA
-        # Lee ==> AHA
+    # If not custom, then either Lee or AHA
+    # Lee ==> AHA
 
-        if(guidelines == "Lee_2020"){
-          bp_cutoffs = default_cutoffs #list( c(100, 120, 130, 140, 180), c(60, 80, 90, 120))
+    if(guidelines == "Lee_2020"){
+      bp_cutoffs = default_cutoffs #list( c(100, 120, 130, 140, 180), c(60, 80, 80, 90, 120))
 
 
-        }else if(guidelines == "AHA"){
+    }else if(guidelines == "AHA"){
 
-            # if bp_cutoffs differ from default_cutoffs it implies that the user changed the bp_cutoffs input argument
-            if( identical(bp_cutoffs, default_cutoffs) == FALSE ){
+      # if bp_cutoffs differ from default_cutoffs it implies that the user changed the bp_cutoffs input argument
+      if( identical(bp_cutoffs, default_cutoffs) == FALSE ){
 
-                # Indicate that bp_cutoffs changed from default
-                user_change = TRUE
+        # Run checks for bp_cutoff supplied by user
+        bp_cutoffs = cutoff_input_check(SUL, DUL, bp_cutoffs)
 
-                # Run checks for bp_cutoff supplied by user
-                bp_cutoffs = cutoff_input_check(SUL, DUL, bp_cutoffs)
-
-            }else{user_change = FALSE}
-
-            # User did not change the bp_cutoffs argument --> use the cutoffs specified by AHA
-            if(user_change == FALSE){
-
-                if(bp_type == "OBP"){
-                  bp_cutoffs = list( c(100, 120, 130, 140, 160), c(60, 80, 90, 100))
-
-                }else if(bp_type == "HBPM"){
-                  bp_cutoffs = list( c(100, 120, 130, 135, 145), c(60, 80, 85, 90))
-
-                }else if(bp_type == "ABPM"){
-                  bp_cutoffs = list( c(100, 115, 125, 130, 145), c(60, 75, 80, 90))
-                }
-
-            }else{
-                message('AHA guidelines specified, but bp_cutoffs changed by user.
+        message('AHA guidelines specified, but bp_cutoffs changed by user.
 bp_cutoffs will override AHA guidelines for the respective bp_type.
 If this is a mistake, leave bp_cutoffs to default values and keep guidelines = "AHA".')
-              }
 
+      }else{
+        # User did not change the bp_cutoffs argument --> use the cutoffs specified by AHA
+        if(bp_type == "OBP"){
+          bp_cutoffs = list( c(100, 120, 130, 140, 160), c(60, 80, 80, 90, 100))
+
+        }else if(bp_type == "HBPM"){
+          bp_cutoffs = list( c(100, 120, 130, 135, 145), c(60, 80, 80, 85, 90))
+
+        }else if(bp_type == "ABPM"){
+          bp_cutoffs = list( c(100, 115, 125, 130, 145), c(60, 75, 75, 80, 90))
         }
-
+      }
+    }
   }
 
   # specify each of the 4 LL/UL vectors using user input
-  sbp_LL  = c( 0, 0, bp_cutoffs[[1]][2], bp_cutoffs[[1]][3], bp_cutoffs[[1]][3], 0, bp_cutoffs[[1]][4], bp_cutoffs[[1]][4], 0, bp_cutoffs[[1]][5] )
+  sbp_LL  = c( 0, bp_cutoffs[[1]][1], bp_cutoffs[[1]][2], bp_cutoffs[[1]][3], bp_cutoffs[[1]][3], 0, bp_cutoffs[[1]][4], bp_cutoffs[[1]][4], 0, bp_cutoffs[[1]][5] )
   sbp_UL = c( bp_cutoffs[[1]][1], bp_cutoffs[[1]][2], bp_cutoffs[[1]][3], bp_cutoffs[[1]][4], bp_cutoffs[[1]][4], bp_cutoffs[[1]][3], bp_cutoffs[[1]][5], bp_cutoffs[[1]][5], bp_cutoffs[[1]][4], SUL )
-  dbp_LL =  c( 0, 0, 0, bp_cutoffs[[2]][2], 0, bp_cutoffs[[2]][2],   bp_cutoffs[[2]][3], 0, bp_cutoffs[[2]][3], bp_cutoffs[[2]][4] )
-  dbp_UL = c( bp_cutoffs[[2]][1], bp_cutoffs[[2]][2], bp_cutoffs[[2]][2], bp_cutoffs[[2]][3], bp_cutoffs[[2]][2], bp_cutoffs[[2]][3], bp_cutoffs[[2]][4], bp_cutoffs[[2]][3], bp_cutoffs[[2]][4], DUL )
+  dbp_LL =  c( 0, bp_cutoffs[[2]][1], 0, bp_cutoffs[[2]][3], 0, bp_cutoffs[[2]][3],   bp_cutoffs[[2]][4], 0, bp_cutoffs[[2]][4], bp_cutoffs[[2]][5] )
+  dbp_UL = c( bp_cutoffs[[2]][1], bp_cutoffs[[2]][2], bp_cutoffs[[2]][3], bp_cutoffs[[2]][4], bp_cutoffs[[2]][3], bp_cutoffs[[2]][4], bp_cutoffs[[2]][5], bp_cutoffs[[2]][4], bp_cutoffs[[2]][5], DUL )
 
   # Output including all 10 stages from Lee et al. 2020
   out = data.frame(default_stages, sbp_LL, sbp_UL, default_sbp_dbp_ops, dbp_LL, dbp_UL)
 
-  colnames(out)[1] <- "Stages"
-  colnames(out)[4] <- "Operation"
+  colnames(out)[which( colnames(out) %in% "default_stages" )] <- "Stages"
+  colnames(out)[which( colnames(out) %in% "default_sbp_dbp_ops" )] <- "Operation"
 
   if(guidelines == "AHA"){
 
-    out = out[ out[ , 1] %in% default_stages[c(2,3,4,7,10)] , ]
+    # out = out[ out[ , 1] %in% default_stages[c(1,2,3,4,7,10)] , ]
+    out = out[ out[ , 1] %in% default_stages[ which( default_stages %in% c("Low","Normal","Elevated","Stage 1","Stage 2","Crisis") )] , ]
     row.names(out) <- NULL
 
-    out$Operation[c(3,4)] <- c("|", "|")
+    out[ out[ , 1] %in% default_stages[ which( default_stages %in% c("Stage 1", "Stage 2") )] , ]$Operation <- c("|", "|")
 
   }
 
@@ -163,6 +155,10 @@ If this is a mistake, leave bp_cutoffs to default values and keep guidelines = "
     out = out[ out[ , 1] %in% default_stages[!(default_stages %in% "Low")] , ]
     row.names(out) <- NULL
 
+    # Reset LL of SBP / DBP to 0
+    out$sbp_LL[1] <- 0
+    out$dbp_LL[1] <- 0
+
   }
 
   if(inc_crisis == FALSE){
@@ -170,8 +166,26 @@ If this is a mistake, leave bp_cutoffs to default values and keep guidelines = "
     out = out[ out[ , 1] %in% default_stages[!(default_stages %in% "Crisis")] , ]
     row.names(out) <- NULL
 
+    # Reset UL of SBP / DBP to SUL / DUL:
+
+    if(guidelines == "Lee_2020"){
+
+      # Change S2 and ISH - S2
+      out$sbp_UL[ length(out$sbp_UL) - 2 ] <- SUL
+      out$sbp_UL[ length(out$sbp_UL) - 1 ] <- SUL
+      out$dbp_UL[ length(out$dbp_UL) - 2 ] <- DUL
+      out$dbp_UL[ length(out$dbp_UL) ]     <- DUL
+
+    }else if(guidelines == "AHA"){
+      # Change S2 SUL / DUL
+      out$sbp_UL[ length(out$sbp_UL) ] <- SUL
+      out$dbp_UL[ length(out$dbp_UL) ] <- DUL
+    }
+
+
   }
 
+  # print(out)
 
   return(out)
 
@@ -182,7 +196,7 @@ If this is a mistake, leave bp_cutoffs to default values and keep guidelines = "
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
 
 
-#' Alternative Blood Pressure Stages
+#' Blood Pressure Stage Classification
 #'
 #' Adds BP_CLASS, SBP_Category, and DBP_Category columns to supplied dataframe.
 #'
@@ -196,11 +210,57 @@ If this is a mistake, leave bp_cutoffs to default values and keep guidelines = "
 #'
 #' @param dbp column name corresponding to diastolic blood pressure (DBP)
 #'
-#' @param bp_type temporary
+#' @param bp_type A string designation for the blood pressure type of the underlying SBP / DBP data. \code{bp_type}
+#' may be one of the following: "HBPM", "ABPM", or "OBP" where HBPM corresponds to home blood pressure
+#' monitoring, ABPM corresponds to ambulatory blood pressure monitoring, and OBP corresponds to office
+#' blood pressure data. By default, \code{bp_type} is set to "HBPM". \code{bp_type} only impacts \code{bp_stages}
+#' if \code{guidelines = "AHA"}, for which the cutoffs for each blood pressure stage will be adjusted
+#' according to its respective blood pressure type. If guidelines argument set to either "Lee" or
+#' "Custom", the \code{bp_type} will have no effect since the Lee guidelines are pre-determined from a
+#' recent academic paper and Custom implies that the user is already aware of the bp_type.
 #'
-#' @param guidelines temporary
+#' @param guidelines A string designation for the health / medical guidelines to follow when mapping BP
+#' readings to a respective BP stage. \code{guidelines} can take on either "Lee_2020" corresponding to an
+#' academic paper by Lee et al (2020) (see references for function), "AHA" corresponding to published
+#' guidelines by the American Heart Association, or "Custom" which the user sets their own BP cutoffs.
 #'
-#' @param bp_cutoffs temporary
+#' @param bp_cutoffs A list containing two vectors corresponding to SBP and DBP cutoffs, respectively.
+#' The vectors both contain 5 integer values that each represent an upper limit cutoff for each SBP / DBP
+#' stage. If \code{guidelines = "Lee_2020"}, this argument is ignored; if \code{guidelines = "AHA"} and
+#' if the \code{bp_cutoffs} is manually adjusted (i.e. not the default list), then the manually adjusted
+#' list will override the default AHA guidelines. The default AHA guidelines depend on the bp_type and will
+#' adjust automatically based on the specification of \cde{bp_type}. If \code{guidelines = "Custom"},
+#' the \code{bp_cutoffs} argument dictates the cutoffs for the respective stages as expected.
+#'
+#' The SBP vector (100, 120, 130, 140, 180) corresponds to the upper limits for the following stages:
+#' Low (0-100), Normal (100-120), Elevated (120-130), Stage 1 Hypertension (130-140), Stage 2 Hypertension
+#' (140-180) according to the American Heart Association (AHA). When utilizing Lee et al (2020) guidelines,
+#' the following additional stages will be automatically derived and included: Isolated Systolic Hypertension
+#' for Stage 1 (ISH - S1) (130-140), Isolated Diastolic Hypertension for Stage 1 (IDH - S1) (0-130), ISH - S2
+#' (140-180), and IDH - S2 (0-140).
+#'
+#' The DBP vector (60, 80, 80, 90, 120) corresponds to the upper limits for the following stages:
+#' Low (0-60), Normal (60-80), Elevated (0-80), Stage 1 Hypertension (80-90), Stage 2 Hypertension
+#' (90-120) according to the American Heart Association (AHA). When utilizing Lee et al (2020) guidelines,
+#' the following additional stages will be automatically derived and included: Isolated Systolic Hypertension
+#' for Stage 1 (ISH - S1) (0-80), Isolated Diastolic Hypertension for Stage 1 (IDH - S1) (80-90), ISH - S2
+#' (0-90), and IDH - S2 (90-120).
+#'
+#' NOTE: The upper limit of the "Elevated" category repeats in the DBP vector and matches that of Normal.
+#' This because according to most guidelines, there is no distinction between DBP cutoffs for Normal and
+#' Elevated - these stages are discerned by SBP, not DBP. Should the user decide to manually change these
+#' \code{bp_cutoffs} values, the stages will reflect accordingly.
+#'
+#' Any manual adjustment to these SBP / DBP vectors by the user will be assumed to be "Custom" and will
+#' classify readings accordingly. If no manual adjustments made, stage classification will conform to either
+#' "Lee_2020" or "AHA" protocol (where Lee is pre-determined and AHA is determined by bp_type).
+#'
+#' Any SBP reading below 100 or DBP reading below 60 is considered Hypotension ("Low").
+#' Any SBP reading above 180 or DBP reading above 120 is considered a Crisis.
+#'
+#' If \code{inc_low = FALSE}, although an upper limit value is still required in the SBP vector, the "Low"
+#' stage will be omitted in the final output. Similarly, if \code{inc_crisis = FALSE}, then the "Crisis"
+#' category will be omitted from the final output.
 #'
 #' @param inc_low A TRUE / FALSE indicator of whether or not to include the "Low" (Hypotension)
 #' category to the scatter plot. The range for Hypotension is set from a minimum of 25 for DBP or 80
@@ -260,10 +320,10 @@ If this is a mistake, leave bp_cutoffs to default values and keep guidelines = "
 #'
 #' bp_stages(bp_jhs, sbp = "sys.mmhg.", dbp = "dias.mmhg.")
 #'
-bp_stages <- function(data, sbp, dbp, bp_type = c("HBPM", "ABPM", "OBP"), inc_low = TRUE, inc_crisis = TRUE, data_screen = TRUE,
+bp_stages <- function(data, sbp, dbp, bp_type = c("HBPM", "ABPM", "OBP"), inc_low = FALSE, inc_crisis = TRUE, data_screen = TRUE,
                       SUL = 240, SLL = 50, DUL = 140, DLL = 40, adj_sbp_dbp = TRUE,
                       guidelines = c("Lee_2020", "AHA", "Custom"),
-                      bp_cutoffs = list( c(100, 120, 130, 140, 180), c(60, 80, 90, 120)) ){
+                      bp_cutoffs = list( c(100, 120, 130, 140, 180), c(60, 80, 80, 90, 120)) ){
 
   SBP = DBP = BP_CLASS = . = NULL
   rm(list = c('SBP', 'DBP', 'BP_CLASS', '.'))
