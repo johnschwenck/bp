@@ -7,6 +7,8 @@
 process_data(
   data,
   bp_type = c("hbpm", "abpm", "ap"),
+  guidelines = c("Lee_2020", "AHA", "Custom"),
+  bp_cutoffs = list(c(100, 120, 130, 140, 180), c(60, 80, 80, 90, 120)),
   ap = NULL,
   time_elap = NULL,
   sbp = NULL,
@@ -48,7 +50,47 @@ minimum.}
 \item{bp_type}{Required argument specifying which of the three BP data types
 ("HBPM", "ABPM", or "AP") the input data is. Default \code{bp_type} set to "HBPM".
 This argument determines which processing steps are necessary to yield sensible
-output.}
+output.
+
+HBPM - Home Blood Pressure Monitor | ABPM - Ambulatory Blood Pressure | AP - Arterial Pressure
+
+NOTE: \code{bp_type} impacts blood pressure staging in \code{bp_stages} if \code{guidelines = "AHA"}, for which the
+cutoffs for each blood pressure stage are automatically adjusted according to \code{bp_type}.}
+
+\item{guidelines}{A string designation for the guidelines to follow when mapping BP
+readings to a respective BP stage. \code{guidelines} can take on either "Lee_2020" corresponding to staging in Lee et al (2020), "AHA" corresponding to
+guidelines by the American Heart Association, see e.g. Muntner et al (2019), or "Custom" based on user-defined cutoffs in \code{bp_cutoffs}. By default, AHA guidelines adjust \code{bp_cutoffs} depending on the BP type.}
+
+\item{bp_cutoffs}{A list containing two vectors corresponding to SBP and DBP cutoffs, respectively.
+Each vector contains 5 values.
+
+The SBP vector (100, 120, 130, 140, 180) corresponds to the upper limits for the following stages:
+Low (0-100), Normal (100-120), Elevated (120-130), Stage 1 Hypertension (130-140), Stage 2 Hypertension
+(140-180). When utilizing Lee et al (2020) guidelines,
+additional stages are included: Isolated Systolic Hypertension
+for Stage 1 (ISH - S1) (130-140), Isolated Diastolic Hypertension for Stage 1 (IDH - S1) (0-130), ISH - S2
+(140-180), and IDH - S2 (0-140).
+
+The DBP vector (60, 80, 80, 90, 120) corresponds to the upper limits for the following stages:
+Low (0-60), Normal (60-80), Elevated (0-80), Stage 1 Hypertension (80-90), Stage 2 Hypertension
+(90-120). The upper limit of the "Elevated" category repeats in the DBP vector and matches that of Normal.
+This because according to most guidelines, there is no distinction between DBP cutoffs for Normal and
+Elevated - these stages are discerned by SBP, not DBP. When utilizing Lee et al (2020) guidelines,
+additional stages are included: Isolated Diastolic Hypertension
+for Stage 1 (ISH - S1) (0-80), Isolated Diastolic Hypertension for Stage 1 (IDH - S1) (80-90), ISH - S2
+(0-90), and IDH - S2 (90-120).
+
+Any SBP reading below 100 or DBP reading below 60 is considered Hypotension ("Low").
+Any SBP reading above 180 or DBP reading above 120 is considered a Crisis.
+
+When \code{guidelines = "AHA"}, the cutoffs are automatically adjusted to match BP type without user input, For \code{bp_type = "hbpm"},
+SBP = (100, 120, 130, 135, 160),  DBP = (60, 80, 80, 85, 110). For\code{bp_type = "abpm"}, SBP = (100, 115, 125, 130, 160), DBP = (60, 75, 75, 80, 105). An adjustment of default cutoffs by the user
+These choices can be overwritten by directly changing \code{bp_cutoffs}, in which case the guidelines are ignored and automatically treated as "Custom".
+
+
+If \code{inc_low = FALSE}, although an upper limit value is still required in the SBP vector, the "Low"
+stage will be omitted in the final output. Similarly, if \code{inc_crisis = FALSE}, then the "Crisis"
+category will be omitted from the final output.}
 
 \item{ap}{(For AP data only) Required column name (character string) corresponding
 to continuous Arterial Pressure (AP) (mmHg). Note that this is a required argument
@@ -242,6 +284,9 @@ jhs_proc
 Lee H, Yano Y, Cho SMJ, Park JH, Park S, Lloyd-Jones DM, Kim HC. Cardiovascular risk of isolated
 systolic or diastolic hypertension in young adults. \emph{Circulation}. 2020; 141:1778–1786.
 \doi{10.1161/CIRCULATIONAHA.119.044838}
+
+Muntner, P., Carey, R. M., Jamerson, K., Wright Jr, J. T., & Whelton, P. K. (2019). Rationale for ambulatory and home blood pressure monitoring thresholds in the 2017 American College of Cardiology/American Heart Association Guideline. Hypertension, 73(1), 33-38. \doi{10.1161/HYPERTENSIONAHA.118.11946}
+
 
 Omboni, S., Parati, G*., Zanchetti, A., Mancia, G. Calculation of trough: peak ratio of
 antihypertensive treatment from ambulatory blood pressure: methodological aspects

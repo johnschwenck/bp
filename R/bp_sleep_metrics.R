@@ -308,7 +308,7 @@ get_summaries_SBP_DBP <- function(data){
 #'                            map = "map",
 #'                            rpp = "rpp",
 #'                            pp = "pp",
-#'                            bp_type = "abpm")
+#'                            bp_type = "ABPM")
 #'
 #' bp_sleep_metrics(hypnos_proc)
 #'

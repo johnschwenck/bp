@@ -76,7 +76,7 @@ hypnos_proc <- process_data(bp_hypnos,
                            map = "map",
                            rpp = "rpp",
                            pp = "pp",
-                           bp_type = "abpm")
+                           bp_type = "ABPM")
 
 bp_sleep_metrics(hypnos_proc)
 

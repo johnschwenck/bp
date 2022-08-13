@@ -2,12 +2,13 @@
 % Please edit documentation in R/bp_stages.R
 \name{bp_stages}
 \alias{bp_stages}
-\title{Alternative Blood Pressure Stages}
+\title{Blood Pressure Stage Classification}
 \usage{
 bp_stages(
   data,
   sbp,
   dbp,
+  bp_type = c("hbpm", "abpm", "ap"),
   inc_low = TRUE,
   inc_crisis = TRUE,
   data_screen = TRUE,
@@ -15,7 +16,9 @@ bp_stages(
   SLL = 50,
   DUL = 140,
   DLL = 40,
-  adj_sbp_dbp = TRUE
+  adj_sbp_dbp = TRUE,
+  guidelines = c("Lee_2020", "AHA", "Custom"),
+  bp_cutoffs = list(c(100, 120, 130, 140, 180), c(60, 80, 80, 90, 120))
 )
 }
 \arguments{
@@ -23,22 +26,31 @@ bp_stages(
 contain data for Systolic blood pressure and Diastolic blood pressure at a
 minimum.}
 
-\item{sbp}{column name corresponding to systolic blood pressure (SBP)}
+\item{sbp}{Required column name (character string) corresponding to Systolic Blood
+Pressure (mmHg)}
 
-\item{dbp}{column name corresponding to diastolic blood pressure (DBP)}
+\item{dbp}{Required column name (character string) corresponding to Diastolic Blood
+Pressure (mmHg)}
 
-\item{inc_low}{A TRUE / FALSE indicator of whether or not to include the "Low" (Hypotension)
-category to the scatter plot. The range for Hypotension is set from a minimum of 25 for DBP or 80
-for SBP, or the corresponding minimum value for either category from the data until 60 for DBP and
-100 for SBP.}
+\item{bp_type}{Required argument specifying which of the three BP data types
+("HBPM", "ABPM", or "AP") the input data is. Default \code{bp_type} set to "HBPM".
+This argument determines which processing steps are necessary to yield sensible
+output.
 
-\item{inc_crisis}{A TRUE / FALSE indicator of whether or not to include the Hypertensive "Crisis"
-category to the scatter plot. The range for crisis is any value above 180 for SBP or above 120 for
-DBP.}
+HBPM - Home Blood Pressure Monitor | ABPM - Ambulatory Blood Pressure | AP - Arterial Pressure
 
-\item{data_screen}{Default to TRUE. data_screens for extreme values in the data for both \code{SBP} and \code{DBP}
-according to Omboni, et al (1995) paper - Calculation of Trough:Peak Ratio of Antihypertensive Treatment
-from Ambulatory Blood Pressure: Methodological Aspects}
+NOTE: \code{bp_type} impacts blood pressure staging in \code{bp_stages} if \code{guidelines = "AHA"}, for which the
+cutoffs for each blood pressure stage are automatically adjusted according to \code{bp_type}.}
+
+\item{inc_low}{Optional logical argument dictating whether or not to include the "Low" category for BP
+classification column (and the supplementary SBP/DBP Category columns). Default set to TRUE.}
+
+\item{inc_crisis}{Optional logical argument dictating whether or not to include the "Crisis" category for BP
+classification column (and the supplementary SBP/DBP Category columns). Default set to TRUE.}
+
+\item{data_screen}{Optional logical argument; default set to TRUE. Screens for extreme values in the data
+for both \code{SBP} and \code{DBP} according to Omboni, et al (1995) paper - Calculation of Trough:Peak
+Ratio of Antihypertensive Treatment from Ambulatory Blood Pressure: Methodological Aspects}
 
 \item{SUL}{Systolic Upper Limit (SUL). If \code{data_screen = TRUE}, then \code{SUL} sets the upper limit by which
 to exclude any \code{SBP} values that exceed this threshold. The default is set to 240 per Omboni, et al (1995)
@@ -62,9 +74,44 @@ Methodological Aspects}
 
 \item{adj_sbp_dbp}{Logical indicator to dictate whether or not to run helper functions that adjust / process
 SBP & DBP columns in supplied data set. Default set to: \code{adj_sbp_dbp = TRUE}}
+
+\item{guidelines}{A string designation for the guidelines to follow when mapping BP
+readings to a respective BP stage. \code{guidelines} can take on either "Lee_2020" corresponding to staging in Lee et al (2020), "AHA" corresponding to
+guidelines by the American Heart Association, see e.g. Muntner et al (2019), or "Custom" based on user-defined cutoffs in \code{bp_cutoffs}. By default, AHA guidelines adjust \code{bp_cutoffs} depending on the BP type.}
+
+\item{bp_cutoffs}{A list containing two vectors corresponding to SBP and DBP cutoffs, respectively.
+Each vector contains 5 values.
+
+The SBP vector (100, 120, 130, 140, 180) corresponds to the upper limits for the following stages:
+Low (0-100), Normal (100-120), Elevated (120-130), Stage 1 Hypertension (130-140), Stage 2 Hypertension
+(140-180). When utilizing Lee et al (2020) guidelines,
+additional stages are included: Isolated Systolic Hypertension
+for Stage 1 (ISH - S1) (130-140), Isolated Diastolic Hypertension for Stage 1 (IDH - S1) (0-130), ISH - S2
+(140-180), and IDH - S2 (0-140).
+
+The DBP vector (60, 80, 80, 90, 120) corresponds to the upper limits for the following stages:
+Low (0-60), Normal (60-80), Elevated (0-80), Stage 1 Hypertension (80-90), Stage 2 Hypertension
+(90-120). The upper limit of the "Elevated" category repeats in the DBP vector and matches that of Normal.
+This because according to most guidelines, there is no distinction between DBP cutoffs for Normal and
+Elevated - these stages are discerned by SBP, not DBP. When utilizing Lee et al (2020) guidelines,
+additional stages are included: Isolated Diastolic Hypertension
+for Stage 1 (ISH - S1) (0-80), Isolated Diastolic Hypertension for Stage 1 (IDH - S1) (80-90), ISH - S2
+(0-90), and IDH - S2 (90-120).
+
+Any SBP reading below 100 or DBP reading below 60 is considered Hypotension ("Low").
+Any SBP reading above 180 or DBP reading above 120 is considered a Crisis.
+
+When \code{guidelines = "AHA"}, the cutoffs are automatically adjusted to match BP type without user input, For \code{bp_type = "hbpm"},
+SBP = (100, 120, 130, 135, 160),  DBP = (60, 80, 80, 85, 110). For\code{bp_type = "abpm"}, SBP = (100, 115, 125, 130, 160), DBP = (60, 75, 75, 80, 105). An adjustment of default cutoffs by the user
+These choices can be overwritten by directly changing \code{bp_cutoffs}, in which case the guidelines are ignored and automatically treated as "Custom".
+
+
+If \code{inc_low = FALSE}, although an upper limit value is still required in the SBP vector, the "Low"
+stage will be omitted in the final output. Similarly, if \code{inc_crisis = FALSE}, then the "Crisis"
+category will be omitted from the final output.}
 }
 \value{
-A dataframe with additional columns corresponding to the stages of high blood pressure and the
+A dataframe with additional columns corresponding to the stages of blood pressure and the
 supplementary SBP / DBP categories
 }
 \description{
@@ -87,8 +134,10 @@ bp_stages(bp_jhs, sbp = "sys.mmhg.", dbp = "dias.mmhg.")
 
 }
 \references{
-Omboni, S., Parati, G*., Zanchetti, A., Mancia, G. Calculation of trough: peak ratio of
-antihypertensive treatment from ambulatory blood pressure: methodological aspects
-\emph{Journal of Hypertension}. October 1995 - Volume 13 - Issue 10 - p 1105-1112
-\doi{10.1097/00004872-199510000-00005}
+Lee H, Yano Y, Cho SMJ, Park JH, Park S, Lloyd-Jones DM, et al. Cardiovascular risk of isolated systolic
+or diastolic hypertension in young adults. \emph{Circulation}. 2020;141(22):1778–1786.
+\doi{0.1161/CIRCULATIONAHA.119.044838}
+
+Muntner, P., Carey, R. M., Jamerson, K., Wright Jr, J. T., & Whelton, P. K. (2019). Rationale for ambulatory and home blood pressure monitoring thresholds in the 2017 American College of Cardiology/American Heart Association Guideline. Hypertension, 73(1), 33-38.
+\doi{10.1161/HYPERTENSIONAHA.118.11946}
 }
