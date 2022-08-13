@@ -1,4 +1,5 @@
 
+
 #' Blood Pressure Stage Scatter Plot
 #'
 #' @description Display all \code{SBP} and \code{DBP}
@@ -6,6 +7,7 @@
 #' mutually exclusive levels of Hypertension as in Lee et al (2020) (the default), or the
 #' levels set by the American Heart Association (AHA).
 #'
+#' @inheritParams process_data
 #'
 #' @param data A processed dataframe resulting from the \code{process_data} function that
 #' contains the \code{SBP}, and \code{DBP} columns, as well as (potentially) other information that can be used for grouping.
@@ -16,7 +18,6 @@
 #' through the \code{inc_low} or \code{inc_crisis} function arguments, respectively.
 #' Setting \code{plot_type = "AHA"} will use the stages according to the guidelines
 #' set forth by the American Heart Association (reference: \url{https://www.heart.org/en/health-topics/high-blood-pressure/understanding-blood-pressure-readings})
-#'
 #'
 #' @param subj Optional argument. Allows the user to specify and subset specific subjects
 #' from the \code{ID} column of the supplied data set. The \code{subj} argument can be a single
@@ -38,6 +39,8 @@
 #'
 #' @param inc_crisis A TRUE / FALSE indicator of whether or not to include the "Crisis" (Hypertensive)
 #' category to the scatter plot. This is only activated in conjunction with \code{"stages2020"} plot type, and if TRUE is defined as SBP > 180 or DBP > 120. If FALSE, those values are displayed as either "ISH - S2", "S2" or "IDH - S2" stages (see details). This argument is ignored with plot type \code{"AHA"}, where the "Crisis" stage (SBP > 180 or DBP > 120) is always displayed.
+#'
+#'
 #'
 #' @return A scatter plot graphic using the ggplot2 package overlaying each reading (represented as
 #' points) onto a background that contains each stage
@@ -108,7 +111,7 @@
 #' data("bp_hypnos")
 #' data("bp_ghana")
 #' hypnos_proc <- process_data(bp_hypnos,
-#'                          bp_type = 'ABPM',
+#'                          bp_type = 'abpm',
 #'                          sbp = "syst",
 #'                          dbp = "DIAST",
 #'                          date_time = "date.time",
@@ -144,12 +147,14 @@
 #' #(Note that column names are of proper naming convention so no processing needed)
 #' bp_scatter(bp::bp_ghana, inc_crisis = TRUE, inc_low = FALSE, group_var = "TIME_ELAPSED")
 bp_scatter <- function(data,
-                           plot_type = c("stages2020", "AHA"),
-                           subj = NULL,
-                           group_var = NULL,
-                           wrap_var = NULL,
-                           inc_crisis = TRUE,
-                           inc_low = TRUE){
+                       plot_type = c("stages2020", "AHA"),
+                       subj = NULL,
+                       group_var = NULL,
+                       wrap_var = NULL,
+                       inc_crisis = TRUE,
+                       inc_low = TRUE,
+                       bp_cutoffs = list( c(100, 120, 130, 140, 180), c(60, 80, 80, 90, 120)),
+                       bp_type = c("hbpm", "abpm", "ap")){
 
   # Set global variables
   SBP = DBP = VISIT = ID = NULL
@@ -164,6 +169,13 @@ bp_scatter <- function(data,
   # Coerce user input to upper case and match with either 8 stage thresholds or the AHA guidelines
   #plot_type = toupper(plot_type)
   plot_type = match.arg(plot_type)
+  bp_type <- tolower(bp_type)
+  bp_type <- toupper( match.arg(bp_type) )
+
+  # Fix this in the long term
+  if(plot_type == "stages2020"){
+    plot_type = "Lee_2020"
+  }
 
   # If user supplies a vector corresponding to a subset of multiple subjects (multi-subject only)
   if(!is.null(subj)){
@@ -218,315 +230,193 @@ bp_scatter <- function(data,
     stop('One or more of the required variables are missing. \nEnsure that you have run the process_data() function first.')
   }
 
-  # 8 stage thresholds according to Lee et al 2020
-  if(plot_type == "stages2020"){
+  ### BEGIN PLOTS
 
-    # Initialize IDH - S1, Elevated, and ISH - S1 as they never change
-    xlim_breaks <- c(80, 90)
-    ylim_breaks <- c(120, 130, 140)
+  # For plots
+  source_dsc <- ifelse(plot_type == "Lee_2020", 'Source: Lee et al (2020)', 'Source: American Heart Association')
 
-    # precalculate minDBP and minSBP values
-    minDBP = min(data$DBP, na.rm = TRUE)
-    minSBP = min(data$SBP, na.rm = TRUE)
+  # Need bp_type, guidelines (plot_type), and bp_cutoffs
+  stage_lookup = stage_lookup_v1(bp_type = bp_type, guidelines = plot_type, bp_cutoffs = bp_cutoffs,
+                                 inc_low = inc_low, inc_crisis = inc_crisis)
 
-    # Check whether user wants to include a 'Low (Hypotension)' category
-    if( inc_low == TRUE ){
+  # Color Map
+  color_map = data.frame(
+    Stages = c("Low", "Normal", "Elevated", "Stage 1", "ISH - S1", "IDH - S1", "Stage 2", "ISH - S2", "IDH - S2", "Crisis"),
+    colors_map = c('lightblue', 'darkgreen', 'yellow', 'orangered1', 'orange', 'orange', 'red', 'red3', 'red3', 'darkred'),
+    row_order = c(1:10),
+    text_x = c(0, 0, 0,
+               stage_lookup$dbp_UL[which(stage_lookup$Stages %in% "Stage 1")-1],
+               0,
+               stage_lookup$dbp_UL[which(stage_lookup$Stages %in% "Stage 1")-1],
+               stage_lookup$dbp_UL[which(stage_lookup$Stages %in% "Stage 2")-1],
+               0,
+               stage_lookup$dbp_UL[which(stage_lookup$Stages %in% "Stage 2")-1],
+               ifelse("Crisis" %in% stage_lookup$Stages, stage_lookup$dbp_UL[which(stage_lookup$Stages %in% "Crisis")]-15, NA )
+    ),
 
-      low_x_lim <- c( floor(min(25, minDBP - 10)), 60)
-      low_y_lim <- c( floor(min(80, minSBP - 10)), 100)
+    text_y = c(ifelse("Low" %in% stage_lookup$Stages, stage_lookup$sbp_UL[which(stage_lookup$Stages %in% "Low")], NA ),
+               stage_lookup$sbp_UL[which(stage_lookup$Stages %in% "Normal")],
+               stage_lookup$sbp_UL[which(stage_lookup$Stages %in% "Elevated")],
+               stage_lookup$sbp_UL[which(stage_lookup$Stages %in% "Stage 1")],
+               stage_lookup$sbp_UL[which(stage_lookup$Stages %in% "Stage 1")],
+               0,
+               stage_lookup$sbp_UL[which(stage_lookup$Stages %in% "Stage 2")],
+               stage_lookup$sbp_UL[which(stage_lookup$Stages %in% "Stage 2")],
+               0,
+               ifelse("Crisis" %in% stage_lookup$Stages, stage_lookup$sbp_UL[which(stage_lookup$Stages %in% "Crisis")], NA )
+    )
+  )
 
-      norm_x_lim <- c(60, 80)
-      norm_y_lim <- c(100, 120)
+  # Filter based only on what stages are included in stage_lookup
+  color_map = color_map[ color_map[ , 1] %in% stage_lookup$Stages, ]
+  row.names(color_map) <- NULL
+  color_map$row_order <- as.integer(row.names(color_map))
 
-      xlim_breaks <- c(low_x_lim, xlim_breaks)
-      ylim_breaks <- c(low_y_lim, ylim_breaks)
+  # Add colors to stage_lookup table
+  stage_lookup = merge(stage_lookup, color_map, by = 'Stages')
+  stage_lookup = stage_lookup[order(stage_lookup$row_order),]
+  row.names(stage_lookup) <- NULL
 
-    }else{
 
-      xlim_breaks <- c( floor(min(25, minDBP - 10)), xlim_breaks )
-      ylim_breaks <- c( floor(min(80, minSBP - 10)), ylim_breaks )
+  # Plot limits for SBP/DBP
+  sbp_breaks = c(0, sort(unique(stage_lookup$sbp_UL)) )
+  dbp_breaks =  c(0, sort(unique(stage_lookup$dbp_UL)) )
 
-      norm_x_lim <- c( floor(min(25, minDBP - 10)) , 80)
-      norm_y_lim <- c( floor(min(80, minSBP - 10)) , 120)
+  sbp_breaks_len = length(sbp_breaks)
+  dbp_breaks_len = length(dbp_breaks)
 
+  # Create scatterplot
+  scat <- ggplot(data, aes(DBP, SBP)) +
+
+    # Give user option to adjust breaks
+    scale_y_continuous(breaks = sbp_breaks) +
+    scale_x_continuous(breaks = dbp_breaks)
+
+  # Add stage sections
+  for(i in nrow(stage_lookup):1){
+    scat <- scat + annotate("rect",
+                            xmin = stage_lookup$dbp_LL[i],
+                            xmax = stage_lookup$dbp_UL[i],
+                            ymin = stage_lookup$sbp_LL[i],
+                            ymax = stage_lookup$sbp_UL[i],
+                            fill = stage_lookup$colors_map[i],
+                            alpha = 0.5)
+  }
+
+  if(plot_type == "AHA"){
+
+    # Fill vertically for Normal, Stage 1, Stage 2, and Crisis
+    for(i in which(stage_lookup$Stages %in% c("Normal", "Stage 1", "Stage 2") )){
+      scat <- scat + annotate("rect",
+                              xmin = stage_lookup$dbp_LL[i],
+                              xmax = stage_lookup$dbp_UL[i],
+                              ymin = 0,
+                              ymax = stage_lookup$sbp_LL[i],
+                              fill = stage_lookup$colors_map[i],
+                              alpha = 0.5)
+
+      scat <- scat + annotate("rect",
+                              xmin = 0,
+                              xmax = stage_lookup$dbp_LL[i],
+                              ymin = stage_lookup$sbp_LL[i],
+                              ymax = stage_lookup$sbp_UL[i],
+                              fill = stage_lookup$colors_map[i],
+                              alpha = 0.5)
     }
 
-
-    # Check whether user wants to include a hypertensive 'Crisis' category
-    if( inc_crisis == TRUE ){
-
-      crisis_x_lim <- c(120, max(140, max(data$DBP, na.rm = TRUE) + 10) )
-      crisis_y_lim <- c(180, max(200, max(data$SBP, na.rm = TRUE) + 10) )
-
-      s2_x_lim <- c(90, 120)
-      s2_y_lim <- c(140, 180)
-
-      xlim_breaks <- c( xlim_breaks, crisis_x_lim)
-      xlim_breaks <- ceiling(xlim_breaks)
-
-      ylim_breaks <- c( ylim_breaks, crisis_y_lim)
-      ylim_breaks <- ceiling(ylim_breaks)
-
-    }else{
-
-      xlim_breaks <- c(xlim_breaks, max(120, max(data$DBP, na.rm = TRUE) + 10) )
-      xlim_breaks <- ceiling(xlim_breaks)
-
-      ylim_breaks <- c(ylim_breaks, max(140, max(data$SBP, na.rm = TRUE) + 10) )
-      ylim_breaks <- ceiling(ylim_breaks)
-
-      s2_x_lim <- c( xlim_breaks[length(xlim_breaks)-1], xlim_breaks[length(xlim_breaks)] )
-      s2_y_lim <- c( ylim_breaks[length(ylim_breaks)-1], ylim_breaks[length(ylim_breaks)] )
-
-    }
-
-
-    # Calculate length of breaks to prestore
-    xlim_breaks_length = length(xlim_breaks)
-    ylim_breaks_length = length(ylim_breaks)
-
-    scat <- ggplot(data, aes(DBP, SBP)) +
-
-      # Give user option to adjust breaks
-      scale_y_continuous(breaks = ylim_breaks) +
-      scale_x_continuous(breaks = xlim_breaks) +
-
-
-            ## Categories
-
-            # Low (Hypotension) & Normal Categories
-            {if( inc_low == FALSE ) annotate("rect", xmin = xlim_breaks[1],
-                                                     xmax = xlim_breaks[2],
-                                                     ymin = ylim_breaks[1],
-                                                     ymax = ylim_breaks[2],
-                                                     fill = 'darkgreen',    alpha = .5)} +
-
-            {if( inc_low == TRUE ) annotate("rect", xmin = xlim_breaks[1],
-                                                    xmax = xlim_breaks[2],
-                                                    ymin = ylim_breaks[1],
-                                                    ymax = ylim_breaks[2],
-                                                    fill = 'lightblue')} +
-
-            {if( inc_low == TRUE ) annotate("rect", xmin = xlim_breaks[1],
-                                                    xmax = xlim_breaks[3],
-                                                    ymin = ylim_breaks[2],
-                                                    ymax = ylim_breaks[3],
-                                                    fill = 'darkgreen',    alpha = .5)} +
-
-            {if( inc_low == TRUE ) annotate("rect", xmin = xlim_breaks[2],
-                                                    xmax = xlim_breaks[3],
-                                                    ymin = ylim_breaks[1],
-                                                    ymax = ylim_breaks[2],
-                                                    fill = 'darkgreen',    alpha = .5)} +
-
-
-              # Elevated
-              annotate("rect", xmin = xlim_breaks[1], xmax = 80,  ymin = 120, ymax = 130, fill = 'yellow',     alpha = .5) +
-
-              # Stage 1 - All
-              annotate("rect", xmin = 80, xmax = 90,  ymin = 130, ymax = 140, fill = 'orangered1',     alpha = .67) +
-              # Stage 1 - ISH
-              annotate("rect", xmin = xlim_breaks[1], xmax = 80,  ymin = 130, ymax = 140, fill = 'orange',    alpha = .5) +
-              # Stage 1 - IDH
-              annotate("rect", xmin = 80, xmax = 90,  ymin = ylim_breaks[1], ymax = 130, fill = 'orange',    alpha = .5) +
-
-
-          ################################
-          #        INCLUDE CRISIS        #
-          ################################
-
-            # Crisis - All
-            {if( inc_crisis == TRUE )
-              annotate("rect", xmin = xlim_breaks[xlim_breaks_length - 1],
-                               xmax = xlim_breaks[xlim_breaks_length],
-                               ymin = ylim_breaks[ylim_breaks_length - 1],
-                               ymax = ylim_breaks[ylim_breaks_length],
-                               fill = 'darkred',    alpha = .5) }+
-
-            # Crisis - Dias
-            {if( inc_crisis == TRUE )
-              annotate("rect", xmin = xlim_breaks[xlim_breaks_length - 1],
-                               xmax = xlim_breaks[xlim_breaks_length],
-                               ymin = ylim_breaks[1],
-                               ymax = ylim_breaks[ylim_breaks_length - 1],
-                               fill = 'darkred',    alpha = .5) }+
-
-            # Crisis - Sys
-            {if( inc_crisis == TRUE )
-              annotate("rect", xmin = xlim_breaks[1],
-                               xmax = xlim_breaks[xlim_breaks_length - 1],
-                               ymin = ylim_breaks[ylim_breaks_length - 1],
-                               ymax = ylim_breaks[ylim_breaks_length],
-                               fill = 'darkred',    alpha = .5) }+
-
-            # Stage 2 - All
-            {if( inc_crisis == TRUE )
-              annotate("rect", xmin = xlim_breaks[xlim_breaks_length - 2],
-                               xmax = xlim_breaks[xlim_breaks_length - 1],
-                               ymin = ylim_breaks[ylim_breaks_length - 2],
-                               ymax = ylim_breaks[ylim_breaks_length - 1],
-                               fill = 'red',    alpha = .5)} +
-
-            # Stage 2 - Isolated Diatolic
-            {if( inc_crisis == TRUE )
-              annotate("rect", xmin = xlim_breaks[xlim_breaks_length - 2],
-                               xmax = xlim_breaks[xlim_breaks_length - 1],
-                               ymin = ylim_breaks[1],
-                               ymax = ylim_breaks[ylim_breaks_length - 2],
-                               fill = 'red3',    alpha = .55)} +
-            # Stage 2 - Isolated Systolic
-            {if( inc_crisis == TRUE )
-              annotate("rect", xmin = xlim_breaks[1],
-                               xmax = xlim_breaks[xlim_breaks_length - 2],
-                               ymin = ylim_breaks[ylim_breaks_length - 2],
-                               ymax = ylim_breaks[ylim_breaks_length - 1],
-                               fill = 'red3',    alpha = .55)} +
-
-
-            ################################
-            #        EXCLUDE CRISIS        #
-            ################################
-
-              # Stage 2 - All
-              {if( inc_crisis == FALSE )
-                annotate("rect", xmin = xlim_breaks[xlim_breaks_length- 1],
-                                 xmax = xlim_breaks[xlim_breaks_length],
-                                 ymin = ylim_breaks[ylim_breaks_length - 1],
-                                 ymax = ylim_breaks[ylim_breaks_length],
-                                 fill = 'red3',    alpha = .55)} +
-
-              # Stage 2 - Isolated Diastolic
-              {if( inc_crisis == FALSE )
-                annotate("rect", xmin = xlim_breaks[xlim_breaks_length - 1],
-                                 xmax = xlim_breaks[xlim_breaks_length],
-                                 ymin = ylim_breaks[1],
-                                 ymax = ylim_breaks[ylim_breaks_length - 1],
-                                 fill = 'red',    alpha = .45)} +
-
-              # Stage 2 - Isolated Systolic
-              {if( inc_crisis == FALSE )
-                annotate("rect", xmin = xlim_breaks[1],
-                                 xmax = xlim_breaks[xlim_breaks_length - 1],
-                                 ymin = ylim_breaks[ylim_breaks_length - 1],
-                                 ymax = ylim_breaks[ylim_breaks_length],
-                                 fill = 'red',    alpha = .45)} +
-
-
-      # If group_var column NOT present or # groups in group_vars = 1
-      {if( is.null(group_var) | length( group_var %in% names(data) ) == 0 ) geom_point(color = 'blue', size = 1)} +
-
-      # If group_var column present
-      {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) geom_point(aes(color = factor(get(group_var))), size = 1) } +
-      {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) scale_color_brewer(type = 'div', palette = 'Paired', na.translate = FALSE)} +
-      {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) guides(color=guide_legend(title=group_var)) } +
-
-      # If wrap_var column present
-      {if( !is.null(wrap_var) & length( wrap_var %in% names(data) ) >= 1 ) facet_wrap( as.formula(paste("~", wrap_var)) )} +
-
-
-      ### Stage labels
-
-      # Low (Hypotension)
-      {if(inc_low == TRUE) geom_text(aes(x = min(xlim_breaks) + 5, y = low_y_lim[2], label = 'Low'), color = 'black', hjust = .35, vjust = 2, size = 3, check_overlap = TRUE) }+
-
-      # Normal
-      geom_text(aes(x = min(xlim_breaks) + 5, y = norm_y_lim[2], label = 'Normal'), color = 'black', hjust = .35, vjust = 2, size = 3, check_overlap = TRUE) +
-
-      # Elevated
-      geom_text(aes(x = min(xlim_breaks) + 5, y = 130, label = 'Elevated'), color = 'black', hjust = .35, vjust = 1.5, size = 3, check_overlap = TRUE) +
-
-      # SDH - Stage 1 - All
-      geom_text(aes(x = 90, y = 140, label = 'S1'), color = 'black', hjust = 1.5, vjust = 1.5, size = 3, check_overlap = TRUE) +
-
-      # SDH - Stage 2 - All
-      geom_text(aes(x = s2_x_lim[2] - 5, y = s2_y_lim[2] - 5, label = 'S2'), color = 'black', hjust = 1.5, vjust = 1.5, size = 3, check_overlap = TRUE) +
-
-      # ******************************************************************************************************************************** #
-
-      # ISH - Stage 1
-      geom_text(aes(x = min(xlim_breaks) + 5, y = 140, label = 'ISH - S1'), color = 'black', hjust = .35, vjust = 1.5, size = 3, check_overlap = TRUE) +
-
-      # ISH - Stage 2
-      geom_text(aes(x = min(xlim_breaks) + 5, y = s2_y_lim[2] - 5, label = 'ISH - S2'), color = 'black', hjust = .35, vjust = 1.5, size = 3, check_overlap = TRUE) +
-
-      # ******************************************************************************************************************************** #
-
-      # IDH - Stage 1
-      geom_text(aes(x = 90, y = 90, label = 'IDH\n S1'), color = 'black', hjust = 1.25, size = 3, check_overlap = TRUE) +
-
-      # IDH - Stage 2
-      geom_text(aes(x = s2_x_lim[2] - 5, y = 90, label = 'IDH\n S2'), color = 'black', hjust = 1.25, size = 3, check_overlap = TRUE) +
-
-      # Crisis
-      {if(inc_crisis == TRUE) geom_text(aes(x = xlim_breaks[xlim_breaks_length], y = ylim_breaks[ylim_breaks_length], label = 'Crisis'), color = 'black', hjust = 1.25, vjust = 1.5, size = 3, check_overlap = TRUE) }+
-
-      # Main Title & Subtitle
-      ggtitle('Scatterplot of BP Values', subtitle = 'Source: Lee et al (2020)')
-
-
-
-
-  }else{
-
-    ##############################################################
-    # Compatibility Check for user-supplied stages if applicable
-
-    #sbp_breaks <- stage_check(sbp_stages_alt, dbp_stages_alt)[[1]] # deprecated
-    #dbp_breaks <- stage_check(sbp_stages_alt, dbp_stages_alt)[[2]] # deprecated
-
-    sbp_breaks <- c(80,100,120,130,140,180,200)
-    dbp_breaks <- c(25,60,80,85,90,120,140)
-
-    ##############################################################
-
-
-    # Scatterplot of bp stages
-
-    scat <- ggplot(data, aes(DBP, SBP)) +
-
-      # Give user option to adjust breaks
-      scale_y_continuous(breaks = sbp_breaks) +
-      scale_x_continuous(breaks = dbp_breaks) +
-
-      # Y axis bars:
-      annotate("rect", xmin = dbp_breaks[1], xmax = dbp_breaks[2],  ymin = sbp_breaks[1], ymax = sbp_breaks[2], fill = 'lightblue') +
-      annotate("rect", xmin = dbp_breaks[1], xmax = dbp_breaks[3],  ymin = sbp_breaks[2], ymax = sbp_breaks[3], fill = 'darkgreen',  alpha = .5) +
-      annotate("rect", xmin = dbp_breaks[1], xmax = dbp_breaks[3],  ymin = sbp_breaks[3], ymax = sbp_breaks[4], fill = 'yellow',     alpha = .5) +
-      annotate("rect", xmin = dbp_breaks[1], xmax = dbp_breaks[5],  ymin = sbp_breaks[4], ymax = sbp_breaks[5], fill = 'orange',     alpha = .5) +
-      annotate("rect", xmin = dbp_breaks[1], xmax = dbp_breaks[6],  ymin = sbp_breaks[5], ymax = sbp_breaks[6], fill = 'red3',    alpha = .5) +
-      annotate("rect", xmin = dbp_breaks[1], xmax = dbp_breaks[7],  ymin = sbp_breaks[6], ymax = sbp_breaks[7], fill = 'darkred',        alpha = .5) +
-
-      # X axis bars
-      annotate("rect", xmin = dbp_breaks[2], xmax = dbp_breaks[3], ymin = sbp_breaks[1], ymax = sbp_breaks[2], fill = 'darkgreen',  alpha = .5) +
-      # annotate("rect", xmin = dbp_breaks[3], xmax = dbp_breaks[3], ymin = sbp_breaks[1], ymax = sbp_breaks[3], fill = 'yellow',     alpha = .5) +
-      annotate("rect", xmin = dbp_breaks[3], xmax = dbp_breaks[5], ymin = sbp_breaks[1], ymax = sbp_breaks[4], fill = 'orange',     alpha = .5) +
-      annotate("rect", xmin = dbp_breaks[5], xmax = dbp_breaks[6], ymin = sbp_breaks[1], ymax = sbp_breaks[5], fill = 'red3',    alpha = .5) +
-      annotate("rect", xmin = dbp_breaks[6], xmax = dbp_breaks[7], ymin = sbp_breaks[1], ymax = sbp_breaks[6], fill = 'darkred',        alpha = .5) +
-
-      # Add stage labels
-      geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[2], label = 'Low'), color = 'black', hjust = .35, vjust = 2, size = 3, check_overlap = TRUE) +
-      geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[3], label = 'Normal'), color = 'black', hjust = .35, vjust = 2, size = 3, check_overlap = TRUE) +
-      geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[4], label = 'Elevated'), color = 'black', hjust = .35, vjust = 1.5, size = 3, check_overlap = TRUE) +
-      geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[5], label = 'Stage 1'), color = 'black', hjust = .35, vjust = 1.5, size = 3, check_overlap = TRUE) +
-      geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[6] - ( (sbp_breaks[6] - sbp_breaks[5]) / 2), label = 'Stage 2'), color = 'black', hjust = .35, vjust = 1.5, size = 3, check_overlap = TRUE) +
-      geom_text(aes(x = dbp_breaks[1] + 5, y = sbp_breaks[7], label = 'Crisis'), color = 'black', hjust = .35, vjust = 1.5, size = 3, check_overlap = TRUE) +
-
-      # Add title
-      ggtitle('Scatterplot of BP Values', subtitle = 'Source: American Heart Association') +
-
-      # If group_var column NOT present or # groups in group_vars = 1
-      {if( is.null(group_var) | length( group_var %in% names(data) ) == 0 ) geom_point(color = 'blue', size = 1)} +
-
-      # If group_var column present
-      {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) geom_point(aes(color = factor(get(group_var))), size = 1) } +
-      {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) scale_color_brewer(type = 'div', palette = 'Paired', na.translate = FALSE)} +
-      {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) guides(color=guide_legend(title=group_var)) }
-
-    # If wrap_var column present
-    {if( !is.null(wrap_var) & length( wrap_var %in% names(data) ) >= 1 ) facet_wrap( as.formula(paste("~", wrap_var)) )}
+  }else if(plot_type == "Lee_2020"){
+
+    # Adjust Normal
+    stage_name = "Normal"
+
+    scat <- scat + annotate("rect",
+                            xmin = stage_lookup[ which(stage_lookup$Stages %in% stage_name), ]$dbp_LL,
+                            xmax = stage_lookup[ which(stage_lookup$Stages %in% stage_name), ]$dbp_UL,
+                            ymin = 0,
+                            ymax = stage_lookup[ which(stage_lookup$Stages %in% stage_name), ]$sbp_LL,
+                            fill = stage_lookup[ which(stage_lookup$Stages %in% stage_name), ]$colors_map,
+                            alpha = 0.5)
+
+    scat <- scat + annotate("rect",
+                            xmin = 0,
+                            xmax = stage_lookup[ which(stage_lookup$Stages %in% stage_name), ]$dbp_LL,
+                            ymin = stage_lookup[ which(stage_lookup$Stages %in% stage_name), ]$sbp_LL,
+                            ymax = stage_lookup[ which(stage_lookup$Stages %in% stage_name), ]$sbp_UL,
+                            fill = stage_lookup[ which(stage_lookup$Stages %in% stage_name), ]$colors_map,
+                            alpha = 0.5)
+  }
+
+  if( (inc_crisis == TRUE) & ("Crisis" %in% stage_lookup$Stages) ){
+
+    stage_name = "Crisis"
+
+    scat <- scat + annotate("rect",
+                            xmin = stage_lookup[ which(stage_lookup$Stages %in% stage_name), ]$dbp_LL,
+                            xmax = stage_lookup[ which(stage_lookup$Stages %in% stage_name), ]$dbp_UL,
+                            ymin = 0,
+                            ymax = stage_lookup[ which(stage_lookup$Stages %in% stage_name), ]$sbp_LL,
+                            fill = stage_lookup[ which(stage_lookup$Stages %in% stage_name), ]$colors_map,
+                            alpha = 0.5)
+
+    scat <- scat + annotate("rect",
+                            xmin = 0,
+                            xmax = stage_lookup[ which(stage_lookup$Stages %in% stage_name), ]$dbp_LL,
+                            ymin = stage_lookup[ which(stage_lookup$Stages %in% stage_name), ]$sbp_LL,
+                            ymax = stage_lookup[ which(stage_lookup$Stages %in% stage_name), ]$sbp_UL,
+                            fill = stage_lookup[ which(stage_lookup$Stages %in% stage_name), ]$colors_map,
+                            alpha = 0.5)
 
   }
 
+  # Add Labels:
+
+  if(plot_type == "Lee_2020"){
+
+    for(i in 1:nrow(stage_lookup)){
+
+      scat <- scat + geom_text(x = stage_lookup$text_x[i] + 5, y = stage_lookup$text_y[i],
+                               label = stage_lookup$Stages[i], color = 'black',
+                               hjust = .35, vjust = 2, size = 2.5, check_overlap = TRUE)
+    }
+
+
+  }else if(plot_type == "AHA"){
+
+    for(i in 1:nrow(stage_lookup)){
+
+      scat <- scat + geom_text(x = stage_lookup$dbp_LL[1] + 5, y = stage_lookup$sbp_UL[i],
+                               label = stage_lookup$Stages[i], color = 'black',
+                               hjust = .35, vjust = 2, size = 2.5, check_overlap = TRUE)
+    }
+
+  }
+
+  # Add Data:
+
+  # If group_var column NOT present or # groups in group_vars = 1
+  scat <- scat + {if( is.null(group_var) | length( group_var %in% names(data) ) == 0 ) geom_point(color = 'blue', size = 1)} +
+
+    # If group_var column present
+    {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) geom_point(aes(color = factor(get(group_var))), size = 1) } +
+    {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) scale_color_brewer(type = 'div', palette = 'Paired', na.translate = FALSE)} +
+    {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) guides(color=guide_legend(title=group_var)) } +
+
+    # If wrap_var column present
+    {if( !is.null(wrap_var) & length( wrap_var %in% names(data) ) >= 1 ) facet_wrap( as.formula(paste("~", wrap_var)) )} +
+
+    # Add title
+    ggtitle('Scatterplot of BP Values', subtitle = source_dsc) +
+
+    # If group_var column NOT present or # groups in group_vars = 1
+    {if( is.null(group_var) | length( group_var %in% names(data) ) == 0 ) geom_point(color = 'blue', size = 1)} +
+
+    # If group_var column present
+    {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) geom_point(aes(color = factor(get(group_var))), size = 1) } +
+    {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) scale_color_brewer(type = 'div', palette = 'Paired', na.translate = FALSE)} +
+    {if( !is.null(group_var) & length( group_var %in% names(data) ) >= 1 ) guides(color=guide_legend(title=group_var)) }
+
+  # If wrap_var column present
+  {if( !is.null(wrap_var) & length( wrap_var %in% names(data) ) >= 1 ) facet_wrap( as.formula(paste("~", wrap_var)) )}
 
   return(scat)
 

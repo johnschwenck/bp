@@ -11,7 +11,9 @@ bp_scatter(
   group_var = NULL,
   wrap_var = NULL,
   inc_crisis = TRUE,
-  inc_low = TRUE
+  inc_low = TRUE,
+  bp_cutoffs = list(c(100, 120, 130, 140, 180), c(60, 80, 80, 90, 120)),
+  bp_type = c("hbpm", "abpm", "ap")
 )
 }
 \arguments{
@@ -45,6 +47,47 @@ category to the scatter plot. This is only activated in conjunction with \code{"
 
 \item{inc_low}{A TRUE / FALSE indicator of whether or not to include the "Low" (Hypotension)
 category to the scatter plot. This is only activated in conjunction with \code{"stages2020"} plot type, and if TRUE is defined as SBP < 100 and DBP > 60. If FALSE, those values are displayed as "Normal". This argument is ignored with plot type \code{"AHA"}, where the "Low" stage (SBP < 100 and DBP < 60) is always displayed.}
+
+\item{bp_cutoffs}{A list containing two vectors corresponding to SBP and DBP cutoffs, respectively.
+Each vector contains 5 values.
+
+The SBP vector (100, 120, 130, 140, 180) corresponds to the upper limits for the following stages:
+Low (0-100), Normal (100-120), Elevated (120-130), Stage 1 Hypertension (130-140), Stage 2 Hypertension
+(140-180). When utilizing Lee et al (2020) guidelines,
+additional stages are included: Isolated Systolic Hypertension
+for Stage 1 (ISH - S1) (130-140), Isolated Diastolic Hypertension for Stage 1 (IDH - S1) (0-130), ISH - S2
+(140-180), and IDH - S2 (0-140).
+
+The DBP vector (60, 80, 80, 90, 120) corresponds to the upper limits for the following stages:
+Low (0-60), Normal (60-80), Elevated (0-80), Stage 1 Hypertension (80-90), Stage 2 Hypertension
+(90-120). The upper limit of the "Elevated" category repeats in the DBP vector and matches that of Normal.
+This because according to most guidelines, there is no distinction between DBP cutoffs for Normal and
+Elevated - these stages are discerned by SBP, not DBP. When utilizing Lee et al (2020) guidelines,
+additional stages are included: Isolated Diastolic Hypertension
+for Stage 1 (ISH - S1) (0-80), Isolated Diastolic Hypertension for Stage 1 (IDH - S1) (80-90), ISH - S2
+(0-90), and IDH - S2 (90-120).
+
+Any SBP reading below 100 or DBP reading below 60 is considered Hypotension ("Low").
+Any SBP reading above 180 or DBP reading above 120 is considered a Crisis.
+
+When \code{guidelines = "AHA"}, the cutoffs are automatically adjusted to match BP type without user input, For \code{bp_type = "hbpm"},
+SBP = (100, 120, 130, 135, 160),  DBP = (60, 80, 80, 85, 110). For\code{bp_type = "abpm"}, SBP = (100, 115, 125, 130, 160), DBP = (60, 75, 75, 80, 105). An adjustment of default cutoffs by the user
+These choices can be overwritten by directly changing \code{bp_cutoffs}, in which case the guidelines are ignored and automatically treated as "Custom".
+
+
+If \code{inc_low = FALSE}, although an upper limit value is still required in the SBP vector, the "Low"
+stage will be omitted in the final output. Similarly, if \code{inc_crisis = FALSE}, then the "Crisis"
+category will be omitted from the final output.}
+
+\item{bp_type}{Required argument specifying which of the three BP data types
+("HBPM", "ABPM", or "AP") the input data is. Default \code{bp_type} set to "HBPM".
+This argument determines which processing steps are necessary to yield sensible
+output.
+
+HBPM - Home Blood Pressure Monitor | ABPM - Ambulatory Blood Pressure | AP - Arterial Pressure
+
+NOTE: \code{bp_type} impacts blood pressure staging in \code{bp_stages} if \code{guidelines = "AHA"}, for which the
+cutoffs for each blood pressure stage are automatically adjusted according to \code{bp_type}.}
 }
 \value{
 A scatter plot graphic using the ggplot2 package overlaying each reading (represented as
@@ -110,7 +153,7 @@ data("bp_jhs")
 data("bp_hypnos")
 data("bp_ghana")
 hypnos_proc <- process_data(bp_hypnos,
-                         bp_type = 'ABPM',
+                         bp_type = 'abpm',
                          sbp = "syst",
                          dbp = "DIAST",
                          date_time = "date.time",
