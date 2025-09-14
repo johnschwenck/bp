@@ -191,7 +191,7 @@ bp_scatter(bp::bp_ghana, inc_crisis = TRUE, inc_low = FALSE, group_var = "TIME_E
 }
 \references{
 Lee H, Yano Y, Cho SMJ, Park JH, Park S, Lloyd-Jones DM, Kim HC. Cardiovascular risk of isolated
-systolic or diastolic hypertension in young adults. \emph{Circulation}. 2020; 141:1778–1786.
+systolic or diastolic hypertension in young adults. \emph{Circulation}. 2020; 141:1778-1786.
 \doi{10.1161/CIRCULATIONAHA.119.044838}
 
 Unger, T., Borghi, C., Charchar, F., Khan, N. A., Poulter, N. R., Prabhakaran, D., ... & Schutte,

@@ -38,7 +38,7 @@ salt-sensitive Dahl rats on Hypertension.
 }
 \details{
 (Goldberger A., Amaral L., Glass L., Hausdorff J., Ivanov P. C., Mark R., Bugenhagen S.M.,
-Cowley A.W. Jr, Beard D.A., ... \& Stanley H. E. 2000).
+Cowley A.W. Jr, Beard D.A., ... & Stanley H. E. 2000).
 
 Licensed under a ODC-BY (Creative Commons) Open Data Commons Attribution License 1.0
 }

@@ -9,11 +9,11 @@
 #' temporal structure of the data and relies on the sum of squared differences
 #' in successive observations, unlike the average real variability (ARV)
 #' which relies on the sum of absolute differences.
-#' $$SV = sqrt(sum(x_{i+1} - x_i)^2/n-1)$$
+#' \deqn{SV = \sqrt{\frac{\sum(x_{i+1} - x_i)^2}{n-1}}}
 #'
 #' \strong{NOTE:} The canonical standard deviation, independent of the temporal
 #' structure using the sample average, is added for comparison:
-#' $$SD = sqrt(sum(x_{i+1} - xbar)^2/n-1)$$
+#' \deqn{SD = \sqrt{\frac{\sum(x_{i+1} - \bar{x})^2}{n-1}}}
 #'
 #' @param data Required argument. Pre-processed dataframe with SBP and DBP columns
 #' with optional ID, VISIT, WAKE, and DATE columns if available.

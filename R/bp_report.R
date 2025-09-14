@@ -8,17 +8,17 @@
 #' the following variables must be present and properly formatted:
 #' \itemize{
 #'
-#' \item{\code{SBP}}
-#' \item{\code{DBP}}
-#' \item{\code{DATE_TIME}} - Used in the \code{process_data} function to create additional columns
+#' \item \code{SBP}
+#' \item \code{DBP}
+#' \item \code{DATE_TIME} - Used in the \code{process_data} function to create additional columns
 #' that are needed for the \code{bp_report} function (SBP_Category, DBP_Category, Weekday, and
 #' Time_of_Day.)
-#' \item{\code{SBP_CATEGORY}} - Automatically calculated in the \code{process_data} function
-#' \item{\code{DBP_CATEGORY}} - Automatically calculated in the \code{process_data} function
-#' \item{\code{DAY_OF_WEEK}} - Automatically calculated in the \code{process_data} function
-#' \item{\code{TIME_OF_DAY}} - Automatically calculated in the \code{process_data} function
-#' \item{\code{ID}} - (If applicable) Used for separating out different individuals, if more than one
-#' \item{\code{VISIT}} - (If applicable) Used for separating out an individuals' different visits,
+#' \item \code{SBP_CATEGORY} - Automatically calculated in the \code{process_data} function
+#' \item \code{DBP_CATEGORY} - Automatically calculated in the \code{process_data} function
+#' \item \code{DAY_OF_WEEK} - Automatically calculated in the \code{process_data} function
+#' \item \code{TIME_OF_DAY} - Automatically calculated in the \code{process_data} function
+#' \item \code{ID} - (If applicable) Used for separating out different individuals, if more than one
+#' \item \code{VISIT} - (If applicable) Used for separating out an individuals' different visits,
 #' if more than one
 #'
 #' }
@@ -62,13 +62,13 @@
 #' Although PDF is the default possible options include:
 #' \itemize{
 #'
-#' \item{pdf} (default)
-#' \item{png}
-#' \item{jpeg}
-#' \item{tiff}
-#' \item{bmp}
-#' \item{eps}
-#' \item{ps}
+#' \item pdf (default)
+#' \item png
+#' \item jpeg
+#' \item tiff
+#' \item bmp
+#' \item eps
+#' \item ps
 #'
 #' }
 #'
