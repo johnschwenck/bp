@@ -59,10 +59,10 @@
 #'
 #' The default plot categories are as follows:
 #' \itemize{
-#'    \item{\emph{INV}: Inverted (Reverse) Dipper - no nocturnal decline (greater or equal to 0\%)}
-#'    \item{\emph{ND}: Non-Dipper - a nocturnal decline between 0 - 10\%}
-#'    \item{\emph{DIP}: Dipper - a nocturnal decline between 10\% and the extreme dipping \% (20\%)}
-#'    \item{\emph{ED}: Extreme Dipper - a nocturnal decline exceeding 20\%}
+#'    \item \emph{INV}: Inverted (Reverse) Dipper - no nocturnal decline (greater or equal to 0\%)
+#'    \item \emph{ND}: Non-Dipper - a nocturnal decline between 0 - 10\%
+#'    \item \emph{DIP}: Dipper - a nocturnal decline between 10\% and the extreme dipping \% (20\%)
+#'    \item \emph{ED}: Extreme Dipper - a nocturnal decline exceeding 20\%
 #' }
 #'
 #' @export

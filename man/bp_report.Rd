@@ -28,17 +28,17 @@ function to properly format data set. In order for the \code{bp_report} function
 the following variables must be present and properly formatted:
 \itemize{
 
-\item{\code{SBP}}
-\item{\code{DBP}}
-\item{\code{DATE_TIME}} - Used in the \code{process_data} function to create additional columns
+\item \code{SBP}
+\item \code{DBP}
+\item \code{DATE_TIME} - Used in the \code{process_data} function to create additional columns
 that are needed for the \code{bp_report} function (SBP_Category, DBP_Category, Weekday, and
 Time_of_Day.)
-\item{\code{SBP_CATEGORY}} - Automatically calculated in the \code{process_data} function
-\item{\code{DBP_CATEGORY}} - Automatically calculated in the \code{process_data} function
-\item{\code{DAY_OF_WEEK}} - Automatically calculated in the \code{process_data} function
-\item{\code{TIME_OF_DAY}} - Automatically calculated in the \code{process_data} function
-\item{\code{ID}} - (If applicable) Used for separating out different individuals, if more than one
-\item{\code{VISIT}} - (If applicable) Used for separating out an individuals' different visits,
+\item \code{SBP_CATEGORY} - Automatically calculated in the \code{process_data} function
+\item \code{DBP_CATEGORY} - Automatically calculated in the \code{process_data} function
+\item \code{DAY_OF_WEEK} - Automatically calculated in the \code{process_data} function
+\item \code{TIME_OF_DAY} - Automatically calculated in the \code{process_data} function
+\item \code{ID} - (If applicable) Used for separating out different individuals, if more than one
+\item \code{VISIT} - (If applicable) Used for separating out an individuals' different visits,
 if more than one
 
 }}
@@ -82,13 +82,13 @@ The default is set to 8.53 inches.}
 Although PDF is the default possible options include:
 \itemize{
 
-\item{pdf} (default)
-\item{png}
-\item{jpeg}
-\item{tiff}
-\item{bmp}
-\item{eps}
-\item{ps}
+\item pdf (default)
+\item png
+\item jpeg
+\item tiff
+\item bmp
+\item eps
+\item ps
 
 }}
 
@@ -98,12 +98,12 @@ millimeters ("mm") are also available.}
 
 \item{scale}{A multiplicative scaling factor for the report output.}
 
-\item{plot}{A logical value indicating whether to automatically produce the plot of bp_report, or suppress the output. The default value is TRUE. If false, the returned object is a grob that can be plotted using \code{\link{grid.arrange}}}
+\item{plot}{A logical value indicating whether to automatically produce the plot of bp_report, or suppress the output. The default value is TRUE. If false, the returned object is a grob that can be plotted using \code{\link[gridExtra]{grid.arrange}}}
 
 \item{hist_bins}{An integer specifying how many bins to use for histogram plots. This is a ggplot parameter; default value set to 30}
 }
 \value{
-If \code{plot = TRUE}, the function produces a plot of BP report that contains scatterplot of BP values by stages (see \code{\link{bp_scatter}}), histograms of BP values by stages (see \code{\link{bp_hist}}) and frequency tables of BP values by stages and day of the week/time of the day (see \code{\link{dow_tod_plots}}). If \code{plot = FALSE}, the function returns the grob object that can be plotted later using \code{\link{grid.arrange}}. If \code{save_report = TRUE}, the report will be automatically saved at the current working directory (can be checked using \code{getwd()}) or at specified file path.
+If \code{plot = TRUE}, the function produces a plot of BP report that contains scatterplot of BP values by stages (see \code{\link{bp_scatter}}), histograms of BP values by stages (see \code{\link{bp_hist}}) and frequency tables of BP values by stages and day of the week/time of the day (see \code{\link{dow_tod_plots}}). If \code{plot = FALSE}, the function returns the grob object that can be plotted later using \code{\link[gridExtra]{grid.arrange}}. If \code{save_report = TRUE}, the report will be automatically saved at the current working directory (can be checked using \code{getwd()}) or at specified file path.
 }
 \description{
 The \code{bp_report} function serves to aggregate various data visuals and metrics

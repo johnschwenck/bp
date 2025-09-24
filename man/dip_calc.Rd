@@ -61,10 +61,10 @@ tibbles will be broken down further by date. There are 4 classifications a subje
 default dipping threshold of 10\% and extreme dipping threshold of 20\% according to the original source):
 
 \itemize{
-   \item{Reverse Dipper - no nocturnal decline (greater or equal to 0\%)}
-   \item{Non-Dipper - a nocturnal decline between 0 - 10\%}
-   \item{Dipper - a nocturnal decline between 10\% and the extreme dipping \% (20\%)}
-   \item{Extreme Dipper - a nocturnal decline exceeding 20\%}
+   \item Reverse Dipper - no nocturnal decline (greater or equal to 0\%)
+   \item Non-Dipper - a nocturnal decline between 0 - 10\%
+   \item Dipper - a nocturnal decline between 10\% and the extreme dipping \% (20\%)
+   \item Extreme Dipper - a nocturnal decline exceeding 20\%
 }
 }
 \description{
