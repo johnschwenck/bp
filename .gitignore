@@ -2,3 +2,5 @@
 .Rhistory
 .RData
 .Ruserdata
+fitbit_credentials.txt
+fitbit_API.R
