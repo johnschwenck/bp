@@ -1,15 +1,27 @@
-## Submission Comments 0.1
-* Due to a 'utf8' package issue (https://github.com/r-hub/rhub/issues/374), devtools::check_rhub(env_vars=c(R_COMPILE_AND_INSTALL_PACKAGES = "always")) was run for the rhub check and passed
-* Local R CMD Check warning:  "'qpdf' is needed for checks on size reduction of PDFs" is specific to the local machine. Not an error. Passes Travis and Appveyor.
-* One time error: "Error in curl::curl_fetch_memory(url, handle = h) : Failed FTP upload: 550" from devtools::check_win_devel() (Issue: https://github.com/r-lib/devtools/issues/1435). Used httr::set_config(use_proxy(url="10.3.100.207",port=8080)) to fix.
-* check_rhub() issue with DOI / URL reference in certain function documentation even though links work as intended (dip_calc, dip_class_plot)
+## CRAN Submission Comments
 
-## Test environments
-* local R installation, R 4.0.2
-* ubuntu 16.04 (on travis-ci), R 4.0.2
-* win-builder (devel)
+This is a new version (e.g., v2.1.1) of the 'bp' package.
 
-## R CMD check results
+### Changes from the Previous Version
 
-0 errors | 0 warnings | 0 note
+* **CRAN Check Fixes:** The build process was updated to resolve local environment issues (Rtools, temporary files) and package dependency issues (e.g., 'png' package).
+* **Code Maintenance:** Addressed internal code issues that caused the syntax error at `R/fitbit_API.R:822` (the file was removed and excluded from the build).
+* **Package Data Files:** No changes were made to the data files in the `data/` directory.
 
+### Regarding Package Size
+
+We note that the package installed size is approximately **4.4 MB**. This size is necessary to include the essential sample data files required for the vignettes and examples to run accurately and demonstrate the package's primary functionalities (such as detailed visualizations and statistical reports).
+
+We confirm that the installed size remains **below the 5 MB limit** as stated in the CRAN Policy, and these data files are required for testing and demonstration.
+
+### Test Environments
+
+* Local R installation, R 4.5.1 (x86\_64-w64-mingw32)
+* **R-hub v2 Checks (via GitHub Actions):**
+    * All default CRAN-critical platforms (R-devel Linux, Windows, macOS) passed cleanly. See results at: `https://github.com/johnschwenck/bp/actions`
+
+* **Win-builder:** Passed R-devel on Windows.
+
+### R CMD Check Results
+
+**0 errors | 0 warnings | 0 notes**
