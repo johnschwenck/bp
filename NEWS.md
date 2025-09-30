@@ -60,3 +60,7 @@
 * Removed deprecated functions from documentation: arv, cv, sv (replaced with bp_arv, bp_cv, bp_sv)
 * Fixed histogram binning for missing / Null values
 
+# bp 2.1.1
+* Removed obsolete Travis and Appveyor CI checks in lieu of GitHub Actions
+* Updated readme documentation
+* Resolved various CRAN NOTES

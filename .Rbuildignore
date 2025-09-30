@@ -7,3 +7,4 @@
 ^data-raw$
 ^R/Test_bp_tables\.R$
 ^\.github$
+R/fitbit_API.R
