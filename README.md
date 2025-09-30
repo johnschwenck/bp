@@ -5,16 +5,17 @@
 
 <!-- badges: start -->
 
-[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/bp)](https://cran.r-project.org/package=bp)
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/bp)](https://cran.r-project.org/package=bp)
 [![](https://cranlogs.r-pkg.org/badges/bp)](https://CRAN.R-project.org/package=bp)
 
+[![R-CMD-check](https://github.com/johnschwenck/bp/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/johnschwenck/bp/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 ## bp: Blood Pressure Analysis for R
 
 Cardiovascular disease (CVD) is the leading cause of death worldwide
 with Hypertension, specifically, affecting over 1.1 billion people
-annually. The goal of the  package is to provide a comprehensive toolbox
+annually. The goal of the package is to provide a comprehensive toolbox
 for analyzing blood pressure (BP) data using a variety of statistical
 metrics and visualizations to bring more clarity to CVD.
 
@@ -43,67 +44,64 @@ devtools::install_github("johnschwenck/bp", build_vignettes = TRUE)
 
 ### Sample Data
 
-The  package includes six sample data sets:
+The package includes six sample data sets:
 
-  - `bp_hypnos`: The data set contains ABPM measurements from n=
-    5subjects with type 2diabetes and obstructive sleep apnea. The
-    recordings are taken every hour during the 24-hour period for each
-    of the two visits that are 3 months apart. Additional information
-    includes sleep/wake indicator for each recording inferred from a
-    wrist-worn actigraphy device. The aim of original study (Rooney et
-    al.2021) is to determine the effect of positive airway pressure
-    treatment of sleep apnea on glycemic control and blood pressure of
-    patients with type 2diabetes. The included data is a subset of the
-    full data described in [Rooneyet
-    al.(2021)](https://clinicaltrials.gov/ct2/show/NCT02454153)
-  - `bp_jhs`: The data set consists of HBPM measurements from a [2019
-    single-subject pilot
-    study](https://dataverse.harvard.edu/dataverse/r4r) during an
-    endured aerobic (endurance) exercise: cycling 5,775 miles from New
-    York City, New York to Seward, Alaska over the course of 95 days.
-    Data was collected using an Omron Evolv wireless blood pressure
-    monitor twice per day (in the morning upon waking up and in the
-    evening before bed). The aim of original study (Schwenck 2019) is to
-    assess blood pressure variability across different environments
-    through time.
-  - `bp_ghana`: The data set contains HBPM measurements on n=
-    757subjects across 32 community health centers from
-    cluster-randomized trial in Ghana: 389 subjects are in the health
-    insurance coverage (HIC) group and 368 subjects are in another group
-    consisting of a combination of HIC with a nurse-led task-shifting
-    strategy for hypertension control (TASSH)(this group is denoted
-    TASSH + HIC). Baseline blood pressure measurements were collected,
-    with 85% of subjects having available 12 month follow-up
-    measurements. The aim of original study (Ogedegbe et al.2018) is to
-    assess the comparative effectiveness of HIC alone versus the
-    combination of TASSH + HIC on reducing systolic blood pressure among
-    patients with uncontrolled hypertension in Ghana.
-  - `bp_preg`: The data set contains HBPM measurements from n= 209women,
-    each of whom were recorded every 30 minutes during the Pregnancy Day
-    Assessment Clinic (PDAC) observation window for up to a maximum of
-    240 minutes (i.e. a maximum of 8 total readings per subject per
-    observation window) in addition to an initial “booking” reading
-    before the PDAC assessment. The aim of the original study (McCarthy
-    et al.2015) is to investigate the pregnancy-induced hypertension and
-    pre-eclampsia prediction to determine whether the blood pressure
-    assessment of the first observation window of 1 hour (60 minutes) is
-    sufficiently accurate relative to the standard 4 hour (240 minute)
-    window.
-  - `bp_children`: The data set contains HBPM measurements on n= 1,283
-    children from Bristol, UK. Three blood pressure readings per visit
-    were collected over the course of two observation periods (at ages 9
-    and 11). Additionally, information on their physical activity has
-    been collected. The aim of original study (Solomon-Moore et al.2020)
-    is to examine how sedentary behavior affect children progressing
-    through primary school, and to understand the relationship between
-    elevated blood pressure in children and its impact on the
-    development of cardiovascular disease into adulthood.
-  - `bp_rats`: The data set contains AP measurements sampled at 100 Hz
-    of the SS (n1= 9) and SS.13 (n2= 6) genetic strains of Dahl rats.
-    Each mouse was administered either a low sodium or a high sodium
-    diet. The aim of original study (Bugenhagen et al.2010) is to
-    investigate the connection between the dysfunction of the baroreflex
-    control system in Dahl rats and salt-sensitive Hypertension
+- `bp_hypnos`: The data set contains ABPM measurements from n= 5subjects
+  with type 2diabetes and obstructive sleep apnea. The recordings are
+  taken every hour during the 24-hour period for each of the two visits
+  that are 3 months apart. Additional information includes sleep/wake
+  indicator for each recording inferred from a wrist-worn actigraphy
+  device. The aim of original study (Rooney et al.2021) is to determine
+  the effect of positive airway pressure treatment of sleep apnea on
+  glycemic control and blood pressure of patients with type 2diabetes.
+  The included data is a subset of the full data described in [Rooneyet
+  al.(2021)](https://clinicaltrials.gov/ct2/show/NCT02454153)
+- `bp_jhs`: The data set consists of HBPM measurements from a [2019
+  single-subject pilot
+  study](https://dataverse.harvard.edu/dataverse/r4r) during an endured
+  aerobic (endurance) exercise: cycling 5,775 miles from New York City,
+  New York to Seward, Alaska over the course of 95 days. Data was
+  collected using an Omron Evolv wireless blood pressure monitor twice
+  per day (in the morning upon waking up and in the evening before bed).
+  The aim of original study (Schwenck 2019) is to assess blood pressure
+  variability across different environments through time.
+- `bp_ghana`: The data set contains HBPM measurements on n= 757subjects
+  across 32 community health centers from cluster-randomized trial in
+  Ghana: 389 subjects are in the health insurance coverage (HIC) group
+  and 368 subjects are in another group consisting of a combination of
+  HIC with a nurse-led task-shifting strategy for hypertension control
+  (TASSH)(this group is denoted TASSH + HIC). Baseline blood pressure
+  measurements were collected, with 85% of subjects having available 12
+  month follow-up measurements. The aim of original study (Ogedegbe et
+  al.2018) is to assess the comparative effectiveness of HIC alone
+  versus the combination of TASSH + HIC on reducing systolic blood
+  pressure among patients with uncontrolled hypertension in Ghana.
+- `bp_preg`: The data set contains HBPM measurements from n= 209women,
+  each of whom were recorded every 30 minutes during the Pregnancy Day
+  Assessment Clinic (PDAC) observation window for up to a maximum of 240
+  minutes (i.e. a maximum of 8 total readings per subject per
+  observation window) in addition to an initial “booking” reading before
+  the PDAC assessment. The aim of the original study (McCarthy et
+  al.2015) is to investigate the pregnancy-induced hypertension and
+  pre-eclampsia prediction to determine whether the blood pressure
+  assessment of the first observation window of 1 hour (60 minutes) is
+  sufficiently accurate relative to the standard 4 hour (240 minute)
+  window.
+- `bp_children`: The data set contains HBPM measurements on n= 1,283
+  children from Bristol, UK. Three blood pressure readings per visit
+  were collected over the course of two observation periods (at ages 9
+  and 11). Additionally, information on their physical activity has been
+  collected. The aim of original study (Solomon-Moore et al.2020) is to
+  examine how sedentary behavior affect children progressing through
+  primary school, and to understand the relationship between elevated
+  blood pressure in children and its impact on the development of
+  cardiovascular disease into adulthood.
+- `bp_rats`: The data set contains AP measurements sampled at 100 Hz of
+  the SS (n1= 9) and SS.13 (n2= 6) genetic strains of Dahl rats. Each
+  mouse was administered either a low sodium or a high sodium diet. The
+  aim of original study (Bugenhagen et al.2010) is to investigate the
+  connection between the dysfunction of the baroreflex control system in
+  Dahl rats and salt-sensitive Hypertension
 
 ### Intended Functionality
 
@@ -121,15 +119,15 @@ subjects.
 The package has the ability to make use of the following physiological
 variables (expressed as integers):
 
-  - Systolic Blood Pressure (`SBP`) measured in mmHg
-  - Diastolic Blood Pressure (`DBP`) measured in mmHg
-  - Arterial Pressure (`AP`) (if applicable)
-  - Heart Rate (`HR`) measured in bpm
-  - Pulse Pressure (`PP`) measured in mmHg which is calculated as SBP -
-    DBP
-  - Mean Arterial Pressure (`MAP`) measured in mmHg
-  - Rate Pressure Product (`RPP`) which is calculated as SBP multiplied
-    by resting HR
+- Systolic Blood Pressure (`SBP`) measured in mmHg
+- Diastolic Blood Pressure (`DBP`) measured in mmHg
+- Arterial Pressure (`AP`) (if applicable)
+- Heart Rate (`HR`) measured in bpm
+- Pulse Pressure (`PP`) measured in mmHg which is calculated as SBP -
+  DBP
+- Mean Arterial Pressure (`MAP`) measured in mmHg
+- Rate Pressure Product (`RPP`) which is calculated as SBP multiplied by
+  resting HR
 
 There are also processing functionality for arterial pressure (AP) data
 which include the following inputs: \* A column corresponding to the AP
@@ -138,23 +136,23 @@ data (`AP`) \* Time elapsed (`time_elap`)
 Furthermore, there are a suite of processing capabilities within the
 `process_data` function such as:
 
-  - `DATE_TIME`: A column coreresponding to a date/time object
-    (typically `as.POSIXct` format) such as `12/1/2020 13:42:07`
-  - `ID`: Identification of individuals
-  - `VISIT`: The visit of each individual, if more than one (integer)
-  - `WAKE`: A binary indicator where 1 denotes awake and 0 denotes
-    asleep (binary 1 or 0)
-  - `GROUP`: An arbitrary column that can be used to group data
-    according to this category (such as gender or age)
-  - `EOD`: Denotes the end-of-day which can be adjusted for situations
-    where individuals may take readings after midnight
-  - `DATA_SCREEN`: A screening proceedure to remove outliers based on
-    upper and lower limits of BP readings
-  - `AGG`: An aggregation option to average consecutive readings taken
-    within quick succession
-  - `CHRON_ORDER`: Adjust the chronology of the readings (chronological
-    vs reverse-chronological)
-  - `TZ`: Time zone adjustment
+- `DATE_TIME`: A column coreresponding to a date/time object (typically
+  `as.POSIXct` format) such as `12/1/2020 13:42:07`
+- `ID`: Identification of individuals
+- `VISIT`: The visit of each individual, if more than one (integer)
+- `WAKE`: A binary indicator where 1 denotes awake and 0 denotes asleep
+  (binary 1 or 0)
+- `GROUP`: An arbitrary column that can be used to group data according
+  to this category (such as gender or age)
+- `EOD`: Denotes the end-of-day which can be adjusted for situations
+  where individuals may take readings after midnight
+- `DATA_SCREEN`: A screening proceedure to remove outliers based on
+  upper and lower limits of BP readings
+- `AGG`: An aggregation option to average consecutive readings taken
+  within quick succession
+- `CHRON_ORDER`: Adjust the chronology of the readings (chronological vs
+  reverse-chronological)
+- `TZ`: Time zone adjustment
 
 After all available variables are identified and processed, the
 resulting processed dataframe is used for all other functions.
@@ -163,19 +161,19 @@ Unique to the `bp` package is the ability to create additional columns
 that might not originally be present in the supplied data set. At
 current, the following additional columns will be created:
 
-  - `TIME_OF_DAY` - Corresponds to the Time of Day (Morning, Afternoon,
-    Evening, or Night) based on `DATE_TIME` column
-  - `DAY_OF_WEEK` - Corresponds to the Day of the week: a useful column
-    for table visuals. Based on `DATE_TIME` column
-  - `SBP_CATEGORY` - Systolic Blood Pressure Stages (Low, Normal,
-    Elevated, Stage 1, Stage 2, Crisis) as defined by the American Heart
-    Association (AHA)
-  - `DBP_CATEGORY` - Diastolic Blood Pressure Stages (Low, Normal,
-    Elevated, Stage 1, Stage 2, Crisis) as defined by the American Heart
-    Association (AHA)
-  - `BP_CLASS` - A two-to-one mapping of SBP and DBP readings that
-    expands on the original AHA categories using a more recent
-    adaptation by (Lee et al 2018)
+- `TIME_OF_DAY` - Corresponds to the Time of Day (Morning, Afternoon,
+  Evening, or Night) based on `DATE_TIME` column
+- `DAY_OF_WEEK` - Corresponds to the Day of the week: a useful column
+  for table visuals. Based on `DATE_TIME` column
+- `SBP_CATEGORY` - Systolic Blood Pressure Stages (Low, Normal,
+  Elevated, Stage 1, Stage 2, Crisis) as defined by the American Heart
+  Association (AHA)
+- `DBP_CATEGORY` - Diastolic Blood Pressure Stages (Low, Normal,
+  Elevated, Stage 1, Stage 2, Crisis) as defined by the American Heart
+  Association (AHA)
+- `BP_CLASS` - A two-to-one mapping of SBP and DBP readings that expands
+  on the original AHA categories using a more recent adaptation by (Lee
+  et al 2018)
 
 See examples below for further details.
 
@@ -189,7 +187,7 @@ categories of hypertension (normal, elevated, or hypertensive).
 The following metrics are currently offered through the `bp` package:
 
 | Function           | Metric Name                                | Source                                                                        |
-| ------------------ | ------------------------------------------ | ----------------------------------------------------------------------------- |
+|--------------------|--------------------------------------------|-------------------------------------------------------------------------------|
 | `bp_arv`           | Average Real Variability                   | [Mena et al (2005)](https://doi.org/10.1097/01.hjh.0000160205.81652.5a)       |
 | `bp_center`        | Mean and Median                            | [Amaro Lijarcio et al (2006)](https://doi.org/10.1016/j.ejim.2006.07.023)     |
 | `bp_cv`            | Coefficient of Variation                   | [Munter et al (2011)](https://doi.org/10.1097/HJH.0b013e32834cf213)           |
@@ -205,7 +203,7 @@ The following visualization functions are currently offered through the
 `bp` package:
 
 | Function         | Visualization Type              |
-| ---------------- | ------------------------------- |
+|------------------|---------------------------------|
 | `bp_scatter`     | Scatter plot of BP stages       |
 | `bp_ts_plots`    | Time series plots               |
 | `bp_hist`        | Histograms of BP stages         |
@@ -219,8 +217,6 @@ processing step and the functionality / analysis step.
 
 1.  Load and process data into a new usable dataframe for all further
     analysis using the `process_data` function
-
-<!-- end list -->
 
 ``` r
 #devtools::install_github("johnschwenck/bp")
@@ -241,7 +237,7 @@ hypnos_proc <- process_data(bp_hypnos,
                      id = 'id', 
                      visit = 'Visit', 
                      wake = 'wake')
-#> 2 values exceeded the DUL or DLL thresholds and were coerced to NA
+#> 2 values that exceeded the DUL or DLL thresholds were coerced to NA.
 ```
 
 **NOTE:** the `process_data` function is insensitive to capitalization
@@ -262,12 +258,10 @@ properly.
     using a subset of only two of the subjects for comparison (subjects
     70417 and 70435):
 
-<!-- end list -->
-
 ``` r
 dip_calc(hypnos_proc, subj = c(70417, 70435))
 #> [[1]]
-#> # A tibble: 8 x 6
+#> # A tibble: 8 × 6
 #> # Groups:   ID, VISIT [4]
 #>   ID    VISIT WAKE  avg_SBP avg_DBP     N
 #>   <fct> <fct> <fct>   <dbl>   <dbl> <int>
@@ -281,7 +275,7 @@ dip_calc(hypnos_proc, subj = c(70417, 70435))
 #> 8 70435 2     1        123.    72.5    20
 #> 
 #> [[2]]
-#> # A tibble: 4 x 6
+#> # A tibble: 4 × 6
 #> # Groups:   ID [2]
 #>   ID    VISIT  dip_sys class_sys  dip_dias class_dias
 #>   <fct> <fct>    <dbl> <chr>         <dbl> <chr>     
@@ -299,29 +293,63 @@ subjects by their `BP_CLASS`: we would include `add_groups = "BP_CLASS"`
 as an additional argument (note that capitalization does not matter).
 
 ``` r
-bp_stats(hypnos_proc, subj = c(70417, 70435), add_groups = "bp_class", bp_type = 1)
-#> # A tibble: 35 x 16
+bp_stats(hypnos_proc, subj = c(70417, 70435), add_groups = "bp_class", bp_type = "both")
+#> # A tibble: 35 × 27
 #> # Groups:   ID, VISIT, WAKE [8]
-#>    ID        N VISIT WAKE  BP_CLASS SBP_mean SBP_med    SD   ARV    SV    CV
-#>    <fct> <int> <fct> <fct> <ord>       <dbl>   <dbl> <dbl> <dbl> <dbl> <dbl>
-#>  1 70417     5 1     0     Normal       114.     114  3.51  3.5   4.74 3.07 
-#>  2 70417     3 1     0     Elevated     125.     125  1.53  1.5   1.58 1.22 
-#>  3 70417     2 1     0     ISH - S2     143      143  2.83  4     4    1.98 
-#>  4 70417     3 1     1     Normal       116.     118  4.04  3.5   4.95 3.49 
-#>  5 70417     9 1     1     Elevated     125.     124  2.54  3.25  3.71 2.03 
-#>  6 70417     6 1     1     ISH - S1     134.     133  2.42  2.4   2.83 1.81 
-#>  7 70417     2 1     1     ISH - S2     144      144  1.41  2     2    0.982
-#>  8 70417     3 2     0     Elevated     124      122  4.36  4     5    3.52 
-#>  9 70417     2 2     0     ISH - S1     133      133  1.41  2     2    1.06 
-#> 10 70417     3 2     0     ISH - S2     151      151  0     0     0    0    
-#> # ... with 25 more rows, and 5 more variables: SBP_max <dbl>, SBP_min <dbl>,
-#> #   SBP_range <dbl>, Peak <dbl>, Trough <dbl>
+#>    ID        N VISIT WAKE  BP_CLASS SBP_mean DBP_mean SBP_med DBP_med SD_SBP
+#>    <fct> <int> <fct> <fct> <ord>       <dbl>    <dbl>   <dbl>   <dbl>  <dbl>
+#>  1 70417     5 1     0     Normal       114.     54.6     114    56     3.51
+#>  2 70417     3 1     0     Elevated     125.     60.3     125    64     1.53
+#>  3 70417     2 1     0     ISH - S2     143      75.5     143    75.5   2.83
+#>  4 70417     3 1     1     Normal       116.     67       118    68     4.04
+#>  5 70417     9 1     1     Elevated     125.     65.2     124    66     2.54
+#>  6 70417     6 1     1     ISH - S1     134.     67.8     133    67.5   2.42
+#>  7 70417     2 1     1     ISH - S2     144      68.5     144    68.5   1.41
+#>  8 70417     3 2     0     Elevated     124      57.7     122    57     4.36
+#>  9 70417     2 2     0     ISH - S1     133      56.5     133    56.5   1.41
+#> 10 70417     3 2     0     ISH - S2     151      66       151    65     0   
+#> # ℹ 25 more rows
+#> # ℹ 17 more variables: SD_DBP <dbl>, ARV_SBP <dbl>, ARV_DBP <dbl>,
+#> #   SV_SBP <dbl>, SV_DBP <dbl>, CV_SBP <dbl>, CV_DBP <dbl>, SBP_max <dbl>,
+#> #   SBP_min <dbl>, DBP_max <dbl>, DBP_min <dbl>, SBP_range <dbl>,
+#> #   DBP_range <dbl>, Peak_SBP <dbl>, Peak_DBP <dbl>, Trough_SBP <dbl>,
+#> #   Trough_DBP <dbl>
 ```
 
 Here is an example of the `bp_scatter` function for subject 70417:
 
 ``` r
 bp_scatter(hypnos_proc, subj = 70417)
+#> Warning in geom_text(aes(x = min(xlim_breaks) + 5, y = low_y_lim[2], label = "Low"), : All aesthetics have length 1, but the data has 55 rows.
+#> ℹ Please consider using `annotate()` or provide this layer with data containing
+#>   a single row.
+#> Warning in geom_text(aes(x = min(xlim_breaks) + 5, y = norm_y_lim[2], label = "Normal"), : All aesthetics have length 1, but the data has 55 rows.
+#> ℹ Please consider using `annotate()` or provide this layer with data containing
+#>   a single row.
+#> Warning in geom_text(aes(x = min(xlim_breaks) + 5, y = 130, label = "Elevated"), : All aesthetics have length 1, but the data has 55 rows.
+#> ℹ Please consider using `annotate()` or provide this layer with data containing
+#>   a single row.
+#> Warning in geom_text(aes(x = 90, y = 140, label = "S1"), color = "black", : All aesthetics have length 1, but the data has 55 rows.
+#> ℹ Please consider using `annotate()` or provide this layer with data containing
+#>   a single row.
+#> Warning in geom_text(aes(x = s2_x_lim[2] - 5, y = s2_y_lim[2] - 5, label = "S2"), : All aesthetics have length 1, but the data has 55 rows.
+#> ℹ Please consider using `annotate()` or provide this layer with data containing
+#>   a single row.
+#> Warning in geom_text(aes(x = min(xlim_breaks) + 5, y = 140, label = "ISH - S1"), : All aesthetics have length 1, but the data has 55 rows.
+#> ℹ Please consider using `annotate()` or provide this layer with data containing
+#>   a single row.
+#> Warning in geom_text(aes(x = min(xlim_breaks) + 5, y = s2_y_lim[2] - 5, : All aesthetics have length 1, but the data has 55 rows.
+#> ℹ Please consider using `annotate()` or provide this layer with data containing
+#>   a single row.
+#> Warning in geom_text(aes(x = 90, y = 90, label = "IDH\n S1"), color = "black", : All aesthetics have length 1, but the data has 55 rows.
+#> ℹ Please consider using `annotate()` or provide this layer with data containing
+#>   a single row.
+#> Warning in geom_text(aes(x = s2_x_lim[2] - 5, y = 90, label = "IDH\n S2"), : All aesthetics have length 1, but the data has 55 rows.
+#> ℹ Please consider using `annotate()` or provide this layer with data containing
+#>   a single row.
+#> Warning in geom_text(aes(x = xlim_breaks[xlim_breaks_length], y = ylim_breaks[ylim_breaks_length], : All aesthetics have length 1, but the data has 55 rows.
+#> ℹ Please consider using `annotate()` or provide this layer with data containing
+#>   a single row.
 ```
 
 <img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />

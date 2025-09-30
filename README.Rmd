@@ -19,6 +19,7 @@ knitr::opts_chunk$set(
 [![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/bp)](https://cran.r-project.org/package=bp)
 [![](https://cranlogs.r-pkg.org/badges/bp)](https://CRAN.R-project.org/package=bp)
 
+[![R-CMD-check](https://github.com/johnschwenck/bp/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/johnschwenck/bp/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 ## bp: Blood Pressure Analysis for R
@@ -165,7 +166,7 @@ dip_calc(hypnos_proc, subj = c(70417, 70435))
 
 In terms of statistical metrics, the `bp_stats` function aggregates many of the variability and center metrics into one table which makes comparing the different measures to one another very convenient. Let's suppose for this example that we wanted to further analyze these two subjects by their `BP_CLASS`: we would include `add_groups = "BP_CLASS"` as an additional argument (note that capitalization does not matter). 
 ```{r}
-bp_stats(hypnos_proc, subj = c(70417, 70435), add_groups = "bp_class", bp_type = 1)
+bp_stats(hypnos_proc, subj = c(70417, 70435), add_groups = "bp_class", bp_type = "both")
 ```
 
 

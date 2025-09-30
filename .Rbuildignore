@@ -6,3 +6,4 @@
 ^CRAN-RELEASE$
 ^data-raw$
 ^R/Test_bp_tables\.R$
+^\.github$
