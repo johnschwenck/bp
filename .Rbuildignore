@@ -2,8 +2,6 @@
 ^\.Rproj\.user$
 ^README\.Rmd$
 ^paper$
-^\.travis\.yml$
-^appveyor\.yml$
 ^cran-comments\.md$
 ^CRAN-RELEASE$
 ^data-raw$
